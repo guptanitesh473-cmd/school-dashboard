@@ -16,7 +16,9 @@ RUN cd backend && npm install --omit=dev
 # Copy backend source
 COPY backend/ ./backend/
 
-# The SQLite DB will live on a persistent volume at /data
+# Create data directory for SQLite
+RUN mkdir -p /data
+
 ENV DB_PATH=/data/school_dashboard.db
 ENV PORT=3001
 ENV NODE_ENV=production
