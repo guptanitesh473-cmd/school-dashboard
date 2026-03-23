@@ -1,0 +1,35 @@
+app = "school-dashboard"
+primary_region = "sin"   # Singapore — closest to India
+
+[build]
+
+[env]
+  PORT = "3001"
+  NODE_ENV = "production"
+
+[mounts]
+  source = "school_db"
+  destination = "/data"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3001
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 50
+    soft_limit = 25
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    path = "/api/health"

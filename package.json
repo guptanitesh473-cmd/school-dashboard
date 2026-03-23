@@ -1,0 +1,13 @@
+{
+  "name": "school-dashboard",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "start": "cd backend && node server.js",
+    "seed": "cd backend && node seed.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

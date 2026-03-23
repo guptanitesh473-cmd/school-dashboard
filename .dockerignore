@@ -1,0 +1,6 @@
+node_modules
+*/node_modules
+backend/public
+backend/school_dashboard.db
+*.db
+.git
