@@ -1,6 +1,151 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { BookOpen, Calculator, Users, TrendingUp, ChevronDown } from 'lucide-react';
+import { BookOpen, Calculator, Users, TrendingUp, ChevronDown, Download } from 'lucide-react';
+
+function downloadStudentReport(student, gradeLabel) {
+  const pct = (s, m) => Math.min(100, Math.round((s / m) * 100));
+  const color = p => p >= 75 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
+  const bg = p => p >= 75 ? '#f0fdf4' : p >= 50 ? '#fffbeb' : '#fef2f2';
+  const border = p => p >= 75 ? '#bbf7d0' : p >= 50 ? '#fde68a' : '#fecaca';
+
+  const catRows = (cats, data) => Object.entries(data).map(([cat, c]) => {
+    const p = c.pct;
+    return `
+      <tr>
+        <td style="padding:8px 12px;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6">${cat}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6">
+          <div style="background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden">
+            <div style="background:${color(p)};width:${p}%;height:100%;border-radius:999px"></div>
+          </div>
+        </td>
+        <td style="padding:8px 12px;text-align:center;border-bottom:1px solid #f3f4f6">
+          <span style="background:${bg(p)};border:1px solid ${border(p)};color:${color(p)};padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600">${c.score}/${c.max}</span>
+        </td>
+        <td style="padding:8px 12px;text-align:center;font-size:13px;font-weight:700;color:${color(p)};border-bottom:1px solid #f3f4f6">${p}%</td>
+      </tr>`;
+  }).join('');
+
+  const engPct = pct(student.english.total, student.english.max);
+  const mathPct = pct(student.math.total, student.math.max);
+  const totalPct = pct(student.total, student.totalMax);
+  const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BLA Report — ${student.name}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none; }
+      @page { margin: 20mm; }
+    }
+  </style>
+</head>
+<body style="max-width:800px;margin:0 auto;padding:32px 24px">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;padding:24px 28px;margin-bottom:24px;color:#fff">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.8;margin-bottom:6px">Baseline Learning Assessment</div>
+        <div style="font-size:26px;font-weight:800;line-height:1.2">${student.name}</div>
+        <div style="margin-top:6px;font-size:14px;opacity:0.9">${gradeLabel}${student.section ? ' · Section ' + student.section : ''}</div>
+      </div>
+      <div style="text-align:right;font-size:12px;opacity:0.8">
+        <div>Report Date</div>
+        <div style="font-weight:600;margin-top:2px">${today}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Summary -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+    ${[
+      { label: 'English', score: student.english.total, max: student.english.max, p: engPct },
+      { label: 'Math', score: student.math.total, max: student.math.max, p: mathPct },
+      { label: 'Total', score: student.total, max: student.totalMax, p: totalPct },
+    ].map(({ label, score, max, p }) => `
+      <div style="border:1px solid #e5e7eb;border-radius:10px;padding:16px;text-align:center">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:8px">${label}</div>
+        <div style="font-size:28px;font-weight:800;color:${color(p)}">${score}</div>
+        <div style="font-size:12px;color:#9ca3af">out of ${max}</div>
+        <div style="margin-top:8px;background:#e5e7eb;border-radius:999px;height:6px;overflow:hidden">
+          <div style="background:${color(p)};width:${p}%;height:100%;border-radius:999px"></div>
+        </div>
+        <div style="margin-top:4px;font-size:13px;font-weight:700;color:${color(p)}">${p}%</div>
+      </div>`).join('')}
+  </div>
+
+  <!-- English Breakdown -->
+  <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:16px">
+    <div style="background:#eff6ff;padding:12px 16px;border-bottom:1px solid #dbeafe;display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">📖</span>
+      <span style="font-weight:700;color:#1e40af;font-size:15px">English Performance</span>
+      <span style="margin-left:auto;font-weight:700;color:${color(engPct)};font-size:14px">${student.english.total}/${student.english.max} (${engPct}%)</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="background:#f9fafb">
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px">Category</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;width:200px">Progress</th>
+          <th style="padding:8px 12px;text-align:center;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;width:100px">Score</th>
+          <th style="padding:8px 12px;text-align:center;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;width:70px">%</th>
+        </tr>
+      </thead>
+      <tbody>${catRows(null, student.english.categories)}</tbody>
+    </table>
+  </div>
+
+  <!-- Math Breakdown -->
+  <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:24px">
+    <div style="background:#f5f3ff;padding:12px 16px;border-bottom:1px solid #e9d5ff;display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">🔢</span>
+      <span style="font-weight:700;color:#6d28d9;font-size:15px">Math Performance</span>
+      <span style="margin-left:auto;font-weight:700;color:${color(mathPct)};font-size:14px">${student.math.total}/${student.math.max} (${mathPct}%)</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="background:#f9fafb">
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px">Category</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;width:200px">Progress</th>
+          <th style="padding:8px 12px;text-align:center;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;width:100px">Score</th>
+          <th style="padding:8px 12px;text-align:center;font-size:11px;text-transform:uppercase;color:#6b7280;letter-spacing:0.5px;width:70px">%</th>
+        </tr>
+      </thead>
+      <tbody>${catRows(null, student.math.categories)}</tbody>
+    </table>
+  </div>
+
+  <!-- Legend -->
+  <div style="display:flex;gap:16px;justify-content:center;font-size:12px;color:#6b7280;margin-bottom:20px">
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#16a34a;border-radius:50%;display:inline-block"></span>≥ 75% Good</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#d97706;border-radius:50%;display:inline-block"></span>50–74% Average</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#dc2626;border-radius:50%;display:inline-block"></span>< 50% Needs Improvement</span>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:16px">
+    OIS Dashboard · Baseline Learning Assessment Report · ${gradeLabel}
+  </div>
+
+  <!-- Print button -->
+  <div class="no-print" style="text-align:center;margin-top:24px">
+    <button onclick="window.print()" style="background:#4f46e5;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">
+      Save as PDF / Print
+    </button>
+  </div>
+
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
 
 function pctColor(pct) {
   if (pct >= 75) return 'bg-green-500';
@@ -234,9 +379,19 @@ function GradeDashboard({ data, section, setSection, sort, setSort, expand, setE
 
       {/* Student table */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-800">Student-wise Scores</h3>
-          <p className="text-xs text-gray-400 mt-0.5">Click a row to expand category details · Click column headers to sort</p>
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-gray-800">Student-wise Scores</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Click a row to expand · Click headers to sort · Download individual reports</p>
+          </div>
+          <button
+            onClick={() => sorted.forEach((s, i) => setTimeout(() => downloadStudentReport(s, label), i * 300))}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors shrink-0"
+            title="Download reports for all visible students"
+          >
+            <Download size={13} />
+            Download All ({filtered.length})
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -248,7 +403,7 @@ function GradeDashboard({ data, section, setSection, sort, setSort, expand, setE
                 <Th onClick={() => toggleSort('english')}>English{sortIcon('english')}</Th>
                 <Th onClick={() => toggleSort('math')}>Math{sortIcon('math')}</Th>
                 <Th onClick={() => toggleSort('total')}>Total{sortIcon('total')}</Th>
-                <Th cls="w-8"></Th>
+                <Th cls="w-24">Report</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -256,6 +411,7 @@ function GradeDashboard({ data, section, setSection, sort, setSort, expand, setE
                 <StudentRow
                   key={student.no}
                   student={student}
+                  gradeLabel={label}
                   expanded={expand === student.no}
                   onToggle={() => setExpand(expand === student.no ? null : student.no)}
                   engCatNames={engCatNames}
@@ -281,7 +437,7 @@ function Th({ children, onClick, cls = '' }) {
   );
 }
 
-function StudentRow({ student, expanded, onToggle, engCatNames, mathCatNames }) {
+function StudentRow({ student, gradeLabel, expanded, onToggle, engCatNames, mathCatNames }) {
   return (
     <>
       <tr className="hover:bg-gray-50/60 transition-colors cursor-pointer" onClick={onToggle}>
@@ -295,8 +451,18 @@ function StudentRow({ student, expanded, onToggle, engCatNames, mathCatNames }) 
         <td className="px-4 py-2.5"><ScoreBadge score={student.english.total} max={student.english.max} /></td>
         <td className="px-4 py-2.5"><ScoreBadge score={student.math.total} max={student.math.max} /></td>
         <td className="px-4 py-2.5"><ScoreBadge score={student.total} max={student.totalMax} bold /></td>
-        <td className="px-4 py-2.5 text-gray-400">
-          <ChevronDown size={14} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <td className="px-4 py-2.5" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => downloadStudentReport(student, gradeLabel)}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+              title="Download PDF report"
+            >
+              <Download size={12} />
+              Report
+            </button>
+            <ChevronDown size={14} className={`text-gray-400 transition-transform ml-1 ${expanded ? 'rotate-180' : ''}`} />
+          </div>
         </td>
       </tr>
       {expanded && (
