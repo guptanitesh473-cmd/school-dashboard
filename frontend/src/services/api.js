@@ -86,4 +86,7 @@ export const api = {
     request(`/inventory/school/${schoolId}/item/${templateId}`, { method: 'PUT', body: data }),
   saveInventoryBulk: (schoolId, category, rows) =>
     request(`/inventory/school/${schoolId}/category/${encodeURIComponent(category)}/bulk`, { method: 'PUT', body: { rows } }),
+
+  // BLA
+  getBLA: (grade) => request(`/bla/grade/${grade}`),
 };

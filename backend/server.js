@@ -21,6 +21,7 @@ app.use('/api/retention', require('./routes/retention'));
 app.use('/api/retention-detail', require('./routes/retentionDetail'));
 app.use('/api/progress', require('./routes/progress'));
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/bla', require('./routes/bla'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

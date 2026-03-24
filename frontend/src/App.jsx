@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
-  School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut,
+  School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -13,6 +13,7 @@ import SchoolDetail from './components/SchoolDetail';
 import RetentionReport from './components/RetentionReport';
 import ProjectProgress from './components/ProjectProgress';
 import Inventory from './components/Inventory';
+import BLA from './components/BLA';
 import Login from './components/Login';
 import { authApi } from './services/api';
 
@@ -42,6 +43,11 @@ const NAV = [
     to: '/inventory',
     label: 'Inventory',
     icon: Package,
+  },
+  {
+    to: '/bla',
+    label: 'BLA Dashboard',
+    icon: BookMarked,
   },
 ];
 
@@ -216,6 +222,7 @@ export default function App() {
             <Route path="/schools/new" element={<AddSchoolForm />} />
             <Route path="/schools/:id" element={<SchoolDetail />} />
             <Route path="/schools/:id/edit" element={<AddSchoolForm />} />
+            <Route path="/bla" element={<BLA />} />
           </Routes>
         </main>
       </div>
@@ -252,6 +259,7 @@ function PageTitle() {
     '/retention': 'Retention Report',
     '/progress': 'Project Progress',
     '/inventory': 'Inventory',
+    '/bla': 'BLA Dashboard',
     '/schools': 'Schools',
     '/schools/new': 'Add School',
   };
