@@ -3,35 +3,126 @@ const router = express.Router();
 const https = require('https');
 
 const SHEET_ID = '1cniOqGUEz7edeZrGXzCQer8bw64HS8acI8ECZ38VEdI';
-const GRADES = {
-  3: '418408920',
+
+// Each entry: gid, snoCol, sectionCol, nameCol, dataStartRow,
+//   engCategories: [{name, cols, max}], mathCategories: [{name, cols, max}], mathTotalCol (optional)
+const GRADE_CONFIGS = {
+  1: {
+    gid: '679659520', label: 'Grade 1',
+    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking & Reading', cols: [4], max: 5 },
+      { name: 'Writing', cols: [5, 6], max: 10 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [7, 8, 9, 10, 11], max: 10 },
+    ],
+  },
+  2: {
+    gid: '1972416899', label: 'Grade 2',
+    snoCol: 1, sectionCol: 2, nameCol: 3, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking', cols: [5], max: 5 },
+      { name: 'Writing', cols: [6, 7, 8, 9], max: 10 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15], max: 10 },
+    ],
+  },
+  3: {
+    gid: '418408920', label: 'Grade 3',
+    snoCol: 0, sectionCol: 3, nameCol: 1, dataStartRow: 4,
+    engCategories: [
+      { name: 'Reading & Literacy', cols: [4,5,6,7,8,9,13,14,18,19,22,23,24], max: 13 },
+      { name: 'Grammar & Writing',  cols: [10,11,12,15,16,17,20,21], max: 8 },
+      { name: 'Writing',            cols: [25], max: 5 },
+    ],
+    mathCategories: [
+      { name: 'Numbers & Operations', cols: [26,27,28,29,35,36,37,38,39], max: 14 },
+      { name: 'Fractions',            cols: [30], max: 1 },
+      { name: 'Measurement & Data',   cols: [32,33,34], max: 3 },
+      { name: 'Geometry & Patterns',  cols: [31,40], max: 3 },
+    ],
+    mathTotalCol: 41,
+  },
+  4: {
+    gid: '2090601823', label: 'Grade 4',
+    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking', cols: [4], max: 5 },
+      { name: 'Writing', cols: [5, 6, 7, 8, 9, 10], max: 25 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+    ],
+  },
+  5: {
+    gid: '1683805760', label: 'Grade 5',
+    snoCol: 0, sectionCol: 3, nameCol: 1, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking',  cols: [4], max: 5 },
+      { name: 'Objective', cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+      { name: 'Writing',   cols: [26], max: 5 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
+    ],
+  },
+  6: {
+    gid: '853239414', label: 'Grade 6',
+    snoCol: 0, sectionCol: 2, nameCol: 1, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking',  cols: [4], max: 5 },
+      { name: 'Objective', cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+      { name: 'Writing',   cols: [26], max: 5 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50], max: 30 },
+    ],
+    mathTotalCol: 27,
+  },
+  7: {
+    gid: '650962980', label: 'Grade 7',
+    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking',  cols: [4], max: 5 },
+      { name: 'Writing',   cols: [5], max: 5 },
+      { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], max: 30 },
+    ],
+    mathTotalCol: 49,
+  },
+  8: {
+    gid: '2049470642', label: 'Grade 8',
+    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking',  cols: [4], max: 5 },
+      { name: 'Writing',   cols: [5], max: 5 },
+      { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
+    ],
+    mathTotalCol: 50,
+  },
+  9: {
+    gid: '1720050063', label: 'Grade 9',
+    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+    engCategories: [
+      { name: 'Speaking',  cols: [4], max: 5 },
+      { name: 'Writing',   cols: [5], max: 5 },
+      { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+    ],
+    mathCategories: [
+      { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
+    ],
+    mathTotalCol: 50,
+  },
 };
 
-// Column indices (0-based) for each broader category
-const ENG_CATEGORIES = {
-  'Reading & Literacy': [4, 5, 6, 7, 8, 9, 13, 14, 18, 19, 22, 23, 24],
-  // Speaking(4), Q1(5),Q2(6),Q3(7),Q4(8),Q5(9),Q9(13),Q10(14),Q14(18),Q15(19),Q18(22),Q19(23),Q20(24)
-  'Grammar & Writing': [10, 11, 12, 15, 16, 17, 20, 21],
-  // Q6(10),Q7(11),Q8(12),Q11(15),Q12(16),Q13(17),Q16(20),Q17(21)
-  'Writing': [25],
-};
-
-const MATH_CATEGORIES = {
-  'Numbers & Operations': [26, 27, 28, 29, 35, 36, 37, 38, 39],
-  // Q1(26),Q2(27),Q3(28),Q4(29),Q10(35),Q11(36),Q12(37),Q13(38),Q14(39)
-  'Fractions': [30],          // Q5
-  'Measurement & Data': [32, 33, 34],  // Q7,Q8,Q9
-  'Geometry & Patterns': [31, 40],     // Q6,Q15
-};
-
-const MAX_MARKS = {
-  eng: { 'Reading & Literacy': 13, 'Grammar & Writing': 8, 'Writing': 5 },
-  math: { 'Numbers & Operations': 14, 'Fractions': 1, 'Measurement & Data': 3, 'Geometry & Patterns': 3 },
-};
-// Numbers & Operations: Q1-Q4(1 each=4) + Q10-Q14(2 each=10) = 14
-// Geometry & Patterns: Q6(1) + Q15(2) = 3
-
-function fetchCSV(sheetId, gid) {
+function fetchCSV(gid) {
   return new Promise((resolve, reject) => {
     const follow = (u) => {
       https.get(u, res => {
@@ -42,7 +133,7 @@ function fetchCSV(sheetId, gid) {
         res.on('error', reject);
       }).on('error', reject);
     };
-    follow(`https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`);
+    follow(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`);
   });
 }
 
@@ -64,79 +155,90 @@ function getScore(row, cols) {
   return cols.reduce((sum, c) => sum + (parseFloat(row[c]) || 0), 0);
 }
 
-function parseStudents(rows) {
+function round1(n) { return Math.round(n * 10) / 10; }
+
+function parseStudents(rows, cfg) {
+  const { snoCol, sectionCol, nameCol, dataStartRow, engCategories, mathCategories, mathTotalCol } = cfg;
   const students = [];
-  for (const row of rows) {
-    const no = parseInt(row[0]);
-    if (!no || !row[1]) continue;
-    const name = row[1].trim();
-    const section = row[3]?.trim() || '';
+
+  for (let i = dataStartRow; i < rows.length; i++) {
+    const row = rows[i];
+    const no = parseInt(row[snoCol]);
+    if (!no || !row[nameCol]) continue;
+    const name = row[nameCol].trim();
+    const section = row[sectionCol]?.trim() || '';
+    if (!name || name.toLowerCase() === 'name of student') continue;
 
     const engCats = {};
-    for (const [cat, cols] of Object.entries(ENG_CATEGORIES)) {
-      const score = getScore(row, cols);
-      const max = MAX_MARKS.eng[cat];
-      engCats[cat] = { score: Math.round(score * 10) / 10, max, pct: Math.round((score / max) * 100) };
+    for (const { name: cat, cols, max } of engCategories) {
+      const score = round1(getScore(row, cols));
+      engCats[cat] = { score, max, pct: Math.min(100, Math.round((score / max) * 100)) };
     }
+    const engTotal = round1(Object.values(engCats).reduce((s, c) => s + c.score, 0));
+    const engMax = engCategories.reduce((s, c) => s + c.max, 0);
 
     const mathCats = {};
-    for (const [cat, cols] of Object.entries(MATH_CATEGORIES)) {
-      const score = getScore(row, cols);
-      const max = MAX_MARKS.math[cat];
-      mathCats[cat] = { score: Math.round(score * 10) / 10, max, pct: Math.round((score / max) * 100) };
+    for (const { name: cat, cols, max } of mathCategories) {
+      const score = round1(getScore(row, cols));
+      mathCats[cat] = { score, max, pct: Math.min(100, Math.round((score / max) * 100)) };
     }
-
-    const engTotal = Object.values(engCats).reduce((s, c) => s + c.score, 0);
-    const engMax = Object.values(engCats).reduce((s, c) => s + c.max, 0); // 26
-    const mathTotal = parseFloat(row[41]) || 0;
-    const mathMax = 21;
-    const grandTotal = Math.round((engTotal + mathTotal) * 10) / 10;
+    const mathMax = mathCategories.reduce((s, c) => s + c.max, 0);
+    const mathTotal = mathTotalCol != null
+      ? (parseFloat(row[mathTotalCol]) || round1(Object.values(mathCats).reduce((s, c) => s + c.score, 0)))
+      : round1(Object.values(mathCats).reduce((s, c) => s + c.score, 0));
 
     students.push({
       no, name, section,
-      english: { categories: engCats, total: Math.round(engTotal * 10) / 10, max: engMax },
+      english: { categories: engCats, total: engTotal, max: engMax },
       math: { categories: mathCats, total: mathTotal, max: mathMax },
-      total: grandTotal, totalMax: engMax + mathMax,
+      total: round1(engTotal + mathTotal),
+      totalMax: engMax + mathMax,
     });
   }
   return students;
 }
 
-// GET /api/bla/grade/3
+// GET /api/bla/grades — list available grades
+router.get('/grades', (req, res) => {
+  const grades = Object.entries(GRADE_CONFIGS).map(([g, cfg]) => ({
+    grade: g,
+    label: cfg.label,
+  }));
+  res.json(grades);
+});
+
+// GET /api/bla/grade/:grade
 router.get('/grade/:grade', async (req, res) => {
-  const gid = GRADES[parseInt(req.params.grade)];
-  if (!gid) return res.status(404).json({ error: 'Grade not found' });
+  const cfg = GRADE_CONFIGS[req.params.grade];
+  if (!cfg) return res.status(404).json({ error: 'Grade not found' });
 
   try {
-    const csv = await fetchCSV(SHEET_ID, gid);
+    const csv = await fetchCSV(cfg.gid);
     if (csv.includes('DOCTYPE')) return res.status(502).json({ error: 'Sheet not accessible' });
     const rows = parseCSV(csv);
-    const students = parseStudents(rows);
+    const students = parseStudents(rows, cfg);
 
-    // Compute averages
-    const avg = (arr, fn) => arr.length ? Math.round(arr.reduce((s, x) => s + fn(x), 0) / arr.length * 10) / 10 : 0;
+    const avg = (arr, fn) => arr.length ? round1(arr.reduce((s, x) => s + fn(x), 0) / arr.length) : 0;
 
     const summary = {
       total: students.length,
-      sections: [...new Set(students.map(s => s.section))].sort(),
+      sections: [...new Set(students.map(s => s.section).filter(Boolean))].sort(),
       avgTotal: avg(students, s => s.total),
       avgEnglish: avg(students, s => s.english.total),
       avgMath: avg(students, s => s.math.total),
-      engCategories: Object.keys(ENG_CATEGORIES).map(cat => ({
-        name: cat,
-        max: MAX_MARKS.eng[cat],
-        avg: avg(students, s => s.english.categories[cat].score),
-        avgPct: avg(students, s => s.english.categories[cat].pct),
+      engCategories: cfg.engCategories.map(({ name: cat, max }) => ({
+        name: cat, max,
+        avg: avg(students, s => s.english.categories[cat]?.score || 0),
+        avgPct: avg(students, s => s.english.categories[cat]?.pct || 0),
       })),
-      mathCategories: Object.keys(MATH_CATEGORIES).map(cat => ({
-        name: cat,
-        max: MAX_MARKS.math[cat],
-        avg: avg(students, s => s.math.categories[cat].score),
-        avgPct: avg(students, s => s.math.categories[cat].pct),
+      mathCategories: cfg.mathCategories.map(({ name: cat, max }) => ({
+        name: cat, max,
+        avg: avg(students, s => s.math.categories[cat]?.score || 0),
+        avgPct: avg(students, s => s.math.categories[cat]?.pct || 0),
       })),
     };
 
-    res.json({ grade: req.params.grade, students, summary });
+    res.json({ grade: req.params.grade, label: cfg.label, students, summary });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
