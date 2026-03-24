@@ -159,6 +159,18 @@ if (userCount === 0) {
   console.log('Default user created: admin / admin123');
 }
 
+// Auto-seed all data if schools table is empty (e.g. fresh Render deploy)
+const schoolCount = db.prepare('SELECT COUNT(*) as c FROM schools').get().c;
+if (schoolCount === 0) {
+  try {
+    const seed = require('./seed_data');
+    seed(db);
+    console.log('Database seeded from seed_data.js');
+  } catch (e) {
+    console.error('Seed failed:', e.message);
+  }
+}
+
 // Migrations — safe to run multiple times
 const migrations = [
   `ALTER TABLE schools ADD COLUMN principal_name TEXT DEFAULT ''`,
