@@ -1,8 +1,7 @@
-// AUTO-GENERATED SEED — regenerate by running: node backend/generate_seed.js
+// AUTO-GENERATED SEED — 2026-03-24T16:47:48.800Z
 module.exports = function seed(db) {
   db.exec(`BEGIN`);
   try {
-  // ---- Schools ----
   const iSch = db.prepare(`INSERT OR IGNORE INTO schools (id,name,code,location,city,state,acquired_date,status,principal_name,zbh_name,academic_start_month,school_type,spoc_teacher_training,spoc_clicker,cod1,cod2,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   iSch.run(1,'OIS Dindigul','OIS-DGL','Dindigul','Dindigul','Tamil Nadu','2020-06-01','active','','','April','existing','','','','','2026-03-18 08:12:55');
   iSch.run(2,'OIS Kelambakkam','OIS-KLB','Chennai','Chennai','Tamil Nadu','2021-03-15','active','','','June','existing','','','','','2026-03-18 08:12:55');
@@ -28,14 +27,12 @@ module.exports = function seed(db) {
   iSch.run(22,'OIS Cheemasandara-New building','OIS-CMS','Bengaluru','Bengaluru','Karnataka',NULL,'active','','','June','new_building','','','','','2026-03-18 08:12:55');
   iSch.run(23,'OIS Bhopal-New building','OIS-BPL','Bhopal','Bhopal','Madhya Pradesh',NULL,'active','','','June','new_building','','','','','2026-03-18 08:12:55');
   iSch.run(24,'OIS Nagpur','OIS-NGP','Nagpur','Nagpur','Maharashtra',NULL,'active','','','June','existing','','','','','2026-03-18 08:12:55');
-  // ---- Categories ----
   const iCat = db.prepare(`INSERT OR IGNORE INTO categories (id,name,sort_order) VALUES (?,?,?)`);
   iCat.run(1,'Sports Infrastructure',1);
   iCat.run(2,'Academic Infrastructure',2);
   iCat.run(3,'General Facilities',3);
   iCat.run(4,'Visual & Performing Arts Infra',4);
   iCat.run(5,'STEM Infra',5);
-  // ---- Offerings ----
   const iOff = db.prepare(`INSERT OR IGNORE INTO offerings (id,category_id,name,sort_order) VALUES (?,?,?,?)`);
   iOff.run(1,1,'Football Ground',1);
   iOff.run(2,1,'Cricket Ground',2);
@@ -61,7 +58,6 @@ module.exports = function seed(db) {
   iOff.run(22,5,'DIY / Maker Lab',2);
   iOff.run(23,5,'Horticulture Lab / Garden',3);
   iOff.run(24,5,'Astronomy Lab / Sky Observation Area',4);
-  // ---- School Offerings ----
   const iSO = db.prepare(`INSERT OR IGNORE INTO school_offerings (id,school_id,offering_id,status,condition_notes,updated_at) VALUES (?,?,?,?,?,?)`);
   iSO.run(1,1,1,'Yes','Space is available in direct use condition','2026-03-20 11:44:42');
   iSO.run(2,1,2,'No','','2026-03-20 11:44:42');
@@ -639,7 +635,6 @@ module.exports = function seed(db) {
   iSO.run(574,24,22,'No','','2026-03-20 11:44:42');
   iSO.run(575,24,23,'No','','2026-03-20 11:44:42');
   iSO.run(576,24,24,'No','','2026-03-20 11:44:42');
-  // ---- Retention Report ----
   const iRR = db.prepare(`INSERT OR IGNORE INTO retention_report (id,school_name,state,location,owner,calling_status,bla_status,exam_start_date,exam_end_date,tentative_bla_date,retention_data_link,bla_scorecard_link,notes,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   iRR.run(1,'Colour (Kelambakkam)','Tamil Nadu','Kelambakkam','Sharada','Completed','Scheduled','2026-02-16','2026-02-20','2026-04-03','Color CIS Students List','','No teachers are present and all the non-teaching staffs are calling, they have so far connected with 190+ parents and recieved a confirmation. The calling will be done by 7th Feb','2026-03-20 05:40:29');
   iRR.run(2,'Oragadam (TIPS)','Tamil Nadu','Oragadam','Nanda Kumar','Completed','Marks Received','2026-03-18','2026-03-27','2026-03-13','ORG Interested Students Details','OIS-BLA-MAR'' 2026','','2026-03-20 05:40:29');
@@ -652,7 +647,6 @@ module.exports = function seed(db) {
   iRR.run(9,'VELS HSR','Karnataka','Bangalore','HSR Principal','Completed','Marks Received','2026-03-06','2026-03-18','2026-03-04','VELLS HSR Student Data','HSR Consolidated BLA Marksheet.xlsx','Have shared BLA QPs','2026-03-20 05:40:29');
   iRR.run(10,'ST. Theresa','Karnataka','Bangalore','Soumya','Completed','','2026-03-05','2026-03-30','2026-06-08','STS STUDENTS SHEET','','They are having workshop, couldn''t speak with the principal','2026-03-20 05:40:29');
   iRR.run(11,'Tatva','','Bangalore','Savitha','Completed','Scheduled','2026-03-11','2026-03-25','2026-04-08','Tatva Student data','','','2026-03-20 05:40:29');
-  // ---- Retention Detail ----
   const iRD = db.prepare(`INSERT OR IGNORE INTO retention_detail (id,school_name,sno,grade_current,grade_next,total_strength,app_fees_paid,interested,yet_to_decide,not_interested,pct_not_interested,is_grand_total,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   iRD.run(1,'OIS Kelambakkam','1','Nursery','K1',7,3,0,0,4,'57%',0,0);
   iRD.run(2,'OIS Kelambakkam','2','K1','K2',34,19,2,0,13,'38%',0,1);
@@ -795,7 +789,6 @@ module.exports = function seed(db) {
   iRD.run(139,'Dharwad','11','G8','G9',62,NULL,47,15,0,'0%',0,138);
   iRD.run(140,'Dharwad','12','G9','G10',45,NULL,39,5,1,'2%',0,139);
   iRD.run(141,'Dharwad','','Grand Total','',431,NULL,301,110,20,'5%',1,140);
-  // ---- Project Progress ----
   const iPP = db.prepare(`INSERT OR IGNORE INTO project_progress (id,school_name,admission_status,total_students,toddler,nursery,lkg,ukg,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   iPP.run(1,'Oragadam','Interested',332,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'2026-03-20 05:40:29');
   iPP.run(2,'Oragadam','Not Interested',27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'2026-03-20 05:40:29');
@@ -829,7 +822,6 @@ module.exports = function seed(db) {
   iPP.run(30,'Dharwad','Interested',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'2026-03-20 05:40:29');
   iPP.run(31,'Dharwad','Not Interested',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'2026-03-20 05:40:29');
   iPP.run(32,'Dharwad','Yet to Decide',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'2026-03-20 05:40:29');
-  // ---- Inventory Templates ----
   const iIT = db.prepare(`INSERT OR IGNORE INTO inventory_templates (id,category,product_name,specification,standard_qty,unit_price,drive_link,sort_order) VALUES (?,?,?,?,?,?,?,?)`);
   iIT.run(477,'All Inventory','SMALL TABLE FOR K1 TO K2','','14','14','',2);
   iIT.run(478,'All Inventory','SMALL CHAIR PRE -NUR TO K2','25','31','27','',3);
@@ -4116,7 +4108,6 @@ module.exports = function seed(db) {
   iIT.run(3759,'Infirmary Room','Wall Clock','','1','230.5','',33);
   iIT.run(3760,'Infirmary Room','PA SYSTEM SPEAKERS','','1','950','',34);
   iIT.run(3761,'Infirmary Room','SIGNAGE''S CLASS ROOM/SAFETY','','1','310','',35);
-  // ---- School Inventory ----
   const iSI = db.prepare(`INSERT OR IGNORE INTO school_inventory (id,school_id,template_id,available_count,condition_notes,notes,updated_at) VALUES (?,?,?,?,?,?,?)`);
   iSI.run(1,8,3292,'4','','','2026-03-21 05:53:17');
   iSI.run(2,8,3293,'5','','','2026-03-21 05:53:17');
