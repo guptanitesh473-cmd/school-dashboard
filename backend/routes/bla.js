@@ -125,6 +125,167 @@ const SCHOOL_CONFIGS = {
     },
   },
 
+  'OIS HSR': {
+    sheetId: '1HeKqeXA2sMuMY7jJr8mYx4p7f4NT6Ve1',
+    grades: {
+      'K1': {
+        gid: '2040667523', label: 'KG 1',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing', cols: [4, 5], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [6, 7, 8, 9, 10], max: 10 },
+        ],
+      },
+      'K2': {
+        gid: '375148893', label: 'KG 2',
+        snoCol: null, sectionCol: 0, nameCol: 1, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3, 4, 5, 6], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [7, 8, 9, 10, 11, 12], max: 10 },
+        ],
+      },
+      'G1': {
+        gid: '174567062', label: 'Grade 1',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing', cols: [4, 5], max: 5 },
+          { name: 'Objectives', cols: [6, 7, 8, 9], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17], max: 20 },
+        ],
+      },
+      'G2': {
+        gid: '851297890', label: 'Grade 2',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing', cols: [4, 5], max: 5 },
+          { name: 'Objectives', cols: [6, 7, 8, 9], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], max: 20 },
+        ],
+      },
+      'G3A': {
+        gid: '1136449405', label: 'Grade 3 A',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], max: 21 },
+        ],
+      },
+      'G3B': {
+        gid: '364985881', label: 'Grade 3 B',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], max: 20 },
+        ],
+      },
+      'G4': {
+        gid: '62845833', label: 'Grade 4',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], max: 30 },
+        ],
+      },
+      'G5': {
+        gid: '215898793', label: 'Grade 5',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], max: 30 },
+        ],
+      },
+      'G6A': {
+        gid: '24659959', label: 'Grade 6 A',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          // col 9 = pre-computed total (skip); col 33 = grand total (skip)
+          { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32], max: 30 },
+        ],
+      },
+      'G6B': {
+        gid: '164981106', label: 'Grade 6 B',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32], max: 30 },
+        ],
+      },
+      'G7': {
+        gid: '2093607848', label: 'Grade 7',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], max: 30 },
+        ],
+      },
+      'G8A': {
+        gid: '275942542', label: 'Grade 8 A',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives', cols: [4, 5, 6, 7], max: 20 },
+          { name: 'Writing', cols: [8], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], max: 30 },
+        ],
+      },
+      'G8B': {
+        gid: '215984780', label: 'Grade 8 B',
+        snoCol: null, sectionCol: 0, nameCol: 1, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [2], max: 5 },
+          { name: 'Objectives', cols: [3, 4, 5, 6], max: 20 },
+          { name: 'Writing', cols: [7], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], max: 30 },
+        ],
+      },
+    },
+  },
+
   'OIS Arkere': {
     sheetId: '1WP3JrZzx9OGC02EWam4M2h_2CjZTo6Ck-he37ZsYkTw',
     // All grades: col0=empty, col1=Section, col2=Name, data starts row 3
