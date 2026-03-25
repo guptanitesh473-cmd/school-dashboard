@@ -1,12 +1,22 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, 'school_dashboard.db');
-const db = new Database(dbPath);
+const seedPath = path.join(__dirname, 'seed.db');
 
+// If no database exists yet, copy the pre-built seed database
+if (!fs.existsSync(dbPath) && fs.existsSync(seedPath)) {
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  fs.copyFileSync(seedPath, dbPath);
+  console.log('Database initialized from seed.db');
+}
+
+const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
+// Ensure all tables exist (safe for both fresh and existing DBs)
 db.exec(`
   CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -149,54 +159,14 @@ db.exec(`
     role TEXT DEFAULT 'admin',
     created_at TEXT DEFAULT (datetime('now'))
   );
-
-  CREATE TABLE IF NOT EXISTS _seed_meta (
-    key TEXT PRIMARY KEY,
-    value TEXT
-  );
 `);
 
-// Seed default admin user if none exists
+// Ensure default admin user exists
 const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
 if (userCount === 0) {
   db.prepare(`INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)`)
     .run('admin', 'admin123', 'Administrator', 'admin');
   console.log('Default user created: admin / admin123');
-}
-
-// Auto-seed all data if schools table is empty (e.g. fresh Render deploy)
-const SEED_VERSION = '2'; // bump when seed_data changes significantly
-const schoolCount = db.prepare('SELECT COUNT(*) as c FROM schools').get().c;
-const seedVer = db.prepare('SELECT value FROM _seed_meta WHERE key=?').get('seed_version')?.value;
-
-if (schoolCount === 0) {
-  try {
-    const seed = require('./seed_data');
-    seed(db);
-    db.prepare('INSERT OR REPLACE INTO _seed_meta (key,value) VALUES (?,?)').run('seed_version', SEED_VERSION);
-    console.log('Database seeded from seed_data.js v' + SEED_VERSION);
-  } catch (e) {
-    console.error('Seed failed:', e.message);
-  }
-} else if (seedVer !== SEED_VERSION) {
-  // Re-apply school_offerings data from seed without touching other tables
-  try {
-    const { schoolOfferingsData } = require('./seed_data');
-    if (schoolOfferingsData) {
-      const upsert = db.prepare(`
-        INSERT INTO school_offerings (school_id, offering_id, status, condition_notes)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(school_id, offering_id) DO UPDATE SET
-          status=excluded.status, condition_notes=excluded.condition_notes, updated_at=datetime('now')
-      `);
-      const run = db.transaction(() => { for (const r of schoolOfferingsData) upsert.run(r.school_id, r.offering_id, r.status, r.condition_notes); });
-      run();
-      db.prepare('INSERT OR REPLACE INTO _seed_meta (key,value) VALUES (?,?)').run('seed_version', SEED_VERSION);
-      console.log('Re-seeded school_offerings to v' + SEED_VERSION);
-    }
-  } catch (e) {
-    console.error('Re-seed school_offerings failed:', e.message);
-  }
 }
 
 // Migrations — safe to run multiple times
@@ -214,7 +184,7 @@ for (const sql of migrations) {
   try { db.exec(sql); } catch (_) { /* column already exists */ }
 }
 
-// Set school_type for existing New Building schools
+// Set school_type for New Building schools
 db.prepare(`UPDATE schools SET school_type='new_building' WHERE name LIKE '%-New building%' AND school_type != 'new_building'`).run();
 
 // Set April academic start for known schools
