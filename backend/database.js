@@ -149,6 +149,11 @@ db.exec(`
     role TEXT DEFAULT 'admin',
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS _seed_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  );
 `);
 
 // Seed default admin user if none exists
@@ -160,14 +165,37 @@ if (userCount === 0) {
 }
 
 // Auto-seed all data if schools table is empty (e.g. fresh Render deploy)
+const SEED_VERSION = '2'; // bump when seed_data changes significantly
 const schoolCount = db.prepare('SELECT COUNT(*) as c FROM schools').get().c;
+const seedVer = db.prepare('SELECT value FROM _seed_meta WHERE key=?').get('seed_version')?.value;
+
 if (schoolCount === 0) {
   try {
     const seed = require('./seed_data');
     seed(db);
-    console.log('Database seeded from seed_data.js');
+    db.prepare('INSERT OR REPLACE INTO _seed_meta (key,value) VALUES (?,?)').run('seed_version', SEED_VERSION);
+    console.log('Database seeded from seed_data.js v' + SEED_VERSION);
   } catch (e) {
     console.error('Seed failed:', e.message);
+  }
+} else if (seedVer !== SEED_VERSION) {
+  // Re-apply school_offerings data from seed without touching other tables
+  try {
+    const { schoolOfferingsData } = require('./seed_data');
+    if (schoolOfferingsData) {
+      const upsert = db.prepare(`
+        INSERT INTO school_offerings (school_id, offering_id, status, condition_notes)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(school_id, offering_id) DO UPDATE SET
+          status=excluded.status, condition_notes=excluded.condition_notes, updated_at=datetime('now')
+      `);
+      const run = db.transaction(() => { for (const r of schoolOfferingsData) upsert.run(r.school_id, r.offering_id, r.status, r.condition_notes); });
+      run();
+      db.prepare('INSERT OR REPLACE INTO _seed_meta (key,value) VALUES (?,?)').run('seed_version', SEED_VERSION);
+      console.log('Re-seeded school_offerings to v' + SEED_VERSION);
+    }
+  } catch (e) {
+    console.error('Re-seed school_offerings failed:', e.message);
   }
 }
 
