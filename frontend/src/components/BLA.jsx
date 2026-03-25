@@ -197,28 +197,37 @@ function Spinner() {
   return <div className="flex justify-center items-center h-64"><div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" /></div>;
 }
 
+// Schools that have BLA data available (keyed by school name)
+const BLA_SCHOOLS = ['OIS Dindigul'];
+
 export default function BLA() {
+  const [schools, setSchools] = useState([]);
+  const [selectedSchool, setSelectedSchool] = useState('OIS Dindigul');
   const [grades, setGrades] = useState([]);
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingGrades, setLoadingGrades] = useState(true);
+  const [loadingInit, setLoadingInit] = useState(true);
   const [error, setError] = useState('');
   const [section, setSection] = useState('All');
   const [sort, setSort] = useState({ key: 'no', dir: 1 });
   const [expand, setExpand] = useState(null);
 
-  // Load grade list
+  // Load schools + grades together
   useEffect(() => {
-    api.getBLAGrades()
-      .then(g => { setGrades(g); if (g.length) setSelectedGrade(g[0].grade); })
+    Promise.all([api.getSchools(), api.getBLAGrades()])
+      .then(([s, g]) => {
+        setSchools(s.filter(sc => sc.status === 'active'));
+        setGrades(g);
+        if (g.length) setSelectedGrade(g[0].grade);
+      })
       .catch(e => setError(e.message))
-      .finally(() => setLoadingGrades(false));
+      .finally(() => setLoadingInit(false));
   }, []);
 
-  // Load grade data
+  // Load grade data when school or grade changes
   useEffect(() => {
-    if (!selectedGrade) return;
+    if (!selectedGrade || !BLA_SCHOOLS.includes(selectedSchool)) return;
     setLoading(true);
     setData(null);
     setSection('All');
@@ -227,38 +236,72 @@ export default function BLA() {
       .then(setData)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [selectedGrade]);
+  }, [selectedGrade, selectedSchool]);
 
-  if (loadingGrades) return <Spinner />;
+  if (loadingInit) return <Spinner />;
+
+  const hasData = BLA_SCHOOLS.includes(selectedSchool);
 
   return (
     <div className="space-y-6">
-      {/* Header + Grade selector */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">BLA Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Baseline Learning Assessment — select a grade</p>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">BLA Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Baseline Learning Assessment</p>
+      </div>
+
+      {/* School + Grade selectors */}
+      <div className="flex flex-wrap items-center gap-4">
+        {/* School dropdown */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-600 shrink-0">School:</label>
+          <select
+            value={selectedSchool}
+            onChange={e => { setSelectedSchool(e.target.value); setData(null); setError(''); }}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px]"
+          >
+            {schools.map(s => (
+              <option key={s.id} value={s.name}>
+                {s.name}{BLA_SCHOOLS.includes(s.name) ? '' : ' (no data)'}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {grades.map(g => (
-            <button
-              key={g.grade}
-              onClick={() => setSelectedGrade(g.grade)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                selectedGrade === g.grade
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {g.label}
-            </button>
-          ))}
-        </div>
+
+        {/* Grade buttons — only shown if school has data */}
+        {hasData && (
+          <div className="flex flex-wrap gap-1.5">
+            {grades.map(g => (
+              <button
+                key={g.grade}
+                onClick={() => setSelectedGrade(g.grade)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedGrade === g.grade
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {error && <div className="text-red-600 bg-red-50 p-4 rounded-xl">{error}</div>}
-      {loading && <Spinner />}
-      {!loading && data && <GradeDashboard data={data} section={section} setSection={setSection} sort={sort} setSort={setSort} expand={expand} setExpand={setExpand} />}
+
+      {!hasData && (
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 text-center">
+          <div className="text-4xl mb-3">📊</div>
+          <p className="text-gray-700 font-semibold">No BLA data available for {selectedSchool}</p>
+          <p className="text-sm text-gray-400 mt-1">Data will appear here once the BLA scorecard is linked for this school.</p>
+        </div>
+      )}
+
+      {hasData && loading && <Spinner />}
+      {hasData && !loading && data && (
+        <GradeDashboard data={data} section={section} setSection={setSection} sort={sort} setSort={setSort} expand={expand} setExpand={setExpand} />
+      )}
     </div>
   );
 }
