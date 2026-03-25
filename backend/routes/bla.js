@@ -2,127 +2,255 @@ const express = require('express');
 const router = express.Router();
 const https = require('https');
 
-const SHEET_ID = '1cniOqGUEz7edeZrGXzCQer8bw64HS8acI8ECZ38VEdI';
+// Per-school configs: sheetId + grade definitions
+// snoCol: null means no SNO column — auto-assign row numbers
+const SCHOOL_CONFIGS = {
 
-// Each entry: gid, snoCol, sectionCol, nameCol, dataStartRow,
-//   engCategories: [{name, cols, max}], mathCategories: [{name, cols, max}], mathTotalCol (optional)
-const GRADE_CONFIGS = {
-  1: {
-    gid: '679659520', label: 'Grade 1',
-    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking & Reading', cols: [4], max: 5 },
-      { name: 'Writing', cols: [5, 6], max: 10 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [7, 8, 9, 10, 11], max: 10 },
-    ],
+  'OIS Dindigul': {
+    sheetId: '1cniOqGUEz7edeZrGXzCQer8bw64HS8acI8ECZ38VEdI',
+    grades: {
+      1: {
+        gid: '679659520', label: 'Grade 1',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking & Reading', cols: [4], max: 5 },
+          { name: 'Writing', cols: [5, 6], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [7, 8, 9, 10, 11], max: 10 },
+        ],
+      },
+      2: {
+        gid: '1972416899', label: 'Grade 2',
+        snoCol: 1, sectionCol: 2, nameCol: 3, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking', cols: [5], max: 5 },
+          { name: 'Writing', cols: [6, 7, 8, 9], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15], max: 10 },
+        ],
+      },
+      3: {
+        gid: '418408920', label: 'Grade 3',
+        snoCol: 0, sectionCol: 3, nameCol: 1, dataStartRow: 4,
+        engCategories: [
+          { name: 'Reading & Literacy', cols: [4,5,6,7,8,9,13,14,18,19,22,23,24], max: 13 },
+          { name: 'Grammar & Writing',  cols: [10,11,12,15,16,17,20,21], max: 8 },
+          { name: 'Writing',            cols: [25], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numbers & Operations', cols: [26,27,28,29,35,36,37,38,39], max: 14 },
+          { name: 'Fractions',            cols: [30], max: 1 },
+          { name: 'Measurement & Data',   cols: [32,33,34], max: 3 },
+          { name: 'Geometry & Patterns',  cols: [31,40], max: 3 },
+        ],
+        mathTotalCol: 41,
+      },
+      4: {
+        gid: '2090601823', label: 'Grade 4',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking', cols: [4], max: 5 },
+          { name: 'Writing', cols: [5, 6, 7, 8, 9, 10], max: 25 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+        ],
+      },
+      5: {
+        gid: '1683805760', label: 'Grade 5',
+        snoCol: 0, sectionCol: 3, nameCol: 1, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking',  cols: [4], max: 5 },
+          { name: 'Objective', cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+          { name: 'Writing',   cols: [26], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
+        ],
+      },
+      6: {
+        gid: '853239414', label: 'Grade 6',
+        snoCol: 0, sectionCol: 2, nameCol: 1, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking',  cols: [4], max: 5 },
+          { name: 'Objective', cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+          { name: 'Writing',   cols: [26], max: 5 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50], max: 30 },
+        ],
+        mathTotalCol: 27,
+      },
+      7: {
+        gid: '650962980', label: 'Grade 7',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking',  cols: [4], max: 5 },
+          { name: 'Writing',   cols: [5], max: 5 },
+          { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], max: 30 },
+        ],
+        mathTotalCol: 49,
+      },
+      8: {
+        gid: '2049470642', label: 'Grade 8',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking',  cols: [4], max: 5 },
+          { name: 'Writing',   cols: [5], max: 5 },
+          { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
+        ],
+        mathTotalCol: 50,
+      },
+      9: {
+        gid: '1720050063', label: 'Grade 9',
+        snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
+        engCategories: [
+          { name: 'Speaking',  cols: [4], max: 5 },
+          { name: 'Writing',   cols: [5], max: 5 },
+          { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
+        ],
+        mathTotalCol: 50,
+      },
+    },
   },
-  2: {
-    gid: '1972416899', label: 'Grade 2',
-    snoCol: 1, sectionCol: 2, nameCol: 3, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking', cols: [5], max: 5 },
-      { name: 'Writing', cols: [6, 7, 8, 9], max: 10 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15], max: 10 },
-    ],
+
+  'OIS Arkere': {
+    sheetId: '1WP3JrZzx9OGC02EWam4M2h_2CjZTo6Ck-he37ZsYkTw',
+    // All grades: col0=empty, col1=Section, col2=Name, data starts row 3
+    grades: {
+      'K1': {
+        gid: '51594311', label: 'KG 1',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4, 5], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [6, 7, 8, 9, 10], max: 10 },
+        ],
+      },
+      'K2': {
+        gid: '0', label: 'KG 2',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4, 5, 6, 7], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [8, 9, 10, 11, 12, 13], max: 10 },
+        ],
+      },
+      'G1': {
+        gid: '1542586272', label: 'Grade 1',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4, 5, 6, 7, 8, 9], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17], max: 20 },
+        ],
+      },
+      'G2': {
+        gid: '2087003313', label: 'Grade 2',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4, 5, 6, 7, 8, 9], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+        ],
+      },
+      'G3': {
+        gid: '940603544', label: 'Grade 3',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Objectives',       cols: [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23], max: 20 },
+          { name: 'Writing',          cols: [24, 25, 26, 27, 28, 29], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [30,31,32,33,34,35,36,37,38,39], max: 15 },
+        ],
+      },
+      'G4': {
+        gid: '588399200', label: 'Grade 4',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4], max: 5 },
+          { name: 'Objectives',       cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47], max: 30 },
+        ],
+      },
+      'G5': {
+        gid: '935536519', label: 'Grade 5',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4], max: 5 },
+          { name: 'Objectives',       cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47], max: 30 },
+        ],
+      },
+      'G6': {
+        gid: '1453556216', label: 'Grade 6',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4], max: 5 },
+          { name: 'Objectives',       cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47], max: 30 },
+        ],
+      },
+      'G7': {
+        gid: '289602174', label: 'Grade 7',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4], max: 5 },
+          { name: 'Objectives',       cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47], max: 30 },
+        ],
+      },
+      'G8': {
+        gid: '134810148', label: 'Grade 8',
+        snoCol: null, sectionCol: 1, nameCol: 2, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking/Reading', cols: [3], max: 5 },
+          { name: 'Writing',          cols: [4], max: 5 },
+          { name: 'Objectives',       cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47], max: 30 },
+        ],
+      },
+    },
   },
-  3: {
-    gid: '418408920', label: 'Grade 3',
-    snoCol: 0, sectionCol: 3, nameCol: 1, dataStartRow: 4,
-    engCategories: [
-      { name: 'Reading & Literacy', cols: [4,5,6,7,8,9,13,14,18,19,22,23,24], max: 13 },
-      { name: 'Grammar & Writing',  cols: [10,11,12,15,16,17,20,21], max: 8 },
-      { name: 'Writing',            cols: [25], max: 5 },
-    ],
-    mathCategories: [
-      { name: 'Numbers & Operations', cols: [26,27,28,29,35,36,37,38,39], max: 14 },
-      { name: 'Fractions',            cols: [30], max: 1 },
-      { name: 'Measurement & Data',   cols: [32,33,34], max: 3 },
-      { name: 'Geometry & Patterns',  cols: [31,40], max: 3 },
-    ],
-    mathTotalCol: 41,
-  },
-  4: {
-    gid: '2090601823', label: 'Grade 4',
-    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking', cols: [4], max: 5 },
-      { name: 'Writing', cols: [5, 6, 7, 8, 9, 10], max: 25 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
-    ],
-  },
-  5: {
-    gid: '1683805760', label: 'Grade 5',
-    snoCol: 0, sectionCol: 3, nameCol: 1, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking',  cols: [4], max: 5 },
-      { name: 'Objective', cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
-      { name: 'Writing',   cols: [26], max: 5 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
-    ],
-  },
-  6: {
-    gid: '853239414', label: 'Grade 6',
-    snoCol: 0, sectionCol: 2, nameCol: 1, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking',  cols: [4], max: 5 },
-      { name: 'Objective', cols: [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], max: 20 },
-      { name: 'Writing',   cols: [26], max: 5 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50], max: 30 },
-    ],
-    mathTotalCol: 27,
-  },
-  7: {
-    gid: '650962980', label: 'Grade 7',
-    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking',  cols: [4], max: 5 },
-      { name: 'Writing',   cols: [5], max: 5 },
-      { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], max: 30 },
-    ],
-    mathTotalCol: 49,
-  },
-  8: {
-    gid: '2049470642', label: 'Grade 8',
-    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking',  cols: [4], max: 5 },
-      { name: 'Writing',   cols: [5], max: 5 },
-      { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
-    ],
-    mathTotalCol: 50,
-  },
-  9: {
-    gid: '1720050063', label: 'Grade 9',
-    snoCol: 0, sectionCol: 1, nameCol: 2, dataStartRow: 4,
-    engCategories: [
-      { name: 'Speaking',  cols: [4], max: 5 },
-      { name: 'Writing',   cols: [5], max: 5 },
-      { name: 'Objective', cols: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], max: 20 },
-    ],
-    mathCategories: [
-      { name: 'Numeracy', cols: [27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49], max: 30 },
-    ],
-    mathTotalCol: 50,
-  },
+
 };
 
-function fetchCSV(gid) {
+function fetchCSV(sheetId, gid) {
   return new Promise((resolve, reject) => {
     const follow = (u) => {
       https.get(u, res => {
@@ -133,7 +261,7 @@ function fetchCSV(gid) {
         res.on('error', reject);
       }).on('error', reject);
     };
-    follow(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`);
+    follow(`https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`);
   });
 }
 
@@ -160,14 +288,23 @@ function round1(n) { return Math.round(n * 10) / 10; }
 function parseStudents(rows, cfg) {
   const { snoCol, sectionCol, nameCol, dataStartRow, engCategories, mathCategories, mathTotalCol } = cfg;
   const students = [];
+  let autoNo = 0;
 
   for (let i = dataStartRow; i < rows.length; i++) {
     const row = rows[i];
-    const no = parseInt(row[snoCol]);
-    if (!no || !row[nameCol]) continue;
-    const name = row[nameCol].trim();
-    const section = row[sectionCol]?.trim() || '';
+    const name = row[nameCol]?.trim();
     if (!name || name.toLowerCase() === 'name of student') continue;
+
+    // SNO: use column if available, else auto-increment
+    let no;
+    if (snoCol === null) {
+      no = ++autoNo;
+    } else {
+      no = parseInt(row[snoCol]);
+      if (!no) continue;
+    }
+
+    const section = row[sectionCol]?.trim() || '';
 
     const engCats = {};
     for (const { name: cat, cols, max } of engCategories) {
@@ -198,22 +335,30 @@ function parseStudents(rows, cfg) {
   return students;
 }
 
-// GET /api/bla/grades — list available grades
+// GET /api/bla/grades?school=OIS+Arkere
 router.get('/grades', (req, res) => {
-  const grades = Object.entries(GRADE_CONFIGS).map(([g, cfg]) => ({
+  const schoolName = req.query.school || 'OIS Dindigul';
+  const schoolCfg = SCHOOL_CONFIGS[schoolName];
+  if (!schoolCfg) return res.status(404).json({ error: 'School not found' });
+
+  const grades = Object.entries(schoolCfg.grades).map(([g, cfg]) => ({
     grade: g,
     label: cfg.label,
   }));
   res.json(grades);
 });
 
-// GET /api/bla/grade/:grade
+// GET /api/bla/grade/:grade?school=OIS+Arkere
 router.get('/grade/:grade', async (req, res) => {
-  const cfg = GRADE_CONFIGS[req.params.grade];
+  const schoolName = req.query.school || 'OIS Dindigul';
+  const schoolCfg = SCHOOL_CONFIGS[schoolName];
+  if (!schoolCfg) return res.status(404).json({ error: 'School not found' });
+
+  const cfg = schoolCfg.grades[req.params.grade];
   if (!cfg) return res.status(404).json({ error: 'Grade not found' });
 
   try {
-    const csv = await fetchCSV(cfg.gid);
+    const csv = await fetchCSV(schoolCfg.sheetId, cfg.gid);
     if (csv.includes('DOCTYPE')) return res.status(502).json({ error: 'Sheet not accessible' });
     const rows = parseCSV(csv);
     const students = parseStudents(rows, cfg);

@@ -197,8 +197,8 @@ function Spinner() {
   return <div className="flex justify-center items-center h-64"><div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" /></div>;
 }
 
-// Schools that have BLA data available (keyed by school name)
-const BLA_SCHOOLS = ['OIS Dindigul'];
+// Schools that have BLA data available
+const BLA_SCHOOLS = ['OIS Dindigul', 'OIS Arkere'];
 
 export default function BLA() {
   const [schools, setSchools] = useState([]);
@@ -213,26 +213,30 @@ export default function BLA() {
   const [sort, setSort] = useState({ key: 'no', dir: 1 });
   const [expand, setExpand] = useState(null);
 
-  // Load schools + grades together
+  // Load schools list once
   useEffect(() => {
-    Promise.all([api.getSchools(), api.getBLAGrades()])
-      .then(([s, g]) => {
-        setSchools(s.filter(sc => sc.status === 'active'));
-        setGrades(g);
-        if (g.length) setSelectedGrade(g[0].grade);
-      })
+    api.getSchools()
+      .then(s => setSchools(s.filter(sc => sc.status === 'active')))
       .catch(e => setError(e.message))
       .finally(() => setLoadingInit(false));
   }, []);
 
-  // Load grade data when school or grade changes
+  // Load grades when selected school changes
+  useEffect(() => {
+    if (!BLA_SCHOOLS.includes(selectedSchool)) { setGrades([]); setData(null); return; }
+    api.getBLAGrades(selectedSchool)
+      .then(g => { setGrades(g); setSelectedGrade(g[0]?.grade || null); setData(null); })
+      .catch(e => setError(e.message));
+  }, [selectedSchool]);
+
+  // Load grade data when grade changes
   useEffect(() => {
     if (!selectedGrade || !BLA_SCHOOLS.includes(selectedSchool)) return;
     setLoading(true);
     setData(null);
     setSection('All');
     setExpand(null);
-    api.getBLA(selectedGrade)
+    api.getBLA(selectedGrade, selectedSchool)
       .then(setData)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));

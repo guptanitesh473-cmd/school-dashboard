@@ -88,6 +88,6 @@ export const api = {
     request(`/inventory/school/${schoolId}/category/${encodeURIComponent(category)}/bulk`, { method: 'PUT', body: { rows } }),
 
   // BLA
-  getBLAGrades: () => request('/bla/grades'),
-  getBLA: (grade) => request(`/bla/grade/${grade}`),
+  getBLAGrades: (school) => request(`/bla/grades?school=${encodeURIComponent(school || 'OIS Dindigul')}`),
+  getBLA: (grade, school) => request(`/bla/grade/${grade}?school=${encodeURIComponent(school || 'OIS Dindigul')}`),
 };
