@@ -125,6 +125,154 @@ const SCHOOL_CONFIGS = {
     },
   },
 
+  'OIS Oragadam': {
+    sheetId: '10VnBM99CMfHjOCq3rmUje_CZrqvuPtfhEXKeQxOuLXE',
+    // Structure: row0=title, row1=headers, row2=max marks, row3+=students
+    // No section column; sections encoded as separate tabs (1A/1B, 2A/2B)
+    grades: {
+      'K1': {
+        gid: '0', label: 'KG 1',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Literacy', cols: [3], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [4], max: 10 },
+        ],
+      },
+      'K2': {
+        gid: '596127515', label: 'KG 2',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Literacy', cols: [3], max: 10 },
+        ],
+        mathCategories: [
+          { name: 'Numeracy', cols: [4], max: 10 },
+        ],
+      },
+      'G1A': {
+        gid: '370494655', label: 'Grade 1 A',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'English', cols: [3], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [4], max: 20 },
+        ],
+      },
+      'G1B': {
+        gid: '1457808633', label: 'Grade 1 B',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'English', cols: [3], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [4], max: 20 },
+        ],
+      },
+      'G2A': {
+        gid: '2113061182', label: 'Grade 2 A',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 20 },
+        ],
+      },
+      'G2B': {
+        gid: '21329565', label: 'Grade 2 B',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 20 },
+        ],
+      },
+      'G3': {
+        gid: '741689356', label: 'Grade 3',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 20 },
+        ],
+      },
+      'G4': {
+        gid: '1375110510', label: 'Grade 4',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 30 },
+        ],
+      },
+      'G5': {
+        gid: '515299518', label: 'Grade 5',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 30 },
+        ],
+      },
+      'G6': {
+        gid: '558537322', label: 'Grade 6',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 30 },
+        ],
+      },
+      'G7': {
+        gid: '56673923', label: 'Grade 7',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 30 },
+        ],
+      },
+      'G8': {
+        gid: '1315408023', label: 'Grade 8',
+        snoCol: 0, sectionCol: 99, nameCol: 1, dataStartRow: 3,
+        engCategories: [
+          { name: 'Speaking', cols: [2], max: 5 },
+          { name: 'Writing', cols: [3], max: 5 },
+          { name: 'Objective', cols: [4], max: 20 },
+        ],
+        mathCategories: [
+          { name: 'Mathematics', cols: [5], max: 30 },
+        ],
+      },
+    },
+  },
+
   'OIS HSR': {
     sheetId: '1HeKqeXA2sMuMY7jJr8mYx4p7f4NT6Ve1',
     grades: {

@@ -198,7 +198,7 @@ function Spinner() {
 }
 
 // Schools that have BLA data available
-const BLA_SCHOOLS = ['OIS Dindigul', 'OIS Arkere', 'OIS HSR'];
+const BLA_SCHOOLS = ['OIS Dindigul', 'OIS Arkere', 'OIS HSR', 'OIS Oragadam'];
 
 export default function BLA() {
   const [schools, setSchools] = useState([]);
