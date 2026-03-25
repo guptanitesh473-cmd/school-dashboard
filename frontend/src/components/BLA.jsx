@@ -223,9 +223,12 @@ export default function BLA() {
 
   // Load grades when selected school changes
   useEffect(() => {
-    if (!BLA_SCHOOLS.includes(selectedSchool)) { setGrades([]); setData(null); return; }
+    setSelectedGrade(null);
+    setData(null);
+    setError('');
+    if (!BLA_SCHOOLS.includes(selectedSchool)) { setGrades([]); return; }
     api.getBLAGrades(selectedSchool)
-      .then(g => { setGrades(g); setSelectedGrade(g[0]?.grade || null); setData(null); })
+      .then(g => { setGrades(g); setSelectedGrade(g[0]?.grade || null); })
       .catch(e => setError(e.message));
   }, [selectedSchool]);
 
