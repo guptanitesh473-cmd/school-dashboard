@@ -231,9 +231,10 @@ const SCHOOL_CONFIGS = {
           { name: 'Writing', cols: [8], max: 5 },
         ],
         mathCategories: [
-          // col 9 = pre-computed total (skip); col 33 = grand total (skip)
+          // col 9 = pre-computed total; col 33 = grand total (both skipped for individual sums)
           { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32], max: 30 },
         ],
+        mathTotalCol: 9, // fallback: some students only have pre-computed total
       },
       'G6B': {
         gid: '164981106', label: 'Grade 6 B',
@@ -246,6 +247,7 @@ const SCHOOL_CONFIGS = {
         mathCategories: [
           { name: 'Numeracy', cols: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32], max: 30 },
         ],
+        mathTotalCol: 9,
       },
       'G7': {
         gid: '2093607848', label: 'Grade 7',
