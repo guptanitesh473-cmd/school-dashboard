@@ -3,6 +3,7 @@ import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
   School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
+  UserCheck, Users, MessageSquare,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -14,6 +15,9 @@ import RetentionReport from './components/RetentionReport';
 import ProjectProgress from './components/ProjectProgress';
 import Inventory from './components/Inventory';
 import BLA from './components/BLA';
+import OnboardingProgress from './components/OnboardingProgress';
+import StaffOnboarding from './components/StaffOnboarding';
+import SurveyFeedback from './components/SurveyFeedback';
 import Login from './components/Login';
 import { authApi } from './services/api';
 
@@ -25,14 +29,29 @@ const NAV = [
     end: true,
   },
   {
+    to: '/onboarding',
+    label: 'Onboarding Progress Status',
+    icon: UserCheck,
+  },
+  {
     to: '/academic',
     label: 'Academic Offering and Infra',
     icon: LayoutGrid,
   },
   {
+    to: '/staff-onboarding',
+    label: 'Staff Onboarding Detail',
+    icon: Users,
+  },
+  {
     to: '/retention',
-    label: 'Retention Report',
+    label: 'Retention Detail',
     icon: ClipboardList,
+  },
+  {
+    to: '/survey',
+    label: 'Survey Form: Parents Feedback',
+    icon: MessageSquare,
   },
   {
     to: '/progress',
@@ -214,8 +233,11 @@ export default function App() {
         <main className="flex-1 p-6 overflow-auto">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/onboarding" element={<OnboardingProgress />} />
             <Route path="/academic" element={<AcademicPage />} />
+            <Route path="/staff-onboarding" element={<StaffOnboarding />} />
             <Route path="/retention" element={<RetentionReport />} />
+            <Route path="/survey" element={<SurveyFeedback />} />
             <Route path="/progress" element={<ProjectProgress />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/schools" element={<SchoolsList />} />
@@ -255,8 +277,11 @@ function AcademicPage() {
 function PageTitle() {
   const titles = {
     '/': 'Home',
+    '/onboarding': 'Onboarding Progress Status',
     '/academic': 'Academic Offering and Infra',
-    '/retention': 'Retention Report',
+    '/staff-onboarding': 'Staff Onboarding Detail',
+    '/retention': 'Retention Detail',
+    '/survey': 'Survey Form: Parents Feedback Analysis',
     '/progress': 'Project Progress',
     '/inventory': 'Inventory',
     '/bla': 'BLA Dashboard',
