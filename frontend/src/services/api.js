@@ -90,4 +90,16 @@ export const api = {
   // BLA
   getBLAGrades: (school) => request(`/bla/grades?school=${encodeURIComponent(school || 'OIS Dindigul')}`),
   getBLA: (grade, school) => request(`/bla/grade/${grade}?school=${encodeURIComponent(school || 'OIS Dindigul')}`),
+
+  // MAU
+  getMAU: (school) => request(`/mau${school ? '?school=' + encodeURIComponent(school) : ''}`),
+  createMAU: (data) => request('/mau', { method: 'POST', body: data }),
+  updateMAU: (id, data) => request(`/mau/${id}`, { method: 'PUT', body: data }),
+  deleteMAU: (id) => request(`/mau/${id}`, { method: 'DELETE' }),
+
+  // Monthly Meetings
+  getMeetings: () => request('/meetings'),
+  createMeeting: (data) => request('/meetings', { method: 'POST', body: data }),
+  updateMeeting: (id, data) => request(`/meetings/${id}`, { method: 'PUT', body: data }),
+  deleteMeeting: (id) => request(`/meetings/${id}`, { method: 'DELETE' }),
 };

@@ -151,6 +151,27 @@ db.exec(`
     UNIQUE(school_name, admission_status)
   );
 
+  CREATE TABLE IF NOT EXISTS mau_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    school_name TEXT NOT NULL,
+    grade TEXT NOT NULL,
+    total_students INTEGER DEFAULT 0,
+    app_login INTEGER DEFAULT 0,
+    used_last_week INTEGER DEFAULT 0,
+    used_last_month INTEGER DEFAULT 0,
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(school_name, grade)
+  );
+
+  CREATE TABLE IF NOT EXISTS monthly_meetings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    month TEXT NOT NULL,
+    school_name TEXT NOT NULL,
+    target TEXT DEFAULT '',
+    outcome TEXT DEFAULT '',
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,

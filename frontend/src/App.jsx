@@ -3,7 +3,7 @@ import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
   School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
-  UserCheck, Users, MessageSquare,
+  UserCheck, Users, MessageSquare, Smartphone, CalendarDays,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -18,6 +18,8 @@ import BLA from './components/BLA';
 import OnboardingProgress from './components/OnboardingProgress';
 import StaffOnboarding from './components/StaffOnboarding';
 import SurveyFeedback from './components/SurveyFeedback';
+import MAU from './components/MAU';
+import MonthlyMeeting from './components/MonthlyMeeting';
 import Login from './components/Login';
 import { authApi } from './services/api';
 
@@ -67,6 +69,16 @@ const NAV = [
     to: '/bla',
     label: 'BLA Dashboard',
     icon: BookMarked,
+  },
+  {
+    to: '/mau',
+    label: 'MAU Data',
+    icon: Smartphone,
+  },
+  {
+    to: '/monthly-meeting',
+    label: 'Monthly Meeting',
+    icon: CalendarDays,
   },
 ];
 
@@ -245,6 +257,8 @@ export default function App() {
             <Route path="/schools/:id" element={<SchoolDetail />} />
             <Route path="/schools/:id/edit" element={<AddSchoolForm />} />
             <Route path="/bla" element={<BLA />} />
+            <Route path="/mau" element={<MAU />} />
+            <Route path="/monthly-meeting" element={<MonthlyMeeting />} />
           </Routes>
         </main>
       </div>
@@ -285,6 +299,8 @@ function PageTitle() {
     '/progress': 'Project Progress',
     '/inventory': 'Inventory',
     '/bla': 'BLA Dashboard',
+    '/mau': 'MAU Data',
+    '/monthly-meeting': 'Monthly Meeting',
     '/schools': 'Schools',
     '/schools/new': 'Add School',
   };
