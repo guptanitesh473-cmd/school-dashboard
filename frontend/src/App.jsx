@@ -42,7 +42,7 @@ const NAV = [
   },
   {
     to: '/staff-onboarding',
-    label: 'Staff Onboarding Detail',
+    label: 'Staff 1on1 and Onboarding',
     icon: Users,
   },
   {
@@ -88,7 +88,7 @@ const SCHOOL_NAV = [
 ];
 
 export default function App() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -293,7 +293,7 @@ function PageTitle() {
     '/': 'Home',
     '/onboarding': 'Onboarding Progress Status',
     '/academic': 'Academic Offering and Infra',
-    '/staff-onboarding': 'Staff Onboarding Detail',
+    '/staff-onboarding': 'Staff 1on1 and Onboarding',
     '/retention': 'Retention Detail',
     '/survey': 'Survey Form: Parents Feedback Analysis',
     '/progress': 'Project Progress',
