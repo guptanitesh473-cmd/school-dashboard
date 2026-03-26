@@ -124,7 +124,7 @@ export default function App() {
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-gray-200 shadow-sm
         transition-all duration-200
-        ${collapsed ? 'w-[64px]' : 'w-[240px]'}
+        ${collapsed ? 'w-[64px]' : 'w-[280px]'}
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
@@ -164,8 +164,8 @@ export default function App() {
               title={collapsed ? label : undefined}
             >
               <Icon size={18} className="shrink-0" />
-              {!collapsed && <span className="truncate">{label}</span>}
-              {!collapsed && <ChevronRight size={14} className="ml-auto opacity-30" />}
+              {!collapsed && <span className="leading-tight text-left">{label}</span>}
+              {!collapsed && <ChevronRight size={14} className="ml-auto opacity-30 shrink-0" />}
             </NavLink>
           ))}
 
@@ -192,7 +192,7 @@ export default function App() {
               title={collapsed ? label : undefined}
             >
               <Icon size={18} className="shrink-0" />
-              {!collapsed && <span className="truncate">{label}</span>}
+              {!collapsed && <span className="leading-tight text-left">{label}</span>}
             </NavLink>
           ))}
         </nav>
