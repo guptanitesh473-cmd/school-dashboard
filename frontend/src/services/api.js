@@ -102,4 +102,10 @@ export const api = {
   createMeeting: (data) => request('/meetings', { method: 'POST', body: data }),
   updateMeeting: (id, data) => request(`/meetings/${id}`, { method: 'PUT', body: data }),
   deleteMeeting: (id) => request(`/meetings/${id}`, { method: 'DELETE' }),
+
+  // User Management
+  getUsers: () => request('/users'),
+  createUser: (data) => request('/users', { method: 'POST', body: data }),
+  updateUser: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
+  deleteUser: (id) => request(`/users/${id}`, { method: 'DELETE' }),
 };

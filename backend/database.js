@@ -195,6 +195,7 @@ const migrations = [
   `ALTER TABLE retention_detail ADD COLUMN prev_total_strength INTEGER DEFAULT NULL`,
   `ALTER TABLE retention_detail ADD COLUMN prev_tc_requested INTEGER DEFAULT NULL`,
   `ALTER TABLE retention_detail ADD COLUMN prev_tc_pct TEXT DEFAULT ''`,
+  `ALTER TABLE users ADD COLUMN school_name TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN principal_name TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN zbh_name TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN academic_start_month TEXT DEFAULT 'June'`,

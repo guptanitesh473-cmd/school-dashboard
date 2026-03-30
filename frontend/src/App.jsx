@@ -3,7 +3,7 @@ import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
   School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
-  UserCheck, Users, MessageSquare, Smartphone, CalendarDays,
+  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -20,6 +20,7 @@ import StaffOnboarding from './components/StaffOnboarding';
 import SurveyFeedback from './components/SurveyFeedback';
 import MAU from './components/MAU';
 import MonthlyMeeting from './components/MonthlyMeeting';
+import UserManagement from './components/UserManagement';
 import Login from './components/Login';
 import { authApi } from './services/api';
 
@@ -195,6 +196,32 @@ export default function App() {
               {!collapsed && <span className="leading-tight text-left">{label}</span>}
             </NavLink>
           ))}
+
+          {/* Admin-only section */}
+          {user?.role === 'admin' && (
+            <>
+              <div className={`mx-4 my-3 border-t border-gray-100 ${collapsed ? 'mx-2' : ''}`} />
+              {!collapsed && (
+                <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+              )}
+              <NavLink
+                to="/users"
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => `
+                  flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
+                  ${isActive
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }
+                  ${collapsed ? 'justify-center px-2' : ''}
+                `}
+                title={collapsed ? 'User Management' : undefined}
+              >
+                <ShieldCheck size={18} className="shrink-0" />
+                {!collapsed && <span className="leading-tight text-left">User Management</span>}
+              </NavLink>
+            </>
+          )}
         </nav>
 
         {/* User + logout */}
@@ -259,6 +286,7 @@ export default function App() {
             <Route path="/bla" element={<BLA />} />
             <Route path="/mau" element={<MAU />} />
             <Route path="/monthly-meeting" element={<MonthlyMeeting />} />
+            <Route path="/users" element={<UserManagement />} />
           </Routes>
         </main>
       </div>
@@ -301,6 +329,7 @@ function PageTitle() {
     '/bla': 'BLA Dashboard',
     '/mau': 'MAU Data',
     '/monthly-meeting': 'Monthly Meeting',
+    '/users': 'User Management',
     '/schools': 'Schools',
     '/schools/new': 'Add School',
   };

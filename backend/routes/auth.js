@@ -15,6 +15,7 @@ function createToken(user) {
     username: user.username,
     name: user.name,
     role: user.role,
+    school_name: user.school_name || '',
     expiresAt: Date.now() + TOKEN_TTL_MS,
   });
   return token;
@@ -34,7 +35,7 @@ router.post('/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid username or password' });
 
   const token = createToken(user);
-  res.json({ token, user: { id: user.id, username: user.username, name: user.name, role: user.role } });
+  res.json({ token, user: { id: user.id, username: user.username, name: user.name, role: user.role, school_name: user.school_name || '' } });
 });
 
 // POST /api/auth/logout
@@ -54,7 +55,7 @@ router.get('/me', (req, res) => {
     sessions.delete(token);
     return res.status(401).json({ error: 'Not authenticated' });
   }
-  res.json({ userId: session.userId, username: session.username, name: session.name, role: session.role });
+  res.json({ userId: session.userId, username: session.username, name: session.name, role: session.role, school_name: session.school_name || '' });
 });
 
 module.exports.router = router;
