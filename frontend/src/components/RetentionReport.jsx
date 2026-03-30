@@ -4,6 +4,8 @@ import { api } from '../services/api';
 const HESARGHATTA = 'OIS Hesarghatta';
 const KELAMBAKKAM = 'OIS Kelambakkam';
 
+const ACADEMIC_YEARS = ['AY 2025-26'];
+
 function pctColor(pct) {
   const n = parseFloat(pct);
   if (isNaN(n)) return '';
@@ -17,6 +19,8 @@ export default function RetentionReport() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editCell, setEditCell] = useState(null);
+  const [selectedSchool, setSelectedSchool] = useState('');
+  const [selectedYear, setSelectedYear] = useState('AY 2025-26');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -36,6 +40,11 @@ export default function RetentionReport() {
   if (!data) return null;
 
   const { schools, summary } = data;
+  const schoolNames = schools.map(s => s.school_name);
+  const visibleSchools = selectedSchool
+    ? schools.filter(s => s.school_name === selectedSchool)
+    : schools;
+
   const retPct = summary.total_students > 0
     ? ((summary.total_interested / summary.total_students) * 100).toFixed(2) : 0;
   const ytdPct = summary.total_students > 0
@@ -45,23 +54,57 @@ export default function RetentionReport() {
 
   return (
     <div className="space-y-4">
+      {/* Filters */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-3 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">Academic Year</label>
+          <select
+            value={selectedYear}
+            onChange={e => setSelectedYear(e.target.value)}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          >
+            {ACADEMIC_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">School</label>
+          <select
+            value={selectedSchool}
+            onChange={e => setSelectedSchool(e.target.value)}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px] focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          >
+            <option value="">All Schools</option>
+            {schoolNames.map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+        {selectedSchool && (
+          <button
+            onClick={() => setSelectedSchool('')}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {/* Overall summary banner */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <SummaryCard label="Total Students" value={summary.total_students} color="bg-indigo-600" />
-        <SummaryCard label={`Retained / Interested`} value={`${summary.total_interested}`} sub={`${retPct}%`} color="bg-green-600" />
-        <SummaryCard label="Yet to Decide" value={`${summary.total_yet_to_decide}`} sub={`${ytdPct}%`} color="bg-amber-500" />
-        <SummaryCard label="Not Interested" value={`${summary.total_not_interested}`} sub={`${niPct}%`} color="bg-red-500" />
+        <SummaryCard label="Retained / Interested" value={summary.total_interested} sub={`${retPct}%`} color="bg-green-600" />
+        <SummaryCard label="Yet to Decide" value={summary.total_yet_to_decide} sub={`${ytdPct}%`} color="bg-amber-500" />
+        <SummaryCard label="Not Interested" value={summary.total_not_interested} sub={`${niPct}%`} color="bg-red-500" />
       </div>
 
       {/* Per-school tables */}
-      {schools.map(({ school_name, rows }) => {
+      {visibleSchools.map(({ school_name, rows }) => {
         const isHesarghatta = school_name === HESARGHATTA;
         const isKelambakkam = school_name === KELAMBAKKAM;
+        const hasPrevData = rows.some(r => r.prev_total_strength != null || r.prev_tc_requested != null);
 
         return (
           <div key={school_name} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             {/* School header */}
-            <div className="px-5 py-3 bg-indigo-600 text-white flex items-center justify-between">
+            <div className="px-5 py-3 bg-indigo-600 text-white flex items-center justify-between flex-wrap gap-2">
               <h3 className="font-bold text-sm tracking-wide">{school_name}</h3>
               {!isHesarghatta && (() => {
                 const grand = rows.find(r => r.is_grand_total);
@@ -69,10 +112,16 @@ export default function RetentionReport() {
                 const pct = grand.total_strength > 0
                   ? ((grand.interested / grand.total_strength) * 100).toFixed(0) : 0;
                 return (
-                  <div className="flex items-center gap-4 text-xs text-indigo-100">
+                  <div className="flex items-center gap-4 text-xs text-indigo-100 flex-wrap">
                     <span>Total: <strong className="text-white">{grand.total_strength}</strong></span>
                     <span>Interested: <strong className="text-green-300">{grand.interested} ({pct}%)</strong></span>
                     <span>Not Int.: <strong className="text-red-300">{grand.not_interested} ({grand.pct_not_interested})</strong></span>
+                    {grand.prev_total_strength != null && (
+                      <span className="border-l border-indigo-400 pl-4">
+                        AY 24-25 Total: <strong className="text-indigo-200">{grand.prev_total_strength}</strong>
+                        &nbsp;TC: <strong className="text-yellow-300">{grand.prev_tc_requested} ({grand.prev_tc_pct})</strong>
+                      </span>
+                    )}
                   </div>
                 );
               })()}
@@ -80,14 +129,23 @@ export default function RetentionReport() {
 
             <div className="overflow-x-auto">
               {isHesarghatta ? (
-                /* Hesarghatta: different columns */
+                /* Hesarghatta special layout */
                 <table className="w-full text-sm border-collapse">
                   <thead>
+                    <tr className="text-xs text-gray-500 uppercase border-b">
+                      <th colSpan={4} className="px-4 py-2 text-center bg-indigo-50 text-indigo-700 border-r border-indigo-100">AY 2025-26</th>
+                      {hasPrevData && <th colSpan={3} className="px-4 py-2 text-center bg-amber-50 text-amber-700">AY 2024-25 (Comparison)</th>}
+                    </tr>
                     <tr className="bg-gray-50 text-xs text-gray-500 uppercase border-b">
                       <th className="px-4 py-2.5 text-left">Grade</th>
                       <th className="px-4 py-2.5 text-center bg-green-50 text-green-700">Continuation</th>
                       <th className="px-4 py-2.5 text-center bg-red-50 text-red-700">Discontinuation</th>
-                      <th className="px-4 py-2.5 text-center">% Discontinuation</th>
+                      <th className="px-4 py-2.5 text-center border-r border-gray-200">% Discontinuation</th>
+                      {hasPrevData && <>
+                        <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-600">Total Strength</th>
+                        <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-600">TC Candidates</th>
+                        <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-600">% TC</th>
+                      </>}
                     </tr>
                   </thead>
                   <tbody>
@@ -96,7 +154,12 @@ export default function RetentionReport() {
                         <td className="px-4 py-2 text-gray-700 font-medium">{row.grade_current}</td>
                         <EditableCell row={row} field="interested" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-green-700 bg-green-50/30" />
                         <EditableCell row={row} field="not_interested" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-red-600 bg-red-50/30" />
-                        <td className={`px-4 py-2 text-center text-xs ${pctColor(row.pct_not_interested)}`}>{row.pct_not_interested || '—'}</td>
+                        <td className={`px-4 py-2 text-center text-xs border-r border-gray-200 ${pctColor(row.pct_not_interested)}`}>{row.pct_not_interested || '—'}</td>
+                        {hasPrevData && <>
+                          <td className="px-4 py-2 text-center text-xs text-amber-700 bg-amber-50/20">{row.prev_total_strength ?? '—'}</td>
+                          <td className="px-4 py-2 text-center text-xs text-amber-700 bg-amber-50/20">{row.prev_tc_requested ?? '—'}</td>
+                          <td className={`px-4 py-2 text-center text-xs bg-amber-50/20 ${pctColor(row.prev_tc_pct)}`}>{row.prev_tc_pct || '—'}</td>
+                        </>}
                       </tr>
                     ))}
                   </tbody>
@@ -105,43 +168,49 @@ export default function RetentionReport() {
                 /* Standard table */
                 <table className="w-full text-sm border-collapse">
                   <thead>
+                    <tr className="text-xs text-gray-500 uppercase border-b">
+                      <th colSpan={isKelambakkam ? 9 : 8} className="px-4 py-2 text-center bg-indigo-50 text-indigo-700 border-r border-indigo-100">AY 2025-26</th>
+                      {hasPrevData && <th colSpan={3} className="px-4 py-2 text-center bg-amber-50 text-amber-700">AY 2024-25 (Comparison)</th>}
+                    </tr>
                     <tr className="bg-gray-50 text-xs text-gray-500 uppercase border-b">
                       <th className="px-3 py-2.5 text-center w-10">S.No</th>
                       <th className="px-4 py-2.5 text-left">Grade (2025-26)</th>
                       <th className="px-4 py-2.5 text-left">Grade (2026-27)</th>
                       <th className="px-4 py-2.5 text-center bg-indigo-50 text-indigo-600">Total Strength</th>
-                      {isKelambakkam && (
-                        <th className="px-4 py-2.5 text-center bg-blue-50 text-blue-600">App. Fee Paid</th>
-                      )}
+                      {isKelambakkam && <th className="px-4 py-2.5 text-center bg-blue-50 text-blue-600">App. Fee Paid</th>}
                       <th className="px-4 py-2.5 text-center bg-green-50 text-green-700">Interested</th>
                       <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-700">Yet to Decide</th>
                       <th className="px-4 py-2.5 text-center bg-red-50 text-red-700">Not Interested</th>
-                      <th className="px-4 py-2.5 text-center">% Not Int.</th>
+                      <th className="px-4 py-2.5 text-center border-r border-gray-200">% Not Int.</th>
+                      {hasPrevData && <>
+                        <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-600">Total Strength</th>
+                        <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-600">TC Requested</th>
+                        <th className="px-4 py-2.5 text-center bg-amber-50 text-amber-600">% TC</th>
+                      </>}
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map(row => (
                       <tr
                         key={row.id}
-                        className={`border-b border-gray-50 ${
-                          row.is_grand_total
-                            ? 'bg-gray-100 font-semibold border-t-2 border-gray-300'
-                            : 'hover:bg-indigo-50/20'
-                        }`}
+                        className={`border-b border-gray-50 ${row.is_grand_total ? 'bg-gray-100 font-semibold border-t-2 border-gray-300' : 'hover:bg-indigo-50/20'}`}
                       >
                         <td className="px-3 py-2 text-center text-gray-400 text-xs">{row.sno || ''}</td>
                         <td className="px-4 py-2 text-gray-800 font-medium">{row.grade_current}</td>
                         <td className="px-4 py-2 text-gray-500">{row.grade_next || '—'}</td>
                         <EditableCell row={row} field="total_strength" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-indigo-700 bg-indigo-50/30" />
-                        {isKelambakkam && (
-                          <EditableCell row={row} field="app_fees_paid" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-blue-700 bg-blue-50/30" />
-                        )}
+                        {isKelambakkam && <EditableCell row={row} field="app_fees_paid" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-blue-700 bg-blue-50/30" />}
                         <EditableCell row={row} field="interested" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-green-700 bg-green-50/30" />
                         <EditableCell row={row} field="yet_to_decide" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-amber-700 bg-amber-50/30" />
                         <EditableCell row={row} field="not_interested" editCell={editCell} setEditCell={setEditCell} saveEdit={saveEdit} className="text-red-600 bg-red-50/30" />
-                        <td className={`px-4 py-2 text-center text-xs ${pctColor(row.pct_not_interested)}`}>
+                        <td className={`px-4 py-2 text-center text-xs border-r border-gray-200 ${pctColor(row.pct_not_interested)}`}>
                           {row.pct_not_interested || '—'}
                         </td>
+                        {hasPrevData && <>
+                          <td className="px-4 py-2 text-center text-xs text-amber-700 bg-amber-50/20">{row.prev_total_strength ?? '—'}</td>
+                          <td className="px-4 py-2 text-center text-xs text-amber-700 bg-amber-50/20">{row.prev_tc_requested ?? '—'}</td>
+                          <td className={`px-4 py-2 text-center text-xs bg-amber-50/20 ${pctColor(row.prev_tc_pct)}`}>{row.prev_tc_pct || '—'}</td>
+                        </>}
                       </tr>
                     ))}
                   </tbody>
@@ -152,7 +221,7 @@ export default function RetentionReport() {
         );
       })}
 
-      {/* Grand total footer row */}
+      {/* Grand total footer */}
       <div className="bg-white rounded-2xl border-2 border-indigo-300 shadow-sm p-4">
         <div className="flex flex-wrap items-center gap-6 text-sm">
           <span className="font-bold text-gray-800 text-base">Grand Total (All Schools)</span>
