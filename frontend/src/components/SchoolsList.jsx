@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { Plus, Eye, Pencil, Trash2, MapPin, Calendar } from 'lucide-react';
+import { useIsSchool } from '../contexts/UserContext';
 
 export default function SchoolsList() {
+  const isSchool = useIsSchool();
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -24,9 +26,11 @@ export default function SchoolsList() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-800">Schools ({schools.length})</h2>
-        <Link to="/schools/new" className="btn-primary text-sm flex items-center gap-1.5">
-          <Plus size={15} /> Add School
-        </Link>
+        {!isSchool && (
+          <Link to="/schools/new" className="btn-primary text-sm flex items-center gap-1.5">
+            <Plus size={15} /> Add School
+          </Link>
+        )}
       </div>
 
       {schools.length === 0 ? (
@@ -74,18 +78,22 @@ export default function SchoolsList() {
                 >
                   <Eye size={13} /> View
                 </button>
-                <button
-                  onClick={() => navigate(`/schools/${school.id}/edit`)}
-                  className="flex-1 flex items-center justify-center gap-1 text-xs btn-secondary py-1.5"
-                >
-                  <Pencil size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(school)}
-                  className="flex items-center justify-center gap-1 text-xs text-red-600 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <Trash2 size={13} />
-                </button>
+                {!isSchool && (
+                  <>
+                    <button
+                      onClick={() => navigate(`/schools/${school.id}/edit`)}
+                      className="flex-1 flex items-center justify-center gap-1 text-xs btn-secondary py-1.5"
+                    >
+                      <Pencil size={13} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(school)}
+                      className="flex items-center justify-center gap-1 text-xs text-red-600 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

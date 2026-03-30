@@ -2,10 +2,13 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 
-// GET all schools
+// GET all schools (school users only see their own)
 router.get('/', (req, res) => {
-  const schools = db.prepare('SELECT * FROM schools ORDER BY name').all();
-  res.json(schools);
+  if (req.user?.role === 'school') {
+    const schools = db.prepare('SELECT * FROM schools WHERE name=? ORDER BY name').all(req.user.school_name);
+    return res.json(schools);
+  }
+  res.json(db.prepare('SELECT * FROM schools ORDER BY name').all());
 });
 
 // GET single school

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
+import { useUser, useIsSchool } from '../contexts/UserContext';
 
 const HESARGHATTA = 'OIS Hesarghatta';
 const KELAMBAKKAM = 'OIS Kelambakkam';
@@ -16,11 +17,17 @@ function pctColor(pct) {
 }
 
 export default function RetentionReport() {
+  const user = useUser();
+  const isSchool = useIsSchool();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editCell, setEditCell] = useState(null);
   const [selectedSchool, setSelectedSchool] = useState('');
   const [selectedYear, setSelectedYear] = useState('AY 2025-26');
+
+  useEffect(() => {
+    if (isSchool && user?.school_name) setSelectedSchool(user.school_name);
+  }, [isSchool, user?.school_name]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -71,13 +78,14 @@ export default function RetentionReport() {
           <select
             value={selectedSchool}
             onChange={e => setSelectedSchool(e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px] focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            disabled={isSchool}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px] focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <option value="">All Schools</option>
+            {!isSchool && <option value="">All Schools</option>}
             {schoolNames.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
-        {selectedSchool && (
+        {!isSchool && selectedSchool && (
           <button
             onClick={() => setSelectedSchool('')}
             className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50"

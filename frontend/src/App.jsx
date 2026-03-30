@@ -23,6 +23,7 @@ import MonthlyMeeting from './components/MonthlyMeeting';
 import UserManagement from './components/UserManagement';
 import Login from './components/Login';
 import { authApi } from './services/api';
+import { UserContext } from './contexts/UserContext';
 
 const NAV = [
   {
@@ -115,6 +116,7 @@ export default function App() {
   if (!user) return <Login onLogin={handleLogin} />;
 
   return (
+    <UserContext.Provider value={user}>
     <div className="min-h-screen flex bg-gray-50">
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -291,6 +293,7 @@ export default function App() {
         </main>
       </div>
     </div>
+    </UserContext.Provider>
   );
 }
 

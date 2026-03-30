@@ -2,10 +2,13 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 
-router.get('/', (req, res) => {
-  const rows = db.prepare('SELECT * FROM project_progress ORDER BY school_name, admission_status').all();
+const isSchool = req => req.user?.role === 'school';
 
-  // Group by school
+router.get('/', (req, res) => {
+  const rows = isSchool(req)
+    ? db.prepare('SELECT * FROM project_progress WHERE school_name=? ORDER BY admission_status').all(req.user.school_name)
+    : db.prepare('SELECT * FROM project_progress ORDER BY school_name, admission_status').all();
+
   const schools = {};
   for (const r of rows) {
     if (!schools[r.school_name]) schools[r.school_name] = { school_name: r.school_name, statuses: [] };
@@ -17,6 +20,8 @@ router.get('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM project_progress WHERE id=?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Not found' });
+  if (isSchool(req) && row.school_name !== req.user.school_name)
+    return res.status(403).json({ error: 'Access denied' });
   const { total_students, toddler, nursery, lkg, ukg, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12 } = req.body;
   db.prepare(`
     UPDATE project_progress SET total_students=?, toddler=?, nursery=?, lkg=?, ukg=?,

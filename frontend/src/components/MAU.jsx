@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
 import { Plus, Pencil, Trash2, X, Save, Smartphone } from 'lucide-react';
+import { useUser, useIsSchool } from '../contexts/UserContext';
 
 const GRADES = [
   'Toddler', 'Nursery', 'LKG', 'UKG',
@@ -28,6 +29,8 @@ function StatCard({ label, value, color }) {
 }
 
 export default function MAU() {
+  const user = useUser();
+  const isSchool = useIsSchool();
   const [schools, setSchools] = useState([]);
   const [selectedSchool, setSelectedSchool] = useState('');
   const [rows, setRows] = useState([]);
@@ -39,7 +42,8 @@ export default function MAU() {
     api.getSchools().then(s => {
       const active = s.filter(sc => sc.status === 'active');
       setSchools(active);
-      if (active.length > 0) setSelectedSchool(active[0].name);
+      if (isSchool && user?.school_name) setSelectedSchool(user.school_name);
+      else if (active.length > 0) setSelectedSchool(active[0].name);
     });
   }, []);
 
@@ -89,7 +93,8 @@ export default function MAU() {
         <select
           value={selectedSchool}
           onChange={e => setSelectedSchool(e.target.value)}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[220px]"
+          disabled={isSchool}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[220px] disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {schools.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
         </select>

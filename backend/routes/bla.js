@@ -648,7 +648,12 @@ function parseStudents(rows, cfg) {
 
 // GET /api/bla/grades?school=OIS+Arkere
 router.get('/grades', (req, res) => {
-  const schoolName = req.query.school || 'OIS Dindigul';
+  // School users can only access their own school
+  const schoolName = req.user?.role === 'school'
+    ? req.user.school_name
+    : (req.query.school || 'OIS Dindigul');
+  if (req.user?.role === 'school' && req.query.school && req.query.school !== schoolName)
+    return res.status(403).json({ error: 'Access denied' });
   const schoolCfg = SCHOOL_CONFIGS[schoolName];
   if (!schoolCfg) return res.status(404).json({ error: 'School not found' });
 
@@ -661,7 +666,9 @@ router.get('/grades', (req, res) => {
 
 // GET /api/bla/grade/:grade?school=OIS+Arkere
 router.get('/grade/:grade', async (req, res) => {
-  const schoolName = req.query.school || 'OIS Dindigul';
+  const schoolName = req.user?.role === 'school'
+    ? req.user.school_name
+    : (req.query.school || 'OIS Dindigul');
   const schoolCfg = SCHOOL_CONFIGS[schoolName];
   if (!schoolCfg) return res.status(404).json({ error: 'School not found' });
 

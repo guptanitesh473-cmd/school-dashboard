@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { BookOpen, Calculator, Users, TrendingUp, ChevronDown, Download } from 'lucide-react';
+import { useUser, useIsSchool } from '../contexts/UserContext';
 
 function downloadStudentReport(student, gradeLabel) {
   const pct = (s, m) => Math.min(100, Math.round((s / m) * 100));
@@ -201,6 +202,8 @@ function Spinner() {
 const BLA_SCHOOLS = ['OIS Dindigul', 'OIS Arkere', 'OIS HSR', 'OIS Oragadam'];
 
 export default function BLA() {
+  const user = useUser();
+  const isSchool = useIsSchool();
   const [schools, setSchools] = useState([]);
   const [selectedSchool, setSelectedSchool] = useState('OIS Dindigul');
   const [grades, setGrades] = useState([]);
@@ -216,7 +219,11 @@ export default function BLA() {
   // Load schools list once
   useEffect(() => {
     api.getSchools()
-      .then(s => setSchools(s.filter(sc => sc.status === 'active')))
+      .then(s => {
+        const active = s.filter(sc => sc.status === 'active');
+        setSchools(active);
+        if (isSchool && user?.school_name) setSelectedSchool(user.school_name);
+      })
       .catch(e => setError(e.message))
       .finally(() => setLoadingInit(false));
   }, []);
@@ -265,7 +272,8 @@ export default function BLA() {
           <select
             value={selectedSchool}
             onChange={e => { setSelectedSchool(e.target.value); setData(null); setError(''); }}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px]"
+            disabled={isSchool}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {schools.map(s => (
               <option key={s.id} value={s.name}>

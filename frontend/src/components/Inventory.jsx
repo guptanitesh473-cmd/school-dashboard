@@ -1,8 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
 import { Package, Search, ExternalLink, Save, CheckCircle2 } from 'lucide-react';
+import { useUser, useIsSchool } from '../contexts/UserContext';
 
 export default function Inventory() {
+  const user = useUser();
+  const isSchool = useIsSchool();
   const [categories, setCategories] = useState([]);
   const [schools, setSchools] = useState([]);
   const [selectedSchool, setSelectedSchool] = useState('');
@@ -11,7 +14,14 @@ export default function Inventory() {
 
   useEffect(() => {
     Promise.all([api.getInventoryCategories(), api.getSchools()])
-      .then(([cats, scs]) => { setCategories(cats); setSchools(scs); })
+      .then(([cats, scs]) => {
+        setCategories(cats);
+        setSchools(scs);
+        if (isSchool && user?.school_name) {
+          const match = scs.find(s => s.name === user.school_name);
+          if (match) setSelectedSchool(String(match.id));
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -34,9 +44,10 @@ export default function Inventory() {
         <select
           value={selectedSchool}
           onChange={e => { setSelectedSchool(e.target.value); setSelectedCategory(''); }}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white min-w-[200px]"
+          disabled={isSchool}
+          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white min-w-[200px] disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <option value="">Select school</option>
+          {!isSchool && <option value="">Select school</option>}
           {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
         <select

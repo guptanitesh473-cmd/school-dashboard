@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
 import { Plus, Pencil, Trash2, X, Save, CalendarDays } from 'lucide-react';
+import { useUser, useIsSchool } from '../contexts/UserContext';
 
 const MONTHS = [
   'January 2025', 'February 2025', 'March 2025', 'April 2025',
@@ -20,12 +21,18 @@ function F({ label, children }) {
 }
 
 export default function MonthlyMeeting() {
+  const user = useUser();
+  const isSchool = useIsSchool();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editRow, setEditRow] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [filterMonth, setFilterMonth] = useState('');
   const [filterSchool, setFilterSchool] = useState('');
+
+  useEffect(() => {
+    if (isSchool && user?.school_name) setFilterSchool(user.school_name);
+  }, [isSchool, user?.school_name]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -71,12 +78,14 @@ export default function MonthlyMeeting() {
           </h2>
           <p className="text-sm text-gray-500 mt-0.5">Target and outcome tracking per school per month</p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors"
-        >
-          <Plus size={15} /> Add Entry
-        </button>
+        {!isSchool && (
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+          >
+            <Plus size={15} /> Add Entry
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -92,20 +101,22 @@ export default function MonthlyMeeting() {
             {allMonths.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-600 shrink-0">School:</label>
-          <select
-            value={filterSchool}
-            onChange={e => setFilterSchool(e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px]"
-          >
-            <option value="">All Schools</option>
-            {allSchools.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        {(filterMonth || filterSchool) && (
+        {!isSchool && (
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-600 shrink-0">School:</label>
+            <select
+              value={filterSchool}
+              onChange={e => setFilterSchool(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white min-w-[200px]"
+            >
+              <option value="">All Schools</option>
+              {allSchools.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
+        {(filterMonth || (!isSchool && filterSchool)) && (
           <button
-            onClick={() => { setFilterMonth(''); setFilterSchool(''); }}
+            onClick={() => { setFilterMonth(''); if (!isSchool) setFilterSchool(''); }}
             className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50"
           >
             Clear filters
