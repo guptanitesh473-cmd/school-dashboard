@@ -98,7 +98,7 @@ export const api = {
   deleteMAU: (id) => request(`/mau/${id}`, { method: 'DELETE' }),
 
   // Monthly Meetings
-  getMeetings: () => request('/meetings'),
+  getMeetings: (school) => request(`/meetings${school ? '?school=' + encodeURIComponent(school) : ''}`),
   createMeeting: (data) => request('/meetings', { method: 'POST', body: data }),
   updateMeeting: (id, data) => request(`/meetings/${id}`, { method: 'PUT', body: data }),
   deleteMeeting: (id) => request(`/meetings/${id}`, { method: 'DELETE' }),

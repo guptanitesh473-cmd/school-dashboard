@@ -9,11 +9,12 @@ const FIELDS = [
   'responsible_person', 'progress_update',
 ];
 
-// GET /api/meetings
+// GET /api/meetings?school=X
 router.get('/', (req, res) => {
-  const rows = isSchool(req)
-    ? db.prepare('SELECT * FROM monthly_meetings WHERE school_name=? ORDER BY month DESC').all(req.user.school_name)
-    : db.prepare('SELECT * FROM monthly_meetings ORDER BY month DESC, school_name').all();
+  const school = isSchool(req) ? req.user.school_name : (req.query.school || null);
+  const rows = school
+    ? db.prepare('SELECT * FROM monthly_meetings WHERE school_name=? ORDER BY id ASC').all(school)
+    : db.prepare('SELECT * FROM monthly_meetings ORDER BY school_name, id ASC').all();
   res.json(rows);
 });
 
