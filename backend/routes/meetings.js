@@ -4,6 +4,11 @@ const db = require('../database');
 
 const isSchool = req => req.user?.role === 'school';
 
+const FIELDS = [
+  'month', 'school_name', 'discussion_points', 'tagged_department',
+  'responsible_person', 'progress_update',
+];
+
 // GET /api/meetings
 router.get('/', (req, res) => {
   const rows = isSchool(req)
@@ -14,13 +19,15 @@ router.get('/', (req, res) => {
 
 // POST /api/meetings
 router.post('/', (req, res) => {
-  const { month, school_name, target = '', outcome = '' } = req.body;
+  const { month, school_name } = req.body;
   if (!month || !school_name) return res.status(400).json({ error: 'month and school_name required' });
   if (isSchool(req) && school_name !== req.user.school_name)
     return res.status(403).json({ error: 'Access denied' });
+  const vals = FIELDS.map(f => req.body[f] ?? '');
+  const placeholders = FIELDS.map(() => '?').join(',');
   const result = db.prepare(
-    'INSERT INTO monthly_meetings (month, school_name, target, outcome) VALUES (?,?,?,?)'
-  ).run(month, school_name, target, outcome);
+    `INSERT INTO monthly_meetings (${FIELDS.join(',')}) VALUES (${placeholders})`
+  ).run(...vals);
   res.json(db.prepare('SELECT * FROM monthly_meetings WHERE id=?').get(result.lastInsertRowid));
 });
 
@@ -30,11 +37,9 @@ router.put('/:id', (req, res) => {
   if (!row) return res.status(404).json({ error: 'Not found' });
   if (isSchool(req) && row.school_name !== req.user.school_name)
     return res.status(403).json({ error: 'Access denied' });
-  const { month, school_name, target, outcome } = req.body;
-  db.prepare(`
-    UPDATE monthly_meetings SET month=?, school_name=?, target=?, outcome=?,
-      updated_at=datetime('now') WHERE id=?
-  `).run(month ?? row.month, school_name ?? row.school_name, target ?? row.target, outcome ?? row.outcome, req.params.id);
+  const sets = FIELDS.map(f => `${f}=?`).join(',');
+  const vals = FIELDS.map(f => req.body[f] ?? row[f]);
+  db.prepare(`UPDATE monthly_meetings SET ${sets}, updated_at=datetime('now') WHERE id=?`).run(...vals, req.params.id);
   res.json(db.prepare('SELECT * FROM monthly_meetings WHERE id=?').get(req.params.id));
 });
 

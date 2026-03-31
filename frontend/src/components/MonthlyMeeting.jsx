@@ -20,6 +20,11 @@ function F({ label, children }) {
   return <div><label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>{children}</div>;
 }
 
+const EMPTY_FORM = {
+  month: '', school_name: '',
+  discussion_points: '', tagged_department: '', responsible_person: '', progress_update: '',
+};
+
 export default function MonthlyMeeting() {
   const user = useUser();
   const isSchool = useIsSchool();
@@ -47,9 +52,8 @@ export default function MonthlyMeeting() {
     load();
   };
 
-  // Unique months and schools for filter dropdowns
   const allMonths = [...new Set(rows.map(r => r.month))].sort((a, b) => {
-    const [ma, ya] = a.split(' '); const [mb, yb] = b.split(' ');
+    const [, ya] = a.split(' '); const [, yb] = b.split(' ');
     return ya !== yb ? ya - yb : MONTHS.indexOf(a) - MONTHS.indexOf(b);
   });
   const allSchools = [...new Set(rows.map(r => r.school_name))].sort();
@@ -59,7 +63,6 @@ export default function MonthlyMeeting() {
     (!filterSchool || r.school_name === filterSchool)
   );
 
-  // Group by month for display
   const grouped = {};
   for (const r of filtered) {
     if (!grouped[r.month]) grouped[r.month] = [];
@@ -76,7 +79,7 @@ export default function MonthlyMeeting() {
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <CalendarDays size={20} className="text-indigo-600" /> Monthly Meeting
           </h2>
-          <p className="text-sm text-gray-500 mt-0.5">Target and outcome tracking per school per month</p>
+          <p className="text-sm text-gray-500 mt-0.5">Discussion points and progress tracking per school per month</p>
         </div>
         {!isSchool && (
           <button
@@ -129,7 +132,7 @@ export default function MonthlyMeeting() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm text-center py-16 text-gray-400">
           <CalendarDays size={32} className="mx-auto mb-3 opacity-30" />
           <p className="font-medium">No meeting entries found</p>
-          <p className="text-sm mt-1">Click "Add Entry" to start tracking meetings.</p>
+          {!isSchool && <p className="text-sm mt-1">Click "Add Entry" to start tracking meetings.</p>}
         </div>
       ) : (
         <div className="space-y-4">
@@ -144,8 +147,10 @@ export default function MonthlyMeeting() {
                   <thead>
                     <tr className="bg-gray-50 text-xs uppercase text-gray-500 border-b">
                       <th className="px-4 py-2.5 text-left">School</th>
-                      <th className="px-4 py-2.5 text-left min-w-[200px]">Target</th>
-                      <th className="px-4 py-2.5 text-left min-w-[200px]">Outcome</th>
+                      <th className="px-4 py-2.5 text-left min-w-[200px]">Discussion Points</th>
+                      <th className="px-4 py-2.5 text-left min-w-[160px]">Tagged Department</th>
+                      <th className="px-4 py-2.5 text-left min-w-[200px]">Responsible Person (Central Team)</th>
+                      <th className="px-4 py-2.5 text-left min-w-[180px]">Progress Update</th>
                       <th className="px-4 py-2.5 text-center w-20">Actions</th>
                     </tr>
                   </thead>
@@ -153,12 +158,16 @@ export default function MonthlyMeeting() {
                     {entries.map(row => (
                       <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                         <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{row.school_name}</td>
-                        <td className="px-4 py-3 text-gray-600 text-xs">{row.target || <span className="text-gray-300">—</span>}</td>
-                        <td className="px-4 py-3 text-gray-600 text-xs">{row.outcome || <span className="text-gray-300">—</span>}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">{row.discussion_points || <span className="text-gray-300">—</span>}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">{row.tagged_department || <span className="text-gray-300">—</span>}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">{row.responsible_person || <span className="text-gray-300">—</span>}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">{row.progress_update || <span className="text-gray-300">—</span>}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1 justify-center">
                             <button onClick={() => setEditRow(row)} className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"><Pencil size={13} /></button>
-                            <button onClick={() => handleDelete(row.id)} className="p-1 text-red-500 hover:bg-red-50 rounded"><Trash2 size={13} /></button>
+                            {!isSchool && (
+                              <button onClick={() => handleDelete(row.id)} className="p-1 text-red-500 hover:bg-red-50 rounded"><Trash2 size={13} /></button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -188,12 +197,7 @@ export default function MonthlyMeeting() {
 
 function MeetingModal({ row, onClose, onSave }) {
   const [schools, setSchools] = useState([]);
-  const [form, setForm] = useState({
-    month: row?.month || '',
-    school_name: row?.school_name || '',
-    target: row?.target || '',
-    outcome: row?.outcome || '',
-  });
+  const [form, setForm] = useState(row ? { ...EMPTY_FORM, ...row } : { ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const set = f => e => setForm(p => ({ ...p, [f]: e.target.value }));
 
@@ -229,21 +233,37 @@ function MeetingModal({ row, onClose, onSave }) {
               </select>
             </F>
           </div>
-          <F label="Target">
+          <F label="Discussion Points">
             <textarea
-              value={form.target}
-              onChange={set('target')}
+              value={form.discussion_points}
+              onChange={set('discussion_points')}
               rows={3}
-              placeholder="What was planned for this meeting..."
+              placeholder="Key points discussed in the meeting..."
               className="input resize-none"
             />
           </F>
-          <F label="Outcome">
+          <F label="Tagged Department">
+            <input
+              value={form.tagged_department}
+              onChange={set('tagged_department')}
+              placeholder="e.g. Academic, Finance, Operations..."
+              className="input"
+            />
+          </F>
+          <F label="Responsible Person from Central Team">
+            <input
+              value={form.responsible_person}
+              onChange={set('responsible_person')}
+              placeholder="Name of responsible person..."
+              className="input"
+            />
+          </F>
+          <F label="Progress Update">
             <textarea
-              value={form.outcome}
-              onChange={set('outcome')}
+              value={form.progress_update}
+              onChange={set('progress_update')}
               rows={3}
-              placeholder="What was discussed / achieved..."
+              placeholder="Current status / progress..."
               className="input resize-none"
             />
           </F>

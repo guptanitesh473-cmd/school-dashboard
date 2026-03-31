@@ -224,6 +224,10 @@ const migrations = [
   `ALTER TABLE schools ADD COLUMN spoc_clicker TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN cod1 TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN cod2 TEXT DEFAULT ''`,
+  `ALTER TABLE monthly_meetings ADD COLUMN discussion_points TEXT DEFAULT ''`,
+  `ALTER TABLE monthly_meetings ADD COLUMN tagged_department TEXT DEFAULT ''`,
+  `ALTER TABLE monthly_meetings ADD COLUMN responsible_person TEXT DEFAULT ''`,
+  `ALTER TABLE monthly_meetings ADD COLUMN progress_update TEXT DEFAULT ''`,
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (_) { /* column already exists */ }
