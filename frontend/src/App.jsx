@@ -20,6 +20,7 @@ import StaffOnboarding from './components/StaffOnboarding';
 import SurveyFeedback from './components/SurveyFeedback';
 import MAU from './components/MAU';
 import MonthlyMeeting from './components/MonthlyMeeting';
+import AuditReport from './components/AuditReport';
 import UserManagement from './components/UserManagement';
 import Login from './components/Login';
 import { authApi } from './services/api';
@@ -81,6 +82,11 @@ const NAV = [
     to: '/monthly-meeting',
     label: 'Monthly Meeting',
     icon: CalendarDays,
+  },
+  {
+    to: '/audit',
+    label: 'Audit Report',
+    icon: ShieldCheck,
   },
 ];
 
@@ -288,6 +294,7 @@ export default function App() {
             <Route path="/bla" element={<BLA />} />
             <Route path="/mau" element={<MAU />} />
             <Route path="/monthly-meeting" element={<MonthlyMeeting />} />
+            <Route path="/audit" element={<AuditReport />} />
             <Route path="/users" element={<UserManagement />} />
           </Routes>
         </main>
@@ -332,6 +339,7 @@ function PageTitle() {
     '/bla': 'BLA Dashboard',
     '/mau': 'MAU Data',
     '/monthly-meeting': 'Monthly Meeting',
+    '/audit': 'Audit Report',
     '/users': 'User Management',
     '/schools': 'Schools',
     '/schools/new': 'Add School',

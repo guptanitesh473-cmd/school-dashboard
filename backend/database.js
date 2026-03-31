@@ -172,6 +172,26 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS audit_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    month TEXT NOT NULL,
+    school_name TEXT NOT NULL,
+    dept_planned TEXT DEFAULT '',
+    agenda_planned TEXT DEFAULT '',
+    timeline TEXT DEFAULT '',
+    designation_planned TEXT DEFAULT '',
+    auditor_name TEXT DEFAULT '',
+    erp TEXT DEFAULT '',
+    designation_executed TEXT DEFAULT '',
+    dept_executed TEXT DEFAULT '',
+    date_of_auditing TEXT DEFAULT '',
+    agenda_executed TEXT DEFAULT '',
+    audit_report TEXT DEFAULT '',
+    issues_tagged TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,

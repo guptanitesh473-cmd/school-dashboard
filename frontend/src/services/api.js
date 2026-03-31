@@ -103,6 +103,12 @@ export const api = {
   updateMeeting: (id, data) => request(`/meetings/${id}`, { method: 'PUT', body: data }),
   deleteMeeting: (id) => request(`/meetings/${id}`, { method: 'DELETE' }),
 
+  // Audit Reports
+  getAudit: () => request('/audit'),
+  createAudit: (data) => request('/audit', { method: 'POST', body: data }),
+  updateAudit: (id, data) => request(`/audit/${id}`, { method: 'PUT', body: data }),
+  deleteAudit: (id) => request(`/audit/${id}`, { method: 'DELETE' }),
+
   // User Management
   getUsers: () => request('/users'),
   createUser: (data) => request('/users', { method: 'POST', body: data }),

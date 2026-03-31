@@ -24,6 +24,7 @@ app.use('/api/inventory', require('./routes/inventory'));
 app.use('/api/bla', require('./routes/bla'));
 app.use('/api/mau', require('./routes/mau'));
 app.use('/api/meetings', require('./routes/meetings'));
+app.use('/api/audit', require('./routes/audit'));
 app.use('/api/users', require('./routes/users'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
