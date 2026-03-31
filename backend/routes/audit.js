@@ -10,11 +10,12 @@ const FIELDS = [
   'dept_executed', 'date_of_auditing', 'agenda_executed', 'audit_report', 'issues_tagged',
 ];
 
-// GET /api/audit
+// GET /api/audit?school=X
 router.get('/', (req, res) => {
-  const rows = isSchool(req)
-    ? db.prepare('SELECT * FROM audit_reports WHERE school_name=? ORDER BY month DESC').all(req.user.school_name)
-    : db.prepare('SELECT * FROM audit_reports ORDER BY month DESC, school_name').all();
+  const school = isSchool(req) ? req.user.school_name : (req.query.school || null);
+  const rows = school
+    ? db.prepare('SELECT * FROM audit_reports WHERE school_name=? ORDER BY id ASC').all(school)
+    : db.prepare('SELECT * FROM audit_reports ORDER BY school_name, id ASC').all();
   res.json(rows);
 });
 

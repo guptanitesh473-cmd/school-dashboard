@@ -104,7 +104,7 @@ export const api = {
   deleteMeeting: (id) => request(`/meetings/${id}`, { method: 'DELETE' }),
 
   // Audit Reports
-  getAudit: () => request('/audit'),
+  getAudit: (school) => request(`/audit${school ? '?school=' + encodeURIComponent(school) : ''}`),
   createAudit: (data) => request('/audit', { method: 'POST', body: data }),
   updateAudit: (id, data) => request(`/audit/${id}`, { method: 'PUT', body: data }),
   deleteAudit: (id) => request(`/audit/${id}`, { method: 'DELETE' }),
