@@ -11,7 +11,7 @@ const DEPT_COLORS = {
 };
 
 const BRANCH_DEPT = [
-  { branch: 'OIS Kumbalagodu, Bangalore', depts: [{ dept: 'Teachers', count: 66 }, { dept: 'Principals', count: 2 }, { dept: 'Admin', count: 14 }, { dept: 'Sales and Marketing', count: 6 }, { dept: 'Drivers', count: 8 }], total: 96 },
+  { branch: 'OIS Kumbalagodu, Bangalore', depts: [{ dept: 'Teachers', count: 33 }, { dept: 'Principals', count: 1 }, { dept: 'Admin', count: 7 }, { dept: 'Sales and Marketing', count: 3 }, { dept: 'Drivers', count: 8 }], total: 52 },
   { branch: 'OIS Thirumudivakkam', depts: [{ dept: 'Teachers', count: 34 }, { dept: 'Support Staff', count: 18 }, { dept: 'Admin', count: 4 }, { dept: 'Drivers', count: 5 }], total: 61 },
   { branch: 'OIS DINDIGUL', depts: [{ dept: 'Teachers', count: 25 }, { dept: 'Support Staff', count: 23 }, { dept: 'Drivers', count: 9 }], total: 57 },
   { branch: 'OIS Rayasandra', depts: [{ dept: 'Teachers', count: 21 }, { dept: 'Principals', count: 1 }, { dept: 'Support Staff', count: 12 }, { dept: 'Admin', count: 6 }, { dept: 'Sales and Marketing', count: 1 }, { dept: 'Drivers', count: 5 }], total: 46 },
@@ -39,9 +39,9 @@ const ONBOARDING_COLS = [
 ];
 
 const ONBOARDING = [
-  { branch: 'OIS Kumbalagodu, Bangalore', teachers: 66, principals: 2, supportStaff: 0, admin: 14, salesMarketing: 6, drivers: 8, total: 96 },
   { branch: 'OIS Thirumudivakkam', teachers: 34, principals: 0, supportStaff: 18, admin: 4, salesMarketing: 0, drivers: 5, total: 61 },
   { branch: 'OIS DINDIGUL', teachers: 25, principals: 0, supportStaff: 23, admin: 0, salesMarketing: 0, drivers: 9, total: 57 },
+  { branch: 'OIS Kumbalagodu, Bangalore', teachers: 33, principals: 1, supportStaff: 0, admin: 7, salesMarketing: 3, drivers: 8, total: 52 },
   { branch: 'OIS Rayasandra', teachers: 21, principals: 1, supportStaff: 12, admin: 6, salesMarketing: 1, drivers: 5, total: 46 },
   { branch: 'OIS HSR', teachers: 25, principals: 1, supportStaff: 9, admin: 2, salesMarketing: 0, drivers: 7, total: 44 },
   { branch: 'OIS Arakere', teachers: 19, principals: 1, supportStaff: 10, admin: 7, salesMarketing: 1, drivers: 3, total: 41 },
@@ -55,7 +55,7 @@ const ONBOARDING = [
   { branch: 'OIS Ramamurthy Nagar', teachers: 3, principals: 0, supportStaff: 2, admin: 0, salesMarketing: 0, drivers: 0, total: 5 },
   { branch: 'OIS Vandalur', teachers: 0, principals: 0, supportStaff: 0, admin: 1, salesMarketing: 0, drivers: 0, total: 1 },
 ];
-const ONBOARDING_TOTALS = { teachers: 246, principals: 6, supportStaff: 121, admin: 39, salesMarketing: 8, drivers: 69, total: 489 };
+const ONBOARDING_TOTALS = { teachers: 213, principals: 5, supportStaff: 121, admin: 32, salesMarketing: 5, drivers: 69, total: 445 };
 
 // ── Teachers 1on1 data ────────────────────────────────────────────────────
 const TEACHERS_1ON1 = [
@@ -76,7 +76,7 @@ const T1ON1_TOTALS = { total: 349, done: 308, recommended: 248 };
 
 // ── Sub-components ────────────────────────────────────────────────────────
 function BranchDeptTab() {
-  const grandTotal = 489;
+  const grandTotal = 445;
   return (
     <div className="space-y-3">
       <div className="bg-indigo-600 text-white rounded-xl px-6 py-4 flex items-center justify-between">
