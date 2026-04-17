@@ -19,6 +19,71 @@ function avgRating(arr) {
   return arr.reduce((s, x) => s + x.r * x.n, 0) / t;
 }
 
+// ── Focus items per card key ──────────────────────────────────────────────────
+function getCardFocus(d, tab, cardKey) {
+  const items = [];
+  if (tab === 'Pre-Primary' && d.prePrimary) {
+    if (cardKey === 'areasOfImprovement') {
+      [...d.prePrimary.areasOfImprovement].sort((a,b)=>b.n-a.n).slice(0,2)
+        .forEach(x => x.n > 0 && items.push(`Needs focus: "${x.name}"`));
+    }
+  }
+  if (tab === 'G1-G5' && d.g1g5) {
+    if (cardKey === 'grades') {
+      d.g1g5.grades.filter(g => Math.min(g.academicStd, g.teachingQuality, g.learningGaps) < 3.0)
+        .forEach(g => items.push(`${g.grade} has score(s) below 3.0`));
+    }
+    if (cardKey === 'remarks') {
+      d.g1g5.remarks.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2)
+        .forEach(x => x.n >= 3 && items.push(`"${x.name}" raised by ${x.n} parents`));
+    }
+  }
+  if (tab === 'G6-G8' && d.g6g8) {
+    if (cardKey === 'ratings') {
+      const { teacherKnowledge, doubtSolving, academicRigor } = d.g6g8;
+      if (avgRating(teacherKnowledge) < 3.5) items.push(`Teacher knowledge avg low: ${avgRating(teacherKnowledge).toFixed(1)}/5`);
+      if (avgRating(doubtSolving) < 3.5)     items.push(`Doubt-solving avg low: ${avgRating(doubtSolving).toFixed(1)}/5`);
+      if (avgRating(academicRigor) < 3.5)    items.push(`Academic rigor avg low: ${avgRating(academicRigor).toFixed(1)}/5`);
+    }
+    if (cardKey === 'majorIssues') {
+      d.g6g8.majorIssues.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2)
+        .forEach(x => x.n >= 2 && items.push(`"${x.name}" — ${x.n} responses`));
+    }
+    if (cardKey === 'areasOfImprovement') {
+      const top = d.g6g8.areasOfImprovement.sort((a,b)=>b.n-a.n)[0];
+      if (top?.n >= 5) items.push(`Top priority: "${top.name}" (${top.n} responses)`);
+    }
+  }
+  if (tab === 'G9-G10' && d.g9g10) {
+    if (cardKey === 'grades') {
+      d.g9g10.grades.filter(g => Math.min(g.boardPrep, g.teachingQuality, g.timeManagement) < 3.0)
+        .forEach(g => items.push(`${g.grade} has score(s) below 3.0`));
+    }
+    if (cardKey === 'majorIssues') {
+      d.g9g10.majorIssues.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2)
+        .forEach(x => x.n >= 2 && items.push(`"${x.name}" — ${x.n} responses`));
+    }
+  }
+  return items;
+}
+
+function InlineFocus({ items }) {
+  if (!items.length) return null;
+  return (
+    <div className="mt-3 flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+      <AlertTriangle size={13} className="text-amber-500 shrink-0 mt-0.5" />
+      <ul className="space-y-0.5">
+        {items.map((item, i) => (
+          <li key={i} className="text-[11px] text-amber-700 flex items-start gap-1.5">
+            <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // ── Pie chart (pure SVG, no deps) ────────────────────────────────────────────
 const PIE_PALETTE = [
   '#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6',
@@ -53,25 +118,8 @@ function PieChart({ data, size = 160 }) {
   );
 }
 
-// ── Bar with % label ──────────────────────────────────────────────────────────
-function HBar({ name, n, total, color = 'bg-indigo-500' }) {
-  const w = Math.max(total > 0 ? 2 : 0, pct(n, total));
-  const pctVal = total > 0 ? pct(n, total).toFixed(1) : '0';
-  return (
-    <div className="flex items-center gap-2 py-0.5">
-      <div className="w-36 text-xs text-gray-600 shrink-0 text-right leading-tight truncate" title={name}>{name}</div>
-      <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden min-w-0">
-        <div className={`${color} h-full rounded-full flex items-center px-2 gap-1`} style={{ width: `${w}%` }}>
-          {w >= 18 && <span className="text-white text-[10px] font-semibold">{n}</span>}
-        </div>
-      </div>
-      <span className="text-xs text-gray-500 w-16 shrink-0 font-medium">{n} <span className="text-gray-400">({pctVal}%)</span></span>
-    </div>
-  );
-}
-
 // ── Pie + bar combo card ──────────────────────────────────────────────────────
-function PieCard({ title, accent, data, color, isIssue }) {
+function PieCard({ title, accent, data, color, isIssue, focusItems = [] }) {
   const total = sum(data);
   const pieData = data.filter(x => x.n > 0);
   return (
@@ -81,21 +129,17 @@ function PieCard({ title, accent, data, color, isIssue }) {
       </div>
       <div className="px-4 py-3">
         <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
-          {/* Pie */}
           <div className="shrink-0">
             <PieChart data={pieData} size={140} />
           </div>
-          {/* Legend + bars */}
           <div className="flex-1 w-full space-y-0.5">
-            {data.map((x, i) => (
+            {data.map((x) => (
               <div key={x.name} className="flex items-center gap-2 py-0.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: x.n > 0 ? PIE_PALETTE[pieData.findIndex(p=>p.name===x.name) % PIE_PALETTE.length] : '#e5e7eb' }} />
                 <div className="w-32 text-xs text-gray-600 shrink-0 truncate" title={x.name}>{x.name}</div>
                 <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${isIssue && x.name !== 'None' ? 'bg-rose-400' : (color || 'bg-indigo-500')}`}
-                    style={{ width: `${pct(x.n, total)}%` }}
-                  />
+                  <div className={`h-full rounded-full ${isIssue && x.name !== 'None' ? 'bg-rose-400' : (color || 'bg-indigo-500')}`}
+                    style={{ width: `${pct(x.n, total)}%` }} />
                 </div>
                 <span className="text-xs text-gray-500 w-20 shrink-0 text-right">
                   {x.n} <span className="text-gray-400">({pct(x.n, total).toFixed(1)}%)</span>
@@ -105,18 +149,22 @@ function PieCard({ title, accent, data, color, isIssue }) {
             <p className="text-xs text-gray-400 pt-1 text-right">Total: {total}</p>
           </div>
         </div>
+        <InlineFocus items={focusItems} />
       </div>
     </div>
   );
 }
 
-function Card({ title, accent = 'border-indigo-400', children }) {
+function Card({ title, accent = 'border-indigo-400', focusItems = [], children }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className={`px-4 py-3 border-b border-gray-100 border-l-4 ${accent}`}>
         <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
       </div>
-      <div className="px-4 py-3">{children}</div>
+      <div className="px-4 py-3">
+        {children}
+        <InlineFocus items={focusItems} />
+      </div>
     </div>
   );
 }
@@ -148,66 +196,15 @@ function RatingBar({ label, data }) {
   );
 }
 
-// ── Focus alert ───────────────────────────────────────────────────────────────
-function getFocusAreas(d, tab) {
-  const items = [];
-  if (tab === 'Pre-Primary' && d.prePrimary) {
-    const top = [...d.prePrimary.areasOfImprovement].sort((a,b)=>b.n-a.n).slice(0,2);
-    top.forEach(x => x.n > 0 && items.push(`Improvement needed: "${x.name}"`));
-  }
-  if (tab === 'G1-G5' && d.g1g5) {
-    d.g1g5.grades.filter(g => Math.min(g.academicStd, g.teachingQuality, g.learningGaps) < 3.0)
-      .forEach(g => items.push(`${g.grade} has score(s) below 3.0`));
-    d.g1g5.remarks.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2)
-      .forEach(x => x.n >= 3 && items.push(`Parent concern: "${x.name}" (${x.n} responses)`));
-  }
-  if (tab === 'G6-G8' && d.g6g8) {
-    const { teacherKnowledge, doubtSolving, academicRigor } = d.g6g8;
-    if (avgRating(teacherKnowledge) < 3.5) items.push(`Teacher knowledge avg: ${avgRating(teacherKnowledge).toFixed(1)} / 5`);
-    if (avgRating(doubtSolving) < 3.5)     items.push(`Doubt-solving avg: ${avgRating(doubtSolving).toFixed(1)} / 5`);
-    if (avgRating(academicRigor) < 3.5)    items.push(`Academic rigor avg: ${avgRating(academicRigor).toFixed(1)} / 5`);
-    d.g6g8.majorIssues.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2)
-      .forEach(x => x.n >= 2 && items.push(`Major issue: "${x.name}" (${x.n} responses)`));
-    const top = d.g6g8.areasOfImprovement.sort((a,b)=>b.n-a.n)[0];
-    if (top?.n >= 5) items.push(`Top area to improve: "${top.name}" (${top.n} responses)`);
-  }
-  if (tab === 'G9-G10' && d.g9g10) {
-    d.g9g10.grades.filter(g => Math.min(g.boardPrep, g.teachingQuality, g.timeManagement) < 3.0)
-      .forEach(g => items.push(`${g.grade} has score(s) below 3.0`));
-    d.g9g10.majorIssues.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2)
-      .forEach(x => x.n >= 2 && items.push(`Major issue: "${x.name}" (${x.n} responses)`));
-  }
-  return items;
-}
-
-function FocusAlert({ items }) {
-  if (!items.length) return null;
-  return (
-    <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
-      <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
-      <div>
-        <p className="text-xs font-semibold text-amber-700 mb-1">Focus Areas — needs attention</p>
-        <ul className="space-y-0.5">
-          {items.map((item, i) => (
-            <li key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
-              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
 // ── tabs ──────────────────────────────────────────────────────────────────────
 function PrePrimaryTab({ d }) {
   const { cocurricular, academicFocus, areasOfImprovement } = d.prePrimary;
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <PieCard title="Co-curricular Activities" accent="border-purple-400" data={cocurricular} color="bg-purple-500" />
-      <PieCard title="Academic Focus"            accent="border-blue-400"   data={academicFocus}       color="bg-blue-500" />
-      <PieCard title="Areas of Improvement"      accent="border-rose-400"   data={areasOfImprovement}  color="bg-rose-500" isIssue />
+      <PieCard title="Academic Focus Areas"      accent="border-blue-400"   data={academicFocus}       color="bg-blue-500" />
+      <PieCard title="Areas of Improvement"      accent="border-rose-400"   data={areasOfImprovement}  color="bg-rose-500" isIssue
+        focusItems={getCardFocus(d, 'Pre-Primary', 'areasOfImprovement')} />
     </div>
   );
 }
@@ -217,8 +214,9 @@ function G1G5Tab({ d }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PieCard title="Satisfaction Areas" accent="border-indigo-400" data={areas}    color="bg-indigo-500" />
-        <Card title="Grade-wise Scores (Avg out of 5)" accent="border-teal-400">
+        <PieCard title="Areas needing improvement" accent="border-indigo-400" data={areas} color="bg-indigo-500" />
+        <Card title="Grade-wise Scores (Avg out of 5)" accent="border-teal-400"
+          focusItems={getCardFocus(d, 'G1-G5', 'grades')}>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -251,14 +249,15 @@ function G1G5Tab({ d }) {
         </Card>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PieCard title="Preferred Subjects"   accent="border-green-400" data={subjects}   color="bg-green-500" />
-        <PieCard title="Preferred Activities" accent="border-amber-400" data={activities} color="bg-amber-500" />
+        <PieCard title="Subjects needing maximum focus"       accent="border-green-400" data={subjects}   color="bg-green-500" />
+        <PieCard title="Co-curricular activities to strengthen" accent="border-amber-400" data={activities} color="bg-amber-500" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {academicPriorities && (
           <PieCard title="Academic Priorities" accent="border-violet-400" data={academicPriorities} color="bg-violet-500" />
         )}
-        <PieCard title="Parent Remarks" accent="border-gray-400" data={remarks} color="bg-rose-400" isIssue />
+        <PieCard title="Major Issues" accent="border-gray-400" data={remarks} color="bg-rose-400" isIssue
+          focusItems={getCardFocus(d, 'G1-G5', 'remarks')} />
       </div>
     </div>
   );
@@ -268,7 +267,8 @@ function G6G8Tab({ d }) {
   const { teacherKnowledge, doubtSolving, academicRigor, majorIssues, areasOfImprovement } = d.g6g8;
   return (
     <div className="space-y-4">
-      <Card title="Satisfaction Ratings (1 = Very Low → 5 = Excellent) — avg shown on right" accent="border-indigo-400">
+      <Card title="Satisfaction Ratings (1 = Very Low → 5 = Excellent) — avg shown on right" accent="border-indigo-400"
+        focusItems={getCardFocus(d, 'G6-G8', 'ratings')}>
         <div className="space-y-3 mt-1">
           <RatingBar label="Teacher subject knowledge & classroom effectiveness" data={teacherKnowledge} />
           <RatingBar label="Effectiveness of doubt-solving & academic support"   data={doubtSolving} />
@@ -283,8 +283,10 @@ function G6G8Tab({ d }) {
         </div>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PieCard title="Major Issues Raised"  accent="border-rose-400"  data={majorIssues}       color="bg-rose-500"  isIssue />
-        <PieCard title="Areas of Improvement" accent="border-amber-400" data={areasOfImprovement} color="bg-amber-500" />
+        <PieCard title="Major Issues Raised"  accent="border-rose-400"  data={majorIssues}       color="bg-rose-500"  isIssue
+          focusItems={getCardFocus(d, 'G6-G8', 'majorIssues')} />
+        <PieCard title="Areas of Improvement" accent="border-amber-400" data={areasOfImprovement} color="bg-amber-500"
+          focusItems={getCardFocus(d, 'G6-G8', 'areasOfImprovement')} />
       </div>
     </div>
   );
@@ -294,7 +296,8 @@ function G9G10Tab({ d }) {
   const { grades, majorIssues, academicPriorities } = d.g9g10;
   return (
     <div className="space-y-4">
-      <Card title="Grade-wise Scores (Avg out of 5)" accent="border-teal-400">
+      <Card title="Grade-wise Scores (Avg out of 5)" accent="border-teal-400"
+        focusItems={getCardFocus(d, 'G9-G10', 'grades')}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -326,7 +329,8 @@ function G9G10Tab({ d }) {
         </div>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PieCard title="Major Issues Raised"    accent="border-rose-400"   data={majorIssues}       color="bg-rose-500"   isIssue />
+        <PieCard title="Major Issues Raised"     accent="border-rose-400"   data={majorIssues}       color="bg-rose-500"   isIssue
+          focusItems={getCardFocus(d, 'G9-G10', 'majorIssues')} />
         <PieCard title="Key Academic Priorities" accent="border-violet-400" data={academicPriorities} color="bg-violet-500" />
       </div>
     </div>
@@ -344,8 +348,7 @@ export default function SurveyFeedback() {
     'G1-G5', 'G6-G8',
     ...(d?.g9g10 ? ['G9-G10'] : []),
   ];
-  const activeTab  = tabs.includes(tab) ? tab : tabs[0];
-  const focusItems = getFocusAreas(d, activeTab);
+  const activeTab = tabs.includes(tab) ? tab : tabs[0];
 
   return (
     <div className="space-y-5">
@@ -395,7 +398,6 @@ export default function SurveyFeedback() {
           ))}
         </div>
         <div className="p-5">
-          <FocusAlert items={focusItems} />
           {activeTab === 'Pre-Primary' && <PrePrimaryTab d={d} />}
           {activeTab === 'G1-G5'      && <G1G5Tab d={d} />}
           {activeTab === 'G6-G8'      && <G6G8Tab d={d} />}
