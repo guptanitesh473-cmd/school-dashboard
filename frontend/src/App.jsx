@@ -3,7 +3,7 @@ import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
   School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
-  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck,
+  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -21,6 +21,8 @@ import SurveyFeedback from './components/SurveyFeedback';
 import MAU from './components/MAU';
 import MonthlyMeeting from './components/MonthlyMeeting';
 import AuditReport from './components/AuditReport';
+import TemplateType from './components/TemplateType';
+import ReportView from './components/ReportView';
 import UserManagement from './components/UserManagement';
 import Login from './components/Login';
 import { authApi } from './services/api';
@@ -87,6 +89,11 @@ const NAV = [
     to: '/audit',
     label: 'Audit Report',
     icon: ShieldCheck,
+  },
+  {
+    to: '/template-type',
+    label: 'Template Type',
+    icon: Languages,
   },
 ];
 
@@ -295,6 +302,7 @@ export default function App() {
             <Route path="/mau" element={<MAU />} />
             <Route path="/monthly-meeting" element={<MonthlyMeeting />} />
             <Route path="/audit" element={<AuditReport />} />
+            <Route path="/template-type" element={<TemplateType />} />
             <Route path="/users" element={<UserManagement />} />
           </Routes>
         </main>
@@ -305,11 +313,11 @@ export default function App() {
 }
 
 function AcademicPage() {
-  const [tab, setTab] = useState('matrix');
+  const [tab, setTab] = useState('report');
   return (
     <div>
       <div className="flex gap-2 mb-5 border-b border-gray-200">
-        {[['matrix', 'Matrix View'], ['stats', 'Stats & Summary']].map(([key, label]) => (
+        {[['report', 'Report'], ['matrix', 'Matrix View'], ['stats', 'Stats & Summary']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -321,7 +329,9 @@ function AcademicPage() {
           </button>
         ))}
       </div>
-      {tab === 'matrix' ? <MatrixView /> : <StatsView />}
+      {tab === 'report' && <ReportView />}
+      {tab === 'matrix' && <MatrixView />}
+      {tab === 'stats'  && <StatsView />}
     </div>
   );
 }
@@ -340,6 +350,7 @@ function PageTitle() {
     '/mau': 'MAU Data',
     '/monthly-meeting': 'Monthly Meeting',
     '/audit': 'Audit Report',
+    '/template-type': 'Template Type',
     '/users': 'User Management',
     '/schools': 'Schools',
     '/schools/new': 'Add School',
