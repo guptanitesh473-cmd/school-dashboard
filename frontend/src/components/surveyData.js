@@ -2,7 +2,7 @@
 // Source: Google Sheet 1f2q_axZPtfNcuWKIRT3yV6_WQhj44-bjS7RI2Cm1MAk
 // Tabs: Pre-Primary · G1-G5 · G6-G8 · G9-G10
 
-export const SCHOOLS = ['JPS', 'Tatva', 'Siddhanta', 'Arkere', 'Marathalli', 'HSR', 'Oragadam', 'Dindigul'];
+export const SCHOOLS = ['JPS', 'Tatva', 'Siddhanta', 'Arkere', 'Marathalli', 'HSR', 'Oragadam', 'Dindigul', 'Mahadevpura'];
 
 export const SURVEY_DATA = {
   JPS: {
@@ -744,6 +744,104 @@ export const SURVEY_DATA = {
         { name: 'Exam preparedness', n: 10 },
         { name: 'Study discipline', n: 9 },
         { name: 'Assessments & feedback', n: 7 },
+      ],
+    },
+    g9g10: {
+      grades: [
+        { grade: 'Grade 9',  boardPrep: 3.33, teachingQuality: 4.00, timeManagement: 4.00 },
+        { grade: 'Grade 10', boardPrep: 3.25, teachingQuality: 3.00, timeManagement: 3.25 },
+        { grade: 'Grade 11', boardPrep: 3.00, teachingQuality: 3.00, timeManagement: 3.50 },
+      ],
+      majorIssues: [
+        { name: 'Academic Focus', n: 5 },
+        { name: 'None', n: 2 },
+        { name: 'Communication & Presentation', n: 1 },
+        { name: 'Teaching methodology', n: 1 },
+        { name: 'Teaching Quality', n: 1 },
+        { name: 'Others', n: 1 },
+      ],
+      academicPriorities: [
+        { name: 'Board results', n: 9 },
+        { name: 'Concept mastery', n: 5 },
+        { name: 'Career guidance', n: 5 },
+        { name: 'Competitive exams', n: 4 },
+      ],
+    },
+  },
+
+  Mahadevpura: {
+    label: 'Mahadevpura',
+    g1g5: {
+      areas: [
+        { name: 'Student motivation', n: 19 },
+        { name: 'Teaching quality', n: 14 },
+        { name: 'Homework & practice', n: 14 },
+        { name: 'Doubt-solving', n: 9 },
+        { name: 'Assessments & feedback', n: 9 },
+      ],
+      grades: [
+        { grade: 'Grade 1', academicStd: 4.40, teachingQuality: 4.20, learningGaps: 4.20 },
+        { grade: 'Grade 2', academicStd: 3.60, teachingQuality: 3.60, learningGaps: 2.80 },
+        { grade: 'Grade 3', academicStd: 3.67, teachingQuality: 3.67, learningGaps: 3.00 },
+        { grade: 'Grade 4', academicStd: 3.22, teachingQuality: 3.22, learningGaps: 3.11 },
+        { grade: 'Grade 5', academicStd: 3.00, teachingQuality: 3.25, learningGaps: 2.75 },
+      ],
+      subjects: [
+        { name: 'Mathematics', n: 18 },
+        { name: 'Languages', n: 17 },
+        { name: 'English', n: 15 },
+        { name: 'Science', n: 14 },
+      ],
+      activities: [
+        { name: 'Sports', n: 25 },
+        { name: 'Dance', n: 15 },
+        { name: 'Music', n: 14 },
+        { name: 'Theatre', n: 9 },
+      ],
+      remarks: [
+        { name: 'None', n: 20 },
+        { name: 'Academic Focus', n: 2 },
+        { name: 'Individual Attention', n: 2 },
+        { name: 'Teaching methodology', n: 2 },
+      ],
+    },
+    g6g8: {
+      teacherKnowledge: [{ r: 1, n: 2 }, { r: 2, n: 5 }, { r: 3, n: 7 }, { r: 4, n: 27 }, { r: 5, n: 12 }],
+      doubtSolving:     [{ r: 1, n: 1 }, { r: 2, n: 8 }, { r: 3, n: 33 }, { r: 4, n: 88 }, { r: 5, n: 80 }],
+      academicRigor:    [{ r: 1, n: 1 }, { r: 2, n: 4 }, { r: 3, n: 39 }, { r: 4, n: 92 }, { r: 5, n: 75 }],
+      majorIssues: [
+        { name: 'Teaching Quality', n: 5 },
+        { name: 'Teaching methodology', n: 4 },
+        { name: 'Academic Focus', n: 2 },
+        { name: 'Individual Attention', n: 1 },
+        { name: 'Hygiene & Infra', n: 1 },
+        { name: 'Extra-curricular', n: 1 },
+        { name: 'Others', n: 1 },
+      ],
+      areasOfImprovement: [
+        { name: 'Depth of teaching', n: 26 },
+        { name: 'Exam preparedness', n: 24 },
+        { name: 'Study discipline', n: 23 },
+        { name: 'Assessments & feedback', n: 18 },
+      ],
+    },
+    g9g10: {
+      grades: [
+        { grade: 'Grade 9',  boardPrep: 2.67, teachingQuality: 2.67, timeManagement: 3.00 },
+        { grade: 'Grade 10', boardPrep: 3.11, teachingQuality: 3.28, timeManagement: 3.33 },
+      ],
+      majorIssues: [
+        { name: 'None', n: 11 },
+        { name: 'Academic Focus', n: 4 },
+        { name: 'Progress Tracking', n: 2 },
+        { name: 'Teaching methodology', n: 2 },
+        { name: 'Teaching Quality', n: 2 },
+      ],
+      academicPriorities: [
+        { name: 'Board results', n: 13 },
+        { name: 'Career guidance', n: 9 },
+        { name: 'Concept mastery', n: 9 },
+        { name: 'Competitive exams', n: 6 },
       ],
     },
   },

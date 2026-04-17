@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SURVEY_DATA, SCHOOLS } from './surveyData';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, AlertTriangle } from 'lucide-react';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function scoreColor(v) {
@@ -14,6 +14,62 @@ function ratingColor(r) {
 }
 function pct(n, total) { return total > 0 ? (n / total) * 100 : 0; }
 function sum(arr) { return arr.reduce((s, x) => s + (x.n ?? 0), 0); }
+function avgRating(arr) {
+  const t = sum(arr); if (!t) return 0;
+  return arr.reduce((s, x) => s + x.r * x.n, 0) / t;
+}
+
+// ── Focus area detector ───────────────────────────────────────────────────────
+function getFocusAreas(d, tab) {
+  const items = [];
+  if (tab === 'Pre-Primary' && d.prePrimary) {
+    const top = [...d.prePrimary.areasOfImprovement].sort((a,b)=>b.n-a.n).slice(0,2);
+    top.forEach(x => x.n > 0 && items.push(`Improvement needed: "${x.name}"`));
+  }
+  if (tab === 'G1-G5' && d.g1g5) {
+    const lowGrades = d.g1g5.grades.filter(g => Math.min(g.academicStd, g.teachingQuality, g.learningGaps) < 3.0);
+    lowGrades.forEach(g => items.push(`${g.grade} has score(s) below 3.0`));
+    const topIssues = d.g1g5.remarks.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2);
+    topIssues.forEach(x => x.n >= 3 && items.push(`Parent concern: "${x.name}" (${x.n} responses)`));
+  }
+  if (tab === 'G6-G8' && d.g6g8) {
+    const { teacherKnowledge, doubtSolving, academicRigor } = d.g6g8;
+    if (avgRating(teacherKnowledge) < 3.5) items.push(`Teacher knowledge avg: ${avgRating(teacherKnowledge).toFixed(1)} / 5`);
+    if (avgRating(doubtSolving) < 3.5)     items.push(`Doubt-solving avg: ${avgRating(doubtSolving).toFixed(1)} / 5`);
+    if (avgRating(academicRigor) < 3.5)    items.push(`Academic rigor avg: ${avgRating(academicRigor).toFixed(1)} / 5`);
+    const topIssues = d.g6g8.majorIssues.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2);
+    topIssues.forEach(x => x.n >= 2 && items.push(`Major issue: "${x.name}" (${x.n} responses)`));
+    const topImprove = d.g6g8.areasOfImprovement.sort((a,b)=>b.n-a.n)[0];
+    if (topImprove?.n >= 5) items.push(`Top area to improve: "${topImprove.name}" (${topImprove.n} responses)`);
+  }
+  if (tab === 'G9-G10' && d.g9g10) {
+    const lowGrades = d.g9g10.grades.filter(g => Math.min(g.boardPrep, g.teachingQuality, g.timeManagement) < 3.0);
+    lowGrades.forEach(g => items.push(`${g.grade} has score(s) below 3.0`));
+    const topIssues = d.g9g10.majorIssues.filter(x => x.name !== 'None').sort((a,b)=>b.n-a.n).slice(0,2);
+    topIssues.forEach(x => x.n >= 2 && items.push(`Major issue: "${x.name}" (${x.n} responses)`));
+  }
+  return items;
+}
+
+function FocusAlert({ items }) {
+  if (!items.length) return null;
+  return (
+    <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+      <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+      <div>
+        <p className="text-xs font-semibold text-amber-700 mb-1">Focus Areas — needs attention</p>
+        <ul className="space-y-0.5">
+          {items.map((item, i) => (
+            <li key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
+              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 // ── shared UI ─────────────────────────────────────────────────────────────────
 function Card({ title, accent = 'border-indigo-400', children }) {
@@ -270,10 +326,15 @@ export default function SurveyFeedback() {
   const [tab, setTab] = useState('Pre-Primary');
 
   const d = SURVEY_DATA[school];
-  const tabs = ['Pre-Primary', 'G1-G5', 'G6-G8', ...(d?.g9g10 ? ['G9-G10'] : [])];
+  const tabs = [
+    ...(d?.prePrimary ? ['Pre-Primary'] : []),
+    'G1-G5', 'G6-G8',
+    ...(d?.g9g10 ? ['G9-G10'] : []),
+  ];
 
   // Reset tab if current tab doesn't exist for selected school
   const activeTab = tabs.includes(tab) ? tab : tabs[0];
+  const focusItems = getFocusAreas(d, activeTab);
 
   return (
     <div className="space-y-5">
@@ -324,6 +385,7 @@ export default function SurveyFeedback() {
         </div>
 
         <div className="p-5">
+          <FocusAlert items={focusItems} />
           {activeTab === 'Pre-Primary' && <PrePrimaryTab d={d} />}
           {activeTab === 'G1-G5'      && <G1G5Tab d={d} />}
           {activeTab === 'G6-G8'      && <G6G8Tab d={d} />}
