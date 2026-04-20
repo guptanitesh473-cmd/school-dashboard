@@ -1,6 +1,197 @@
-import { useState } from 'react';
-import { SURVEY_DATA, SCHOOLS } from './surveyData';
-import { MessageSquare, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageSquare, AlertTriangle, RefreshCw } from 'lucide-react';
+
+// ── Sheet config ──────────────────────────────────────────────────────────────
+const SURVEY_SHEET_ID = '1f2q_axZPtfNcuWKIRT3yV6_WQhj44-bjS7RI2Cm1MAk';
+const sheetUrl = s => `https://docs.google.com/spreadsheets/d/${SURVEY_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s)}`;
+
+// ── CSV parser ────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQ && text[i + 1] === '"') { field += '"'; i++; } else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      row.push(field.trim()); field = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQ) {
+      row.push(field.trim()); rows.push(row); row = []; field = '';
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+    } else { field += ch; }
+  }
+  if (field || row.length) { row.push(field.trim()); rows.push(row); }
+  return rows.filter(r => r.some(Boolean));
+}
+
+// Normalize inconsistent school name spellings across sheets
+function normalizeSchool(name) {
+  return name.replace(/Tattva/g, 'Tatva').replace(/Sidhhanta/g, 'Siddhanta').trim();
+}
+
+// ── Sheet parsers ─────────────────────────────────────────────────────────────
+function parsePrePrimary(rows) {
+  const schools = {};
+  let cur = null;
+  const SKIP = new Set(['Total', 'Co-curricular Activity', 'Column 1', 'Academic Focus',
+    'Area of Improvement', 'Areas of Improvement']);
+  const toNum = v => { const n = parseInt(v); return isNaN(n) ? 0 : n; };
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    const c0 = row[0] || '';
+    if (r === 0) {
+      const m = c0.match(/^(.+?)\s+Co-curricular/i);
+      cur = normalizeSchool(m ? m[1].trim() : 'JPS');
+      schools[cur] = { cocurricular: [], academicFocus: [], areasOfImprovement: [] };
+      continue;
+    }
+    // School name row: first cell non-empty, rest all empty
+    if (c0 && !SKIP.has(c0) && row.slice(1).every(x => !x)) {
+      cur = normalizeSchool(c0);
+      schools[cur] = { cocurricular: [], academicFocus: [], areasOfImprovement: [] };
+      continue;
+    }
+    if (SKIP.has(c0) || !cur) continue;
+    const s = schools[cur];
+    if (c0 && c0 !== 'Total') { const n = toNum(row[1]); if (n > 0) s.cocurricular.push({ name: c0, n }); }
+    const c4 = row[4] || '';
+    if (c4 && !SKIP.has(c4) && c4 !== 'Total') { const n = toNum(row[5]); if (n > 0) s.academicFocus.push({ name: c4, n }); }
+    const c8 = row[8] || '';
+    if (c8 && !SKIP.has(c8) && c8 !== 'Total') { const n = toNum(row[9]); if (n > 0) s.areasOfImprovement.push({ name: c8, n }); }
+  }
+  return schools;
+}
+
+function parseG1G5(rows) {
+  const schools = {};
+  let cur = null;
+  const SKIP_HDR = new Set(['Areas needing improvement', 'Grade', 'Subjects needing maximum focus',
+    'Co-curricular activities to strengthen', 'Major Issues', 'Grand Total', 'Total', 'Column 1']);
+  const toNum   = v => { const n = parseInt(v);   return isNaN(n) ? 0 : n; };
+  const toFloat = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    const c0 = row[0] || '';
+    if (r === 0) {
+      const m = c0.match(/^(.+?)\s+Areas needing improvement/i);
+      cur = normalizeSchool(m ? m[1].trim() : 'JPS');
+      schools[cur] = { areas: [], grades: [], subjects: [], activities: [], remarks: [] };
+      continue;
+    }
+    if (c0 && !SKIP_HDR.has(c0) && row.slice(1).every(x => !x)) {
+      cur = normalizeSchool(c0);
+      schools[cur] = { areas: [], grades: [], subjects: [], activities: [], remarks: [] };
+      continue;
+    }
+    if (SKIP_HDR.has(c0) || !cur) continue;
+    const s = schools[cur];
+    if (c0 && c0 !== 'Total') { const n = toNum(row[1]); if (n > 0) s.areas.push({ name: c0, n }); }
+    const c4 = row[4] || '';
+    if (/^Grade \d+$/.test(c4))
+      s.grades.push({ grade: c4, academicStd: toFloat(row[5]), teachingQuality: toFloat(row[6]), learningGaps: toFloat(row[7]) });
+    const c9 = row[9] || '';
+    if (c9 && !['', 'Total', 'Grand Total', 'Subjects needing maximum focus'].includes(c9)) { const n = toNum(row[10]); if (n > 0) s.subjects.push({ name: c9, n }); }
+    const c13 = row[13] || '';
+    if (c13 && !['', 'Total', 'Grand Total', 'Co-curricular activities to strengthen'].includes(c13)) { const n = toNum(row[14]); if (n > 0) s.activities.push({ name: c13, n }); }
+    const c17 = row[17] || '';
+    if (c17 && !['', 'Total', 'Grand Total', 'Major Issues'].includes(c17)) { const n = toNum(row[18]); if (n > 0) s.remarks.push({ name: c17, n }); }
+  }
+  return schools;
+}
+
+// G6-G8 blocks are not labeled — use positional order matching the sheet
+const G6G8_ORDER = ['JPS', 'Tatva', 'Siddhanta', 'Arkere', 'Marathalli', 'HSR', 'Oragadam', 'Dindigul', 'Mahadevpura'];
+
+function parseG6G8(rows) {
+  const schools = {};
+  let blockIdx = -1;
+  let cur = null;
+  const initBlock = idx => {
+    const name = G6G8_ORDER[idx] || `School${idx + 1}`;
+    schools[name] = {
+      teacherKnowledge: [1,2,3,4,5].map(r => ({ r, n: 0 })),
+      doubtSolving:     [1,2,3,4,5].map(r => ({ r, n: 0 })),
+      academicRigor:    [1,2,3,4,5].map(r => ({ r, n: 0 })),
+      majorIssues: [], areasOfImprovement: [],
+    };
+    return name;
+  };
+  const push = (arr, name, n) => {
+    const ex = arr.find(x => x.name === name);
+    if (ex) ex.n += n; else arr.push({ name, n });
+  };
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    const c0 = row[0] || '', c12 = row[12] || '';
+    if (r === 0) { blockIdx = 0; cur = initBlock(0); continue; }
+    // Separator between school blocks
+    if (!c0 && c12 === 'Major Issues') { blockIdx++; cur = initBlock(blockIdx); continue; }
+    if (!cur) continue;
+    const s = schools[cur];
+    const rating = parseInt(c0);
+    if (rating >= 1 && rating <= 5) {
+      const tkN = parseInt(row[1]), dsN = parseInt(row[5]), arN = parseInt(row[9]);
+      const tk = s.teacherKnowledge.find(x => x.r === rating);
+      const ds = s.doubtSolving.find(x => x.r === rating);
+      const ar = s.academicRigor.find(x => x.r === rating);
+      if (tk && !isNaN(tkN)) tk.n = tkN;
+      if (ds && !isNaN(dsN)) ds.n = dsN;
+      if (ar && !isNaN(arN)) ar.n = arN;
+    }
+    if (c12 && !['Grand Total', 'Major Issues'].includes(c12) && row[13]) {
+      const n = parseInt(row[13]); if (!isNaN(n) && n > 0) push(s.majorIssues, c12, n);
+    }
+    const c16 = row[16] || '';
+    if (c16 && !['Grand Total', 'Areas of Improvement'].includes(c16) && row[17]) {
+      const n = parseInt(row[17]); if (!isNaN(n) && n > 0) push(s.areasOfImprovement, c16, n);
+    }
+  }
+  return schools;
+}
+
+function parseG9G10(rows) {
+  const schools = {};
+  let cur = null;
+  const toFloat = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+  const toNum   = v => { const n = parseInt(v);   return isNaN(n) ? 0 : n; };
+  const push = (arr, name, n) => {
+    const ex = arr.find(x => x.name === name);
+    if (ex) ex.n += n; else arr.push({ name, n });
+  };
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    const c0 = row[0] || '';
+    if (r === 0) {
+      const m = c0.match(/^(.+?)\s+Grade of your child/i);
+      cur = normalizeSchool(m ? m[1].trim() : 'Tatva');
+      schools[cur] = { grades: [], majorIssues: [], academicPriorities: [] };
+      continue;
+    }
+    if (c0 === 'Grade of your child') continue; // sub-header
+    if (c0 && !/^(Grade|Grand Total)/i.test(c0) && row.slice(1).every(x => !x)) {
+      cur = normalizeSchool(c0);
+      schools[cur] = { grades: [], majorIssues: [], academicPriorities: [] };
+      continue;
+    }
+    if (!cur) continue;
+    const s = schools[cur];
+    if (/^Grade \d+/.test(c0))
+      s.grades.push({ grade: c0, boardPrep: toFloat(row[1]), teachingQuality: toFloat(row[2]), timeManagement: toFloat(row[3]) });
+    const c5 = row[5] || '';
+    if (c5 && !['Grand Total', 'Major Issues'].includes(c5) && row[6]) {
+      const n = toNum(row[6]); if (n > 0) push(s.majorIssues, c5, n);
+    }
+    const c9 = row[9] || '';
+    if (c9 && !['Grand Total', 'Key academic priorities for your child', 'Total Count'].includes(c9) && row[10]) {
+      const n = toNum(row[10]); if (n > 0) push(s.academicPriorities, c9, n);
+    }
+  }
+  return schools;
+}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function scoreColor(v) {
@@ -339,16 +530,76 @@ function G9G10Tab({ d }) {
 
 // ── main component ────────────────────────────────────────────────────────────
 export default function SurveyFeedback() {
-  const [school, setSchool] = useState(SCHOOLS[0]);
-  const [tab, setTab]       = useState('Pre-Primary');
+  const [surveyData, setSurveyData] = useState(null);
+  const [schools, setSchools]       = useState([]);
+  const [school, setSchool]         = useState('');
+  const [tab, setTab]               = useState('Pre-Primary');
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState('');
 
-  const d = SURVEY_DATA[school];
+  const load = () => {
+    setLoading(true); setError('');
+    Promise.all([
+      fetch(sheetUrl('Pre-Primary')).then(r => r.text()),
+      fetch(sheetUrl('G1-G5')).then(r => r.text()),
+      fetch(sheetUrl('G6-G8')).then(r => r.text()),
+      fetch(sheetUrl('G9-G10')).then(r => r.text()),
+    ])
+      .then(([pp, g15, g68, g910]) => {
+        const prePrimary = parsePrePrimary(parseCSV(pp));
+        const g1g5Data   = parseG1G5(parseCSV(g15));
+        const g6g8Data   = parseG6G8(parseCSV(g68));
+        const g9g10Data  = parseG9G10(parseCSV(g910));
+
+        // Build unified per-school data map
+        const allSchools = Array.from(new Set([
+          ...Object.keys(prePrimary),
+          ...Object.keys(g1g5Data),
+          ...Object.keys(g6g8Data),
+          ...Object.keys(g9g10Data),
+        ])).sort();
+
+        const data = {};
+        allSchools.forEach(s => {
+          data[s] = {
+            prePrimary: prePrimary[s] || null,
+            g1g5:  g1g5Data[s]  || null,
+            g6g8:  g6g8Data[s]  || null,
+            g9g10: g9g10Data[s] || null,
+          };
+        });
+
+        setSurveyData(data);
+        setSchools(allSchools);
+        setSchool(prev => prev && allSchools.includes(prev) ? prev : allSchools[0] || '');
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []); // eslint-disable-line
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-40">
+      <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" />
+    </div>
+  );
+  if (error) return (
+    <div className="bg-red-50 p-4 rounded-xl text-red-700 text-sm">
+      Failed to load survey data: {error}
+      <button onClick={load} className="ml-3 underline">Retry</button>
+    </div>
+  );
+  if (!surveyData || !school) return null;
+
+  const d = surveyData[school] || {};
   const tabs = [
-    ...(d?.prePrimary ? ['Pre-Primary'] : []),
-    'G1-G5', 'G6-G8',
-    ...(d?.g9g10 ? ['G9-G10'] : []),
+    ...(d.prePrimary ? ['Pre-Primary'] : []),
+    ...(d.g1g5  ? ['G1-G5']  : []),
+    ...(d.g6g8  ? ['G6-G8']  : []),
+    ...(d.g9g10 ? ['G9-G10'] : []),
   ];
-  const activeTab = tabs.includes(tab) ? tab : tabs[0];
+  const activeTab = tabs.includes(tab) ? tab : (tabs[0] || '');
 
   return (
     <div className="space-y-5">
@@ -360,7 +611,6 @@ export default function SurveyFeedback() {
           </h2>
           <p className="text-sm text-gray-500 mt-0.5">Parent satisfaction and feedback analysis by grade band</p>
         </div>
-        {/* Dropdown */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-600 shrink-0">School:</label>
           <select
@@ -368,14 +618,17 @@ export default function SurveyFeedback() {
             onChange={e => { setSchool(e.target.value); setTab('Pre-Primary'); }}
             className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300 min-w-[160px]"
           >
-            {SCHOOLS.map(s => <option key={s} value={s}>{s}</option>)}
+            {schools.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          <button onClick={load} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+            <RefreshCw size={13} />
+          </button>
         </div>
       </div>
 
-      {/* School button pills (still visible for quick switching) */}
+      {/* School button pills */}
       <div className="flex flex-wrap gap-2">
-        {SCHOOLS.map(s => (
+        {schools.map(s => (
           <button key={s}
             onClick={() => { setSchool(s); setTab('Pre-Primary'); }}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -398,10 +651,10 @@ export default function SurveyFeedback() {
           ))}
         </div>
         <div className="p-5">
-          {activeTab === 'Pre-Primary' && <PrePrimaryTab d={d} />}
-          {activeTab === 'G1-G5'      && <G1G5Tab d={d} />}
-          {activeTab === 'G6-G8'      && <G6G8Tab d={d} />}
-          {activeTab === 'G9-G10'     && d.g9g10 && <G9G10Tab d={d} />}
+          {activeTab === 'Pre-Primary' && d.prePrimary && <PrePrimaryTab d={d} />}
+          {activeTab === 'G1-G5'      && d.g1g5       && <G1G5Tab d={d} />}
+          {activeTab === 'G6-G8'      && d.g6g8       && <G6G8Tab d={d} />}
+          {activeTab === 'G9-G10'     && d.g9g10      && <G9G10Tab d={d} />}
         </div>
       </div>
     </div>
