@@ -184,12 +184,19 @@ function SchoolRow({ idx, school, onUpdate, onNavigate }) {
         />
       </td>
 
-      {/* SPOC Clicker — Name only (unchanged) */}
+      {/* SPOC Clicker — Name, ERP, Mobile */}
       <td className="px-4 py-2.5">
-        <InlineText
-          value={school.spoc_clicker}
+        <MultiFieldCell
+          label="SPOC Clicker"
+          accent="border-cyan-400"
+          summary={school.spoc_clicker}
           placeholder="Add SPOC…"
-          onSave={val => onUpdate({ spoc_clicker: val })}
+          fields={[
+            { key: 'spoc_clicker',        label: 'Name',            value: school.spoc_clicker        || '', type: 'text' },
+            { key: 'spoc_clicker_erp',    label: 'ERP',             value: school.spoc_clicker_erp    || '', type: 'text' },
+            { key: 'spoc_clicker_mobile', label: 'Official Mobile', value: school.spoc_clicker_mobile || '', type: 'tel' },
+          ]}
+          onSave={onUpdate}
         />
       </td>
 
@@ -299,52 +306,6 @@ function MultiFieldCell({ label, accent, summary, placeholder, fields, onSave })
   );
 }
 
-// ── InlineText — single field inline edit ─────────────────────────────────────
-function InlineText({ value, placeholder, onSave }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value || '');
-  const inputRef = useRef(null);
-
-  useEffect(() => { if (!editing) setDraft(value || ''); }, [value, editing]);
-
-  const startEdit = (e) => {
-    e.stopPropagation();
-    setDraft(value || '');
-    setEditing(true);
-    setTimeout(() => inputRef.current?.focus(), 0);
-  };
-
-  const commit = () => {
-    setEditing(false);
-    const trimmed = draft.trim();
-    if (trimmed !== (value || '').trim()) onSave(trimmed);
-  };
-
-  if (editing) {
-    return (
-      <input ref={inputRef} value={draft}
-        onChange={e => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={e => {
-          if (e.key === 'Enter') { e.preventDefault(); commit(); }
-          if (e.key === 'Escape') { setEditing(false); setDraft(value || ''); }
-        }}
-        onClick={e => e.stopPropagation()}
-        className="w-full text-sm border border-indigo-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
-        autoFocus
-      />
-    );
-  }
-
-  return (
-    <span onClick={startEdit}
-      className={`block w-full cursor-text rounded px-2 py-1 border border-transparent hover:border-gray-200 hover:bg-white transition-all select-none text-xs ${
-        value ? 'text-gray-700' : 'text-gray-300 italic'
-      }`}>
-      {value || placeholder}
-    </span>
-  );
-}
 
 function StatCard({ icon: Icon, color, value, label }) {
   return (

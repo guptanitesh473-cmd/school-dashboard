@@ -57,7 +57,7 @@ router.put('/:id', (req, res) => {
     zbh_name, zbh_mobile,
     academic_start_month, school_type,
     spoc_teacher_training, spoc_training_erp, spoc_training_mobile,
-    spoc_clicker,
+    spoc_clicker, spoc_clicker_erp, spoc_clicker_mobile,
     cod1, cod1_erp, cod1_mobile,
     cod2, cod2_erp, cod2_mobile,
   } = req.body;
@@ -71,7 +71,7 @@ router.put('/:id', (req, res) => {
        zbh_name=?, zbh_mobile=?,
        academic_start_month=?, school_type=?,
        spoc_teacher_training=?, spoc_training_erp=?, spoc_training_mobile=?,
-       spoc_clicker=?,
+       spoc_clicker=?, spoc_clicker_erp=?, spoc_clicker_mobile=?,
        cod1=?, cod1_erp=?, cod1_mobile=?,
        cod2=?, cod2_erp=?, cod2_mobile=?
        WHERE id=?`
@@ -95,6 +95,8 @@ router.put('/:id', (req, res) => {
       spoc_training_erp ?? school.spoc_training_erp,
       spoc_training_mobile ?? school.spoc_training_mobile,
       spoc_clicker ?? school.spoc_clicker,
+      spoc_clicker_erp ?? school.spoc_clicker_erp,
+      spoc_clicker_mobile ?? school.spoc_clicker_mobile,
       cod1 ?? school.cod1,
       cod1_erp ?? school.cod1_erp,
       cod1_mobile ?? school.cod1_mobile,

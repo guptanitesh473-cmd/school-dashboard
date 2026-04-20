@@ -234,6 +234,8 @@ const migrations = [
   `ALTER TABLE schools ADD COLUMN cod1_mobile TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN cod2_erp TEXT DEFAULT ''`,
   `ALTER TABLE schools ADD COLUMN cod2_mobile TEXT DEFAULT ''`,
+  `ALTER TABLE schools ADD COLUMN spoc_clicker_erp TEXT DEFAULT ''`,
+  `ALTER TABLE schools ADD COLUMN spoc_clicker_mobile TEXT DEFAULT ''`,
   `ALTER TABLE monthly_meetings ADD COLUMN discussion_points TEXT DEFAULT ''`,
   `ALTER TABLE monthly_meetings ADD COLUMN tagged_department TEXT DEFAULT ''`,
   `ALTER TABLE monthly_meetings ADD COLUMN responsible_person TEXT DEFAULT ''`,
