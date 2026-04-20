@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Building2, Construction, School, MapPin } from 'lucide-react';
+import { Building2, Construction, School, MapPin, ChevronDown, X } from 'lucide-react';
 
 export default function Home() {
   const [schools, setSchools] = useState([]);
@@ -12,15 +12,13 @@ export default function Home() {
     api.getSchools().then(setSchools).finally(() => setLoading(false));
   }, []);
 
-  const handleUpdate = useCallback(async (id, field, value) => {
-    // Optimistic update first
-    setSchools(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+  const handleUpdate = useCallback(async (id, fields) => {
+    setSchools(prev => prev.map(s => s.id === id ? { ...s, ...fields } : s));
     try {
-      const updated = await api.updateSchool(id, { [field]: value });
+      const updated = await api.updateSchool(id, fields);
       setSchools(prev => prev.map(s => s.id === id ? { ...s, ...updated } : s));
     } catch (err) {
       console.error('Save failed:', err);
-      // Revert is handled by re-fetching
       api.getSchools().then(setSchools);
     }
   }, []);
@@ -40,9 +38,9 @@ export default function Home() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard icon={Building2} color="bg-indigo-600" value={total} label="Total Schools" />
-        <StatCard icon={Construction} color="bg-amber-500" value={newBuilding} label="New Building Schools" />
-        <StatCard icon={School} color="bg-green-600" value={existing} label="Existing (Taken Over)" />
+        <StatCard icon={Building2}    color="bg-indigo-600" value={total}       label="Total Schools" />
+        <StatCard icon={Construction} color="bg-amber-500"  value={newBuilding} label="New Building Schools" />
+        <StatCard icon={School}       color="bg-green-600"  value={existing}    label="Existing (Taken Over)" />
       </div>
 
       {/* Schools table */}
@@ -50,7 +48,7 @@ export default function Home() {
         <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
           <MapPin size={16} className="text-indigo-600" />
           <h3 className="font-semibold text-gray-800">All Schools</h3>
-          <span className="ml-1 text-xs text-gray-400">— click Principal or ZBH to edit</span>
+          <span className="ml-1 text-xs text-gray-400">— click any cell to edit</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -61,22 +59,22 @@ export default function Home() {
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">City</th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[160px]">
-                  Principal Name <span className="text-indigo-400 font-normal">✎</span>
+                  Principal <span className="text-indigo-400 font-normal">✎</span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[130px]">
-                  ZBH Name <span className="text-indigo-400 font-normal">✎</span>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[140px]">
+                  ZBH <span className="text-indigo-400 font-normal">✎</span>
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Academic Start</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[150px]">
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[160px]">
                   SPOC Teacher Training <span className="text-indigo-400 font-normal">✎</span>
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[140px]">
                   SPOC Clicker <span className="text-indigo-400 font-normal">✎</span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[120px]">
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[130px]">
                   CoD-1 <span className="text-indigo-400 font-normal">✎</span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[120px]">
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide min-w-[130px]">
                   CoD-2 <span className="text-indigo-400 font-normal">✎</span>
                 </th>
               </tr>
@@ -87,7 +85,7 @@ export default function Home() {
                   key={school.id}
                   idx={idx}
                   school={school}
-                  onUpdate={handleUpdate}
+                  onUpdate={fields => handleUpdate(school.id, fields)}
                   onNavigate={() => navigate(`/schools/${school.id}`)}
                 />
               ))}
@@ -99,140 +97,220 @@ export default function Home() {
   );
 }
 
+// ── SchoolRow ─────────────────────────────────────────────────────────────────
 function SchoolRow({ idx, school, onUpdate, onNavigate }) {
   const [type, setType] = useState(school.school_type || 'existing');
   const [month, setMonth] = useState(school.academic_start_month || 'June');
 
-  // Sync if parent updates (e.g. after server confirms)
   useEffect(() => { setType(school.school_type || 'existing'); }, [school.school_type]);
   useEffect(() => { setMonth(school.academic_start_month || 'June'); }, [school.academic_start_month]);
-
-  const handleType = (e) => {
-    const val = e.target.value;
-    setType(val);
-    onUpdate(school.id, 'school_type', val);
-  };
-
-  const handleMonth = (e) => {
-    const val = e.target.value;
-    setMonth(val);
-    onUpdate(school.id, 'academic_start_month', val);
-  };
 
   return (
     <tr className="hover:bg-gray-50/60 transition-colors">
       <td className="px-4 py-2.5 text-gray-400 text-xs">{idx + 1}</td>
-      <td
-        className="px-4 py-2.5 font-medium text-gray-800 cursor-pointer hover:text-indigo-600 transition-colors"
-        onClick={onNavigate}
-      >
+      <td className="px-4 py-2.5 font-medium text-gray-800 cursor-pointer hover:text-indigo-600 transition-colors"
+        onClick={onNavigate}>
         {school.name}
       </td>
       <td className="px-4 py-2.5 text-gray-600">{school.city || school.location || '—'}</td>
 
       {/* Type */}
       <td className="px-4 py-2.5">
-        <select
-          value={type}
-          onChange={handleType}
+        <select value={type} onChange={e => { setType(e.target.value); onUpdate({ school_type: e.target.value }); }}
           className={`text-xs border rounded-full px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer font-medium ${
-            type === 'new_building'
-              ? 'border-amber-200 bg-amber-50 text-amber-700'
-              : 'border-green-200 bg-green-50 text-green-700'
-          }`}
-        >
+            type === 'new_building' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-green-200 bg-green-50 text-green-700'
+          }`}>
           <option value="existing">Existing</option>
           <option value="new_building">New Building</option>
         </select>
       </td>
 
-      {/* Principal */}
+      {/* Principal — Name, ERP, Email, Mobile */}
       <td className="px-4 py-2.5">
-        <InlineText
-          value={school.principal_name}
+        <MultiFieldCell
+          label="Principal"
+          accent="border-indigo-400"
+          summary={school.principal_name}
           placeholder="Add principal…"
-          onSave={val => onUpdate(school.id, 'principal_name', val)}
+          fields={[
+            { key: 'principal_name',   label: 'Name',            value: school.principal_name   || '', type: 'text' },
+            { key: 'principal_erp',    label: 'ERP',             value: school.principal_erp    || '', type: 'text' },
+            { key: 'principal_email',  label: 'Email',           value: school.principal_email  || '', type: 'email' },
+            { key: 'principal_mobile', label: 'Official Mobile', value: school.principal_mobile || '', type: 'tel' },
+          ]}
+          onSave={onUpdate}
         />
       </td>
 
-      {/* ZBH */}
+      {/* ZBH — Name, Mobile */}
       <td className="px-4 py-2.5">
-        <InlineText
-          value={school.zbh_name}
+        <MultiFieldCell
+          label="ZBH"
+          accent="border-violet-400"
+          summary={school.zbh_name}
           placeholder="Add ZBH…"
-          onSave={val => onUpdate(school.id, 'zbh_name', val)}
+          fields={[
+            { key: 'zbh_name',   label: 'Name',            value: school.zbh_name   || '', type: 'text' },
+            { key: 'zbh_mobile', label: 'Official Mobile', value: school.zbh_mobile || '', type: 'tel' },
+          ]}
+          onSave={onUpdate}
         />
       </td>
 
       {/* Academic Start */}
       <td className="px-4 py-2.5">
-        <select
-          value={month}
-          onChange={handleMonth}
+        <select value={month} onChange={e => { setMonth(e.target.value); onUpdate({ academic_start_month: e.target.value }); }}
           className={`text-xs border rounded-full px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer font-medium ${
-            month === 'April'
-              ? 'border-blue-200 bg-blue-50 text-blue-700'
-              : 'border-gray-200 bg-gray-50 text-gray-600'
-          }`}
-        >
+            month === 'April' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-gray-200 bg-gray-50 text-gray-600'
+          }`}>
           <option value="April">April</option>
           <option value="June">June</option>
         </select>
       </td>
 
-      {/* SPOC Teacher Training */}
+      {/* SPOC Teacher Training — Name, ERP, Mobile */}
       <td className="px-4 py-2.5">
-        <InlineText
-          value={school.spoc_teacher_training}
+        <MultiFieldCell
+          label="SPOC Training"
+          accent="border-teal-400"
+          summary={school.spoc_teacher_training}
           placeholder="Add SPOC…"
-          onSave={val => onUpdate(school.id, 'spoc_teacher_training', val)}
+          fields={[
+            { key: 'spoc_teacher_training', label: 'Name',            value: school.spoc_teacher_training || '', type: 'text' },
+            { key: 'spoc_training_erp',     label: 'ERP',             value: school.spoc_training_erp     || '', type: 'text' },
+            { key: 'spoc_training_mobile',  label: 'Official Mobile', value: school.spoc_training_mobile  || '', type: 'tel' },
+          ]}
+          onSave={onUpdate}
         />
       </td>
 
-      {/* SPOC Clicker */}
+      {/* SPOC Clicker — Name only (unchanged) */}
       <td className="px-4 py-2.5">
         <InlineText
           value={school.spoc_clicker}
           placeholder="Add SPOC…"
-          onSave={val => onUpdate(school.id, 'spoc_clicker', val)}
+          onSave={val => onUpdate({ spoc_clicker: val })}
         />
       </td>
 
-      {/* CoD-1 */}
+      {/* CoD-1 — Name, ERP, Mobile */}
       <td className="px-4 py-2.5">
-        <InlineText
-          value={school.cod1}
+        <MultiFieldCell
+          label="CoD-1"
+          accent="border-rose-400"
+          summary={school.cod1}
           placeholder="Add CoD-1…"
-          onSave={val => onUpdate(school.id, 'cod1', val)}
+          fields={[
+            { key: 'cod1',        label: 'Name',            value: school.cod1        || '', type: 'text' },
+            { key: 'cod1_erp',    label: 'ERP',             value: school.cod1_erp    || '', type: 'text' },
+            { key: 'cod1_mobile', label: 'Official Mobile', value: school.cod1_mobile || '', type: 'tel' },
+          ]}
+          onSave={onUpdate}
         />
       </td>
 
-      {/* CoD-2 */}
+      {/* CoD-2 — Name, ERP, Mobile */}
       <td className="px-4 py-2.5">
-        <InlineText
-          value={school.cod2}
+        <MultiFieldCell
+          label="CoD-2"
+          accent="border-orange-400"
+          summary={school.cod2}
           placeholder="Add CoD-2…"
-          onSave={val => onUpdate(school.id, 'cod2', val)}
+          fields={[
+            { key: 'cod2',        label: 'Name',            value: school.cod2        || '', type: 'text' },
+            { key: 'cod2_erp',    label: 'ERP',             value: school.cod2_erp    || '', type: 'text' },
+            { key: 'cod2_mobile', label: 'Official Mobile', value: school.cod2_mobile || '', type: 'tel' },
+          ]}
+          onSave={onUpdate}
         />
       </td>
     </tr>
   );
 }
 
+// ── MultiFieldCell — click to open popover with multiple sub-fields ────────────
+function MultiFieldCell({ label, accent, summary, placeholder, fields, onSave }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState({});
+  const ref = useRef(null);
+
+  const openPopover = (e) => {
+    e.stopPropagation();
+    const init = {};
+    fields.forEach(f => { init[f.key] = f.value; });
+    setDraft(init);
+    setOpen(true);
+  };
+
+  const save = () => {
+    onSave(draft);
+    setOpen(false);
+  };
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      {/* Trigger */}
+      <button onClick={openPopover}
+        className={`flex items-center gap-1 w-full text-left rounded px-2 py-1 border border-transparent hover:border-gray-200 hover:bg-white transition-all ${
+          summary ? 'text-gray-700' : 'text-gray-300 italic'
+        }`}>
+        <span className="flex-1 truncate text-xs">{summary || placeholder}</span>
+        <ChevronDown size={11} className="shrink-0 text-gray-400" />
+      </button>
+
+      {/* Popover */}
+      {open && (
+        <div className="absolute z-50 left-0 top-full mt-1 w-64 bg-white rounded-xl border border-gray-200 shadow-lg p-3 space-y-2"
+          onClick={e => e.stopPropagation()}>
+          <div className={`flex items-center justify-between pb-2 border-b-2 ${accent}`}>
+            <span className="text-xs font-semibold text-gray-700">{label}</span>
+            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <X size={13} />
+            </button>
+          </div>
+          {fields.map(f => (
+            <div key={f.key}>
+              <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">{f.label}</label>
+              <input
+                type={f.type}
+                value={draft[f.key] ?? ''}
+                onChange={e => setDraft(d => ({ ...d, [f.key]: e.target.value }))}
+                onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setOpen(false); }}
+                placeholder={`Enter ${f.label.toLowerCase()}…`}
+                className="mt-0.5 w-full text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+            </div>
+          ))}
+          <button onClick={save}
+            className="w-full mt-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors">
+            Save
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── InlineText — single field inline edit ─────────────────────────────────────
 function InlineText({ value, placeholder, onSave }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value || '');
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    if (!editing) setDraft(value || '');
-  }, [value, editing]);
+  useEffect(() => { if (!editing) setDraft(value || ''); }, [value, editing]);
 
   const startEdit = (e) => {
     e.stopPropagation();
     setDraft(value || '');
     setEditing(true);
-    // Focus on next tick after re-render
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
@@ -244,9 +322,7 @@ function InlineText({ value, placeholder, onSave }) {
 
   if (editing) {
     return (
-      <input
-        ref={inputRef}
-        value={draft}
+      <input ref={inputRef} value={draft}
         onChange={e => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={e => {
@@ -261,12 +337,10 @@ function InlineText({ value, placeholder, onSave }) {
   }
 
   return (
-    <span
-      onClick={startEdit}
-      className={`block w-full cursor-text rounded px-2 py-1 border border-transparent hover:border-gray-200 hover:bg-white transition-all select-none ${
+    <span onClick={startEdit}
+      className={`block w-full cursor-text rounded px-2 py-1 border border-transparent hover:border-gray-200 hover:bg-white transition-all select-none text-xs ${
         value ? 'text-gray-700' : 'text-gray-300 italic'
-      }`}
-    >
+      }`}>
       {value || placeholder}
     </span>
   );

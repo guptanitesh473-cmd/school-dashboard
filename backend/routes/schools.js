@@ -51,15 +51,30 @@ router.post('/', (req, res) => {
 
 // PUT update school
 router.put('/:id', (req, res) => {
-  const { name, code, location, city, state, acquired_date, status, principal_name, zbh_name, academic_start_month, school_type, spoc_teacher_training, spoc_clicker, cod1, cod2 } = req.body;
+  const {
+    name, code, location, city, state, acquired_date, status,
+    principal_name, principal_erp, principal_email, principal_mobile,
+    zbh_name, zbh_mobile,
+    academic_start_month, school_type,
+    spoc_teacher_training, spoc_training_erp, spoc_training_mobile,
+    spoc_clicker,
+    cod1, cod1_erp, cod1_mobile,
+    cod2, cod2_erp, cod2_mobile,
+  } = req.body;
   const school = db.prepare('SELECT * FROM schools WHERE id = ?').get(req.params.id);
   if (!school) return res.status(404).json({ error: 'School not found' });
 
   try {
     db.prepare(
       `UPDATE schools SET name=?, code=?, location=?, city=?, state=?, acquired_date=?, status=?,
-       principal_name=?, zbh_name=?, academic_start_month=?, school_type=?,
-       spoc_teacher_training=?, spoc_clicker=?, cod1=?, cod2=? WHERE id=?`
+       principal_name=?, principal_erp=?, principal_email=?, principal_mobile=?,
+       zbh_name=?, zbh_mobile=?,
+       academic_start_month=?, school_type=?,
+       spoc_teacher_training=?, spoc_training_erp=?, spoc_training_mobile=?,
+       spoc_clicker=?,
+       cod1=?, cod1_erp=?, cod1_mobile=?,
+       cod2=?, cod2_erp=?, cod2_mobile=?
+       WHERE id=?`
     ).run(
       name ?? school.name,
       code ? code.toUpperCase() : school.code,
@@ -69,13 +84,23 @@ router.put('/:id', (req, res) => {
       acquired_date ?? school.acquired_date,
       status ?? school.status,
       principal_name ?? school.principal_name,
+      principal_erp ?? school.principal_erp,
+      principal_email ?? school.principal_email,
+      principal_mobile ?? school.principal_mobile,
       zbh_name ?? school.zbh_name,
+      zbh_mobile ?? school.zbh_mobile,
       academic_start_month ?? school.academic_start_month,
       school_type ?? school.school_type,
       spoc_teacher_training ?? school.spoc_teacher_training,
+      spoc_training_erp ?? school.spoc_training_erp,
+      spoc_training_mobile ?? school.spoc_training_mobile,
       spoc_clicker ?? school.spoc_clicker,
       cod1 ?? school.cod1,
+      cod1_erp ?? school.cod1_erp,
+      cod1_mobile ?? school.cod1_mobile,
       cod2 ?? school.cod2,
+      cod2_erp ?? school.cod2_erp,
+      cod2_mobile ?? school.cod2_mobile,
       req.params.id
     );
     res.json(db.prepare('SELECT * FROM schools WHERE id = ?').get(req.params.id));
