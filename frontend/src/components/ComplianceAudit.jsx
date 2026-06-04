@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { api } from '../services/api';
 
 const SECTIONS = [
   {n:1,title:'Class observation',goal:'Classroom infrastructure, inventory, session delivery and notebook corrections.',items:[
@@ -82,12 +83,17 @@ const statusColor = s => s==='open'?'#d85a30':s==='wip'?'#ba7517':s==='done'?'#3
 const INIT_ACTIONS = Array(3).fill(null).map(() => ({action:'',responsible:'',deadline:'',status:''}));
 
 export default function ComplianceAudit() {
+  const [schools,   setSchools]   = useState([]);
   const [meta, setMeta] = useState({
-    school:'', branch:'', auditor:'',
+    branch:'', audit_no:'1', auditor:'',
     date: new Date().toISOString().split('T')[0],
     academic_year:'', coordinator:'',
   });
   const [checked,   setChecked]   = useState({});
+
+  useEffect(() => {
+    api.getSchools().then(s => setSchools(s.filter(sc => sc.status === 'active')));
+  }, []);
   const [cells,     setCells]     = useState({});
   const [secNotes,  setSecNotes]  = useState({});
   const [openSecs,  setOpenSecs]  = useState({0:true});
@@ -127,19 +133,59 @@ export default function ComplianceAudit() {
             <div style={{fontSize:22,fontWeight:600,color:'#fff',letterSpacing:'-0.3px'}}>School audit & compliance dashboard</div>
             <div style={{fontSize:13,color:'rgba(255,255,255,0.55)',marginTop:4}}>Overall agenda: ensure 80% product implementation</div>
           </div>
-          <div style={{background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:10,padding:'10px 20px',textAlign:'center',flexShrink:0}}>
-            <div style={{fontSize:10,color:'rgba(255,255,255,0.45)',textTransform:'uppercase',letterSpacing:1}}>Target</div>
-            <div style={{fontSize:22,fontWeight:600,color:'#fff'}}>80%</div>
+          <div style={{display:'flex',flexDirection:'column',gap:8,flexShrink:0}}>
+            <div style={{background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:10,padding:'8px 18px',textAlign:'center'}}>
+              <div style={{fontSize:10,color:'rgba(255,255,255,0.45)',textTransform:'uppercase',letterSpacing:1}}>Target</div>
+              <div style={{fontSize:20,fontWeight:600,color:'#fff'}}>80%</div>
+            </div>
+            {meta.audit_no && (
+              <div style={{background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:10,padding:'6px 18px',textAlign:'center'}}>
+                <div style={{fontSize:10,color:'rgba(255,255,255,0.45)',textTransform:'uppercase',letterSpacing:1}}>Audit</div>
+                <div style={{fontSize:18,fontWeight:600,color:'#fff'}}>#{meta.audit_no}</div>
+              </div>
+            )}
           </div>
         </div>
         <div style={{display:'flex',gap:24,flexWrap:'wrap',marginTop:22,paddingTop:18,borderTop:'1px solid rgba(255,255,255,0.1)',position:'relative'}}>
+
+          {/* Branch dropdown */}
+          <div style={{display:'flex',flexDirection:'column',gap:3}}>
+            <span style={{fontSize:10,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:.7}}>Branch / School</span>
+            <select
+              className="ca-input"
+              value={meta.branch}
+              onChange={e => setMeta(p => ({...p, branch: e.target.value}))}
+              style={{background:'rgba(255,255,255,0.08)',border:'none',borderBottom:'1px solid rgba(255,255,255,0.3)',
+                color: meta.branch ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)',
+                fontSize:13,fontWeight:500,width:180,padding:'3px 0',colorScheme:'dark',cursor:'pointer'}}
+            >
+              <option value="">Select branch…</option>
+              {schools.map(s => <option key={s.id} value={s.name} style={{color:'#1e2d3d',background:'#fff'}}>{s.name}</option>)}
+            </select>
+          </div>
+
+          {/* Audit number dropdown */}
+          <div style={{display:'flex',flexDirection:'column',gap:3}}>
+            <span style={{fontSize:10,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:.7}}>Audit number</span>
+            <select
+              className="ca-input"
+              value={meta.audit_no}
+              onChange={e => setMeta(p => ({...p, audit_no: e.target.value}))}
+              style={{background:'rgba(255,255,255,0.08)',border:'none',borderBottom:'1px solid rgba(255,255,255,0.3)',
+                color:'rgba(255,255,255,0.9)',fontSize:13,fontWeight:500,width:120,padding:'3px 0',colorScheme:'dark',cursor:'pointer'}}
+            >
+              {Array.from({length:12},(_,i)=>i+1).map(n => (
+                <option key={n} value={String(n)} style={{color:'#1e2d3d',background:'#fff'}}>Audit {n}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Text fields */}
           {[
-            {l:'School',n:'school',ph:'School name'},
-            {l:'Branch / location',n:'branch',ph:'Branch'},
-            {l:'Auditor',n:'auditor',ph:'Auditor name'},
-            {l:'Audit date',n:'date',ph:'',type:'date'},
-            {l:'Academic year',n:'academic_year',ph:'e.g. 2024-25'},
-            {l:'Coordinator present',n:'coordinator',ph:'Yes / No'},
+            {l:'Auditor',           n:'auditor',       ph:'Auditor name'},
+            {l:'Audit date',        n:'date',          ph:'', type:'date'},
+            {l:'Academic year',     n:'academic_year', ph:'e.g. 2024-25'},
+            {l:'Coordinator present',n:'coordinator',  ph:'Yes / No'},
           ].map(({l,n,ph,type}) => (
             <div key={n} style={{display:'flex',flexDirection:'column',gap:3}}>
               <span style={{fontSize:10,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:.7}}>{l}</span>
