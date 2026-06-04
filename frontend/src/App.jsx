@@ -21,6 +21,7 @@ import SurveyFeedback from './components/SurveyFeedback';
 import MAU from './components/MAU';
 import MonthlyMeeting from './components/MonthlyMeeting';
 import AuditReport from './components/AuditReport';
+import ComplianceAudit from './components/ComplianceAudit';
 import TemplateType from './components/TemplateType';
 import ReportView from './components/ReportView';
 import UserManagement from './components/UserManagement';
@@ -89,6 +90,11 @@ const NAV = [
     to: '/audit',
     label: 'Audit Report',
     icon: ShieldCheck,
+  },
+  {
+    to: '/compliance',
+    label: 'Compliances and Audit',
+    icon: ClipboardList,
   },
   {
     to: '/template-type',
@@ -302,6 +308,7 @@ export default function App() {
             <Route path="/mau" element={<MAU />} />
             <Route path="/monthly-meeting" element={<MonthlyMeeting />} />
             <Route path="/audit" element={<AuditReport />} />
+            <Route path="/compliance" element={<ComplianceAudit />} />
             <Route path="/template-type" element={<TemplateType />} />
             <Route path="/users" element={<UserManagement />} />
           </Routes>
@@ -350,6 +357,7 @@ function PageTitle() {
     '/mau': 'MAU Data',
     '/monthly-meeting': 'Monthly Meeting',
     '/audit': 'Audit Report',
+    '/compliance': 'Compliances and Audit',
     '/template-type': 'Template Type',
     '/users': 'User Management',
     '/schools': 'Schools',
