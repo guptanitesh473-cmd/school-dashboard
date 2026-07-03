@@ -93,16 +93,38 @@ const SENTIMENT_STYLE = {
   info:    { pill: 'bg-blue-100 text-blue-800',   bar: 'border-blue-400 text-blue-800' },
 };
 
+// Split cell text on URLs and render them as compact links instead of raw
+// wrapped strings — auditors sometimes paste a sheet link into a remark cell.
+const URL_RE = /(https?:\/\/[^\s]+)/g;
+function linkify(text) {
+  const parts = text.split(URL_RE);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) => (
+    /^https?:\/\//.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 underline font-medium">
+          🔗 Linked sheet
+        </a>
+      : part
+  ));
+}
+
 function ReportCell({ text }) {
   if (!text) return <span className="text-gray-300">—</span>;
   const sentiment = sentimentOf(text);
-  if (!sentiment) return <span className="whitespace-pre-wrap">{text}</span>;
+  if (!sentiment) return <span className="whitespace-pre-wrap">{linkify(text)}</span>;
   const st = SENTIMENT_STYLE[sentiment];
   if (text.length <= 34) {
     return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${st.pill}`}>{text}</span>;
   }
-  return <div className={`border-l-2 pl-2 whitespace-pre-wrap ${st.bar}`}>{text}</div>;
+  return <div className={`border-l-2 pl-2 whitespace-pre-wrap ${st.bar}`}>{linkify(text)}</div>;
 }
+
+// Columns whose header matches one of these are spreadsheet-merged group
+// labels (e.g. "Category" is only written on the first row of each step, and
+// left blank on the rows below it) — carry the last value down so the table
+// doesn't show ragged blanks for what is really one continuous group.
+const GROUP_FILL_KEYWORDS = ['category'];
 
 function GenericReportTable({ rows }) {
   const maxCols = Math.max(...rows.map(r => r.length));
@@ -111,17 +133,35 @@ function GenericReportTable({ rows }) {
   for (let c = 0; c < maxCols; c++) if (padded.some(r => r[c].trim())) keepCols.push(c);
   const trimmed = padded.map(r => keepCols.map(c => r[c]));
 
+  const classified = trimmed.map(row => ({ row, kind: classifyRow(row) }));
+  let groupCols = [];
+  let carry = {};
+  const displayRows = classified.map(({ row, kind }) => {
+    if (kind === 'header') {
+      groupCols = row.reduce((acc, c, ci) => GROUP_FILL_KEYWORDS.includes(c.trim().toLowerCase()) ? [...acc, ci] : acc, []);
+      carry = {};
+      return row;
+    }
+    if (kind === 'banner') { carry = {}; return row; }
+    const filledRow = row.slice();
+    groupCols.forEach(ci => {
+      if (filledRow[ci].trim()) carry[ci] = filledRow[ci];
+      else if (carry[ci]) filledRow[ci] = carry[ci];
+    });
+    return filledRow;
+  });
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+    <div className="overflow-x-auto rounded-xl border border-gray-300 shadow-sm">
       <table className="w-full text-sm border-collapse">
         <tbody>
-          {trimmed.map((row, ri) => {
-            const kind = classifyRow(row);
+          {classified.map(({ kind, row: originalRow }, ri) => {
+            const row = displayRows[ri];
             if (kind === 'banner') {
-              const text = row.find(c => c.trim()) || '';
+              const text = originalRow.find(c => c.trim()) || '';
               return (
                 <tr key={ri}>
-                  <td colSpan={row.length} className="bg-indigo-950 text-white font-semibold text-[13px] px-4 py-2.5 tracking-wide">
+                  <td colSpan={originalRow.length} className="bg-indigo-950 text-white font-semibold text-[13px] px-4 py-2.5 tracking-wide border border-indigo-900">
                     {text}
                   </td>
                 </tr>
@@ -129,9 +169,9 @@ function GenericReportTable({ rows }) {
             }
             if (kind === 'header') {
               return (
-                <tr key={ri} className="bg-gray-100 sticky top-0">
+                <tr key={ri} className="bg-gray-100">
                   {row.map((c, ci) => (
-                    <th key={ci} className="text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border-b-2 border-gray-300 whitespace-nowrap">
+                    <th key={ci} className="text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border border-gray-300 whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -139,9 +179,9 @@ function GenericReportTable({ rows }) {
               );
             }
             return (
-              <tr key={ri} className={`border-b border-gray-100 hover:bg-indigo-50/40 ${ri % 2 ? 'bg-gray-50/50' : ''}`}>
+              <tr key={ri} className={`hover:bg-indigo-50/40 ${ri % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
                 {row.map((c, ci) => (
-                  <td key={ci} className="px-3 py-2 align-top text-gray-700 text-[13px] max-w-xs">
+                  <td key={ci} className="px-3 py-2.5 align-top text-gray-700 text-[13px] max-w-xs border border-gray-200">
                     <ReportCell text={c} />
                   </td>
                 ))}
