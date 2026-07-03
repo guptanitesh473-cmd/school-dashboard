@@ -25,6 +25,19 @@ function parseCSV(text) {
   return rows.filter(r => r.some(Boolean));
 }
 
+// ── Google Sheet URL → spreadsheet ID ────────────────────────────────────
+function extractSheetId(url) {
+  const m = url && url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : null;
+}
+
+// Every branch workbook has a tab literally named "Master Scorecard" — fetch
+// it by name rather than by the gid a link happens to point to, since Column I
+// sometimes links to a different (raw/pointer) tab in the same workbook.
+function masterScorecardUrl(sheetId) {
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('Master Scorecard')}`;
+}
+
 // ── Sheet parser (skips title row + header row) ─────────────────────────
 function parseBranches(rows) {
   const data = [];
@@ -36,18 +49,10 @@ function parseBranches(rows) {
       students: +students || 0, days: days || '',
       rawSheet: rawSheet || '', reportSheet: reportSheet || '',
       remark: remark || '', timetable: timetable || '',
+      scorecardSheetId: extractSheetId(reportSheet) || extractSheetId(rawSheet),
     });
   }
   return data;
-}
-
-// ── Google Sheet URL → CSV export URL ────────────────────────────────────
-function sheetCsvUrl(editUrl) {
-  const idMatch = editUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if (!idMatch) return null;
-  const gidMatch = editUrl.match(/gid=(\d+)/);
-  const gid = gidMatch ? gidMatch[1] : '0';
-  return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/export?format=csv&gid=${gid}`;
 }
 
 const TAG_COLORS = { Old: 'bg-blue-100 text-blue-800', New: 'bg-amber-100 text-amber-800' };
@@ -158,25 +163,25 @@ const LEGEND = [
 ];
 
 function ReportTab({ branches }) {
-  const withReports = useMemo(() => branches.filter(b => b.reportSheet), [branches]);
+  const withReports = useMemo(() => branches.filter(b => b.scorecardSheetId), [branches]);
   const [selected, setSelected] = useState('');
   const [rows, setRows]     = useState(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr]       = useState('');
 
   const branch = branches.find(b => b.name === selected);
+  const sourceLink = branch?.reportSheet || branch?.rawSheet;
 
   useEffect(() => {
-    if (!branch?.reportSheet) { setRows(null); return; }
-    const url = sheetCsvUrl(branch.reportSheet);
-    if (!url) { setErr('Could not parse report sheet URL'); return; }
+    if (!branch?.scorecardSheetId) { setRows(null); return; }
+    const url = masterScorecardUrl(branch.scorecardSheetId);
     setLoading(true); setErr('');
     fetch(url)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
       .then(text => setRows(parseCSV(text)))
       .catch(e => setErr(e.message))
       .finally(() => setLoading(false));
-  }, [branch?.reportSheet]); // eslint-disable-line
+  }, [branch?.scorecardSheetId]); // eslint-disable-line
 
   return (
     <div className="space-y-4">
@@ -191,9 +196,9 @@ function ReportTab({ branches }) {
           <option value="">Choose a branch…</option>
           {withReports.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
         </select>
-        <span className="text-xs text-gray-400">{withReports.length} branches have a report available</span>
-        {branch?.reportSheet && (
-          <a href={branch.reportSheet} target="_blank" rel="noopener noreferrer"
+        <span className="text-xs text-gray-400">{withReports.length} branches have a Master Scorecard available</span>
+        {sourceLink && (
+          <a href={sourceLink} target="_blank" rel="noopener noreferrer"
             className="ml-auto flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800">
             Open in Google Sheets <ExternalLink size={12} />
           </a>
