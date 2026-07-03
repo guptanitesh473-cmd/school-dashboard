@@ -3,7 +3,7 @@ import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
   School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
-  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages,
+  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages, MapPin,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -22,6 +22,7 @@ import MAU from './components/MAU';
 import MonthlyMeeting from './components/MonthlyMeeting';
 import AuditReport from './components/AuditReport';
 import ComplianceAudit from './components/ComplianceAudit';
+import BangaloreZone from './components/BangaloreZone';
 import TemplateType from './components/TemplateType';
 import ReportView from './components/ReportView';
 import UserManagement from './components/UserManagement';
@@ -95,6 +96,11 @@ const NAV = [
     to: '/compliance',
     label: 'Compliances and Audit',
     icon: ClipboardList,
+  },
+  {
+    to: '/bangalore-zone',
+    label: 'Bangalore Zone',
+    icon: MapPin,
   },
   {
     to: '/template-type',
@@ -309,6 +315,7 @@ export default function App() {
             <Route path="/monthly-meeting" element={<MonthlyMeeting />} />
             <Route path="/audit" element={<AuditReport />} />
             <Route path="/compliance" element={<ComplianceAudit />} />
+            <Route path="/bangalore-zone" element={<BangaloreZone />} />
             <Route path="/template-type" element={<TemplateType />} />
             <Route path="/users" element={<UserManagement />} />
           </Routes>
@@ -358,6 +365,7 @@ function PageTitle() {
     '/monthly-meeting': 'Monthly Meeting',
     '/audit': 'Audit Report',
     '/compliance': 'Compliances and Audit',
+    '/bangalore-zone': 'Bangalore Zone',
     '/template-type': 'Template Type',
     '/users': 'User Management',
     '/schools': 'Schools',

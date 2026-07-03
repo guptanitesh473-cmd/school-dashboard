@@ -1,0 +1,426 @@
+import { useState, useEffect, useMemo } from 'react';
+import { RefreshCw, ExternalLink, FileSpreadsheet, FileBarChart } from 'lucide-react';
+
+// ── Sheet URL ─────────────────────────────────────────────────────────────
+const SHEET_ID = '1Zal-ay0pfrKpDhEDRMk3pFYIsRDU4reVUzDRboWV9Gs';
+const GID = '1772969052';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+
+// ── CSV parser ────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQ && text[i + 1] === '"') { field += '"'; i++; } else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      row.push(field.trim()); field = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQ) {
+      row.push(field.trim()); rows.push(row); row = []; field = '';
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+    } else { field += ch; }
+  }
+  if (field || row.length) { row.push(field.trim()); rows.push(row); }
+  return rows.filter(r => r.some(Boolean));
+}
+
+// ── Sheet parser (skips title row + header row) ─────────────────────────
+function parseBranches(rows) {
+  const data = [];
+  for (let r = 2; r < rows.length; r++) {
+    const [sno, name, tag, member, date, students, days, rawSheet, reportSheet, remark, timetable] = rows[r];
+    if (!name || name.startsWith('Total')) continue;
+    data.push({
+      sno, name, tag: tag || '', member: member || '', date: date || '',
+      students: +students || 0, days: days || '',
+      rawSheet: rawSheet || '', reportSheet: reportSheet || '',
+      remark: remark || '', timetable: timetable || '',
+    });
+  }
+  return data;
+}
+
+// ── Google Sheet URL → CSV export URL ────────────────────────────────────
+function sheetCsvUrl(editUrl) {
+  const idMatch = editUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!idMatch) return null;
+  const gidMatch = editUrl.match(/gid=(\d+)/);
+  const gid = gidMatch ? gidMatch[1] : '0';
+  return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/export?format=csv&gid=${gid}`;
+}
+
+const TAG_COLORS = { Old: 'bg-blue-100 text-blue-800', New: 'bg-amber-100 text-amber-800' };
+
+function timetableStatus(v) {
+  const s = (v || '').trim().toLowerCase();
+  if (s === 'done') return { label: 'Done', cls: 'bg-green-100 text-green-800' };
+  if (!s) return { label: 'Not scheduled', cls: 'bg-gray-100 text-gray-500' };
+  return { label: v, cls: 'bg-amber-100 text-amber-800' };
+}
+
+// ── Generic report table (handles varying per-school sheet layouts) ─────
+const HEADER_KEYWORDS = ['category', 'check point', 'key finding', 'status', 'grade', 'section',
+  'active', 'actual', 'difference', 'flag', 'observation', 'count / data', 'responsible team', '#'];
+
+function classifyRow(row) {
+  const nonEmpty = row.filter(c => c && c.trim());
+  if (nonEmpty.length <= 2) return 'banner';
+  const lower = row.map(c => c.trim().toLowerCase());
+  const isHeader = lower.some(c => HEADER_KEYWORDS.includes(c));
+  return isHeader ? 'header' : 'data';
+}
+
+function sentimentOf(text) {
+  if (/^✅/.test(text)) return 'good';
+  if (/^🔴/.test(text)) return 'bad';
+  if (/^⚠/.test(text)) return 'warn';
+  if (/^⏳/.test(text)) return 'pending';
+  if (/^ℹ/.test(text)) return 'info';
+  return null;
+}
+
+const SENTIMENT_STYLE = {
+  good:    { pill: 'bg-green-100 text-green-800', bar: 'border-green-400 text-green-800' },
+  warn:    { pill: 'bg-amber-100 text-amber-800', bar: 'border-amber-400 text-amber-800' },
+  bad:     { pill: 'bg-red-100 text-red-800',     bar: 'border-red-400 text-red-800' },
+  pending: { pill: 'bg-gray-100 text-gray-600',   bar: 'border-gray-300 text-gray-600' },
+  info:    { pill: 'bg-blue-100 text-blue-800',   bar: 'border-blue-400 text-blue-800' },
+};
+
+function ReportCell({ text }) {
+  if (!text) return <span className="text-gray-300">—</span>;
+  const sentiment = sentimentOf(text);
+  if (!sentiment) return <span className="whitespace-pre-wrap">{text}</span>;
+  const st = SENTIMENT_STYLE[sentiment];
+  if (text.length <= 34) {
+    return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${st.pill}`}>{text}</span>;
+  }
+  return <div className={`border-l-2 pl-2 whitespace-pre-wrap ${st.bar}`}>{text}</div>;
+}
+
+function GenericReportTable({ rows }) {
+  const maxCols = Math.max(...rows.map(r => r.length));
+  const padded = rows.map(r => Array.from({ length: maxCols }, (_, i) => r[i] || ''));
+  const keepCols = [];
+  for (let c = 0; c < maxCols; c++) if (padded.some(r => r[c].trim())) keepCols.push(c);
+  const trimmed = padded.map(r => keepCols.map(c => r[c]));
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+      <table className="w-full text-sm border-collapse">
+        <tbody>
+          {trimmed.map((row, ri) => {
+            const kind = classifyRow(row);
+            if (kind === 'banner') {
+              const text = row.find(c => c.trim()) || '';
+              return (
+                <tr key={ri}>
+                  <td colSpan={row.length} className="bg-indigo-950 text-white font-semibold text-[13px] px-4 py-2.5 tracking-wide">
+                    {text}
+                  </td>
+                </tr>
+              );
+            }
+            if (kind === 'header') {
+              return (
+                <tr key={ri} className="bg-gray-100 sticky top-0">
+                  {row.map((c, ci) => (
+                    <th key={ci} className="text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border-b-2 border-gray-300 whitespace-nowrap">
+                      {c}
+                    </th>
+                  ))}
+                </tr>
+              );
+            }
+            return (
+              <tr key={ri} className={`border-b border-gray-100 hover:bg-indigo-50/40 ${ri % 2 ? 'bg-gray-50/50' : ''}`}>
+                {row.map((c, ci) => (
+                  <td key={ci} className="px-3 py-2 align-top text-gray-700 text-[13px] max-w-xs">
+                    <ReportCell text={c} />
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const LEGEND = [
+  { e: '✅', l: 'Satisfactory',     cls: 'bg-green-100 text-green-800' },
+  { e: '⚠',  l: 'Needs Attention',  cls: 'bg-amber-100 text-amber-800' },
+  { e: '🔴', l: 'Critical',         cls: 'bg-red-100 text-red-800' },
+  { e: '⏳', l: 'Pending',          cls: 'bg-gray-100 text-gray-600' },
+  { e: 'ℹ',  l: 'Info',             cls: 'bg-blue-100 text-blue-800' },
+];
+
+function ReportTab({ branches }) {
+  const withReports = useMemo(() => branches.filter(b => b.reportSheet), [branches]);
+  const [selected, setSelected] = useState('');
+  const [rows, setRows]     = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr]       = useState('');
+
+  const branch = branches.find(b => b.name === selected);
+
+  useEffect(() => {
+    if (!branch?.reportSheet) { setRows(null); return; }
+    const url = sheetCsvUrl(branch.reportSheet);
+    if (!url) { setErr('Could not parse report sheet URL'); return; }
+    setLoading(true); setErr('');
+    fetch(url)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+      .then(text => setRows(parseCSV(text)))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false));
+  }, [branch?.reportSheet]); // eslint-disable-line
+
+  return (
+    <div className="space-y-4">
+      {/* School selector */}
+      <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap items-center gap-3">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select school</label>
+        <select
+          value={selected}
+          onChange={e => setSelected(e.target.value)}
+          className="px-3 py-2 text-sm border border-gray-300 rounded-lg min-w-[260px] bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+        >
+          <option value="">Choose a branch…</option>
+          {withReports.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
+        </select>
+        <span className="text-xs text-gray-400">{withReports.length} branches have a report available</span>
+        {branch?.reportSheet && (
+          <a href={branch.reportSheet} target="_blank" rel="noopener noreferrer"
+            className="ml-auto flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800">
+            Open in Google Sheets <ExternalLink size={12} />
+          </a>
+        )}
+      </div>
+
+      {!selected && (
+        <div className="bg-white border border-dashed border-gray-300 rounded-xl py-16 text-center text-gray-400 text-sm">
+          Select a branch above to view its audit report.
+        </div>
+      )}
+
+      {selected && branch && (
+        <>
+          {/* Summary banner */}
+          <div className="bg-gradient-to-r from-indigo-950 to-indigo-800 rounded-xl px-6 py-5 text-white">
+            <div className="flex flex-wrap items-center justify-between gap-5">
+              <div>
+                <div className="text-lg font-semibold">{branch.name}</div>
+                <div className="text-xs text-indigo-200 mt-1">School audit report</div>
+              </div>
+              <div className="flex flex-wrap gap-6">
+                {[
+                  { l: 'Tag', v: branch.tag || '—' },
+                  { l: 'Assigned', v: branch.member || '—' },
+                  { l: 'Audit Date', v: branch.date || '—' },
+                  { l: 'Students', v: branch.students || '—' },
+                  { l: 'Timetable', v: branch.timetable || 'Not scheduled' },
+                ].map(({ l, v }) => (
+                  <div key={l} className="text-center">
+                    <div className="text-[10px] uppercase tracking-wide text-indigo-300">{l}</div>
+                    <div className="text-sm font-semibold mt-0.5">{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="flex flex-wrap gap-2 text-xs">
+            {LEGEND.map(({ e, l, cls }) => (
+              <span key={l} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-medium ${cls}`}>{e} {l}</span>
+            ))}
+          </div>
+
+          {loading && (
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" />
+            </div>
+          )}
+          {err && (
+            <div className="bg-red-50 p-4 rounded-xl text-red-700 text-sm">Failed to load report: {err}</div>
+          )}
+          {rows && !loading && !err && <GenericReportTable rows={rows} />}
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function BangaloreZone() {
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
+  const [tagFilter, setTagFilter] = useState('all');
+  const [search, setSearch]     = useState('');
+  const [tab, setTab]           = useState('branches');
+
+  const load = () => {
+    setLoading(true); setError('');
+    fetch(SHEET_URL)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+      .then(text => setBranches(parseBranches(parseCSV(text))))
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []); // eslint-disable-line
+
+  const filtered = useMemo(() => {
+    return branches.filter(b => {
+      if (tagFilter !== 'all' && b.tag !== tagFilter) return false;
+      if (search && !b.name.toLowerCase().includes(search.toLowerCase()) &&
+          !b.member.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [branches, tagFilter, search]);
+
+  const stats = useMemo(() => {
+    const total = branches.length;
+    const oldCount = branches.filter(b => b.tag === 'Old').length;
+    const newCount = branches.filter(b => b.tag === 'New').length;
+    const students = branches.reduce((a, b) => a + b.students, 0);
+    const reportsReady = branches.filter(b => b.reportSheet).length;
+    const pendingReport = branches.filter(b => b.tag === 'Old' && !b.reportSheet).length;
+    return { total, oldCount, newCount, students, reportsReady, pendingReport };
+  }, [branches]);
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-40">
+      <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" />
+    </div>
+  );
+  if (error) return (
+    <div className="bg-red-50 p-4 rounded-xl text-red-700 text-sm">
+      Failed to load: {error}
+      <button onClick={load} className="ml-3 underline">Retry</button>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-gray-200">
+        {[['branches', 'All Branches'], ['report', 'Audit Report']].map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              tab === key ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'branches' && (
+        <>
+          {/* KPI row */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="bg-indigo-600 text-white rounded-xl px-4 py-3 flex flex-col items-center justify-center">
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-xs opacity-80 mt-0.5">Total Branches</div>
+            </div>
+            {[
+              { label: 'Existing (Old)', val: stats.oldCount, cls: 'text-blue-700' },
+              { label: 'New Branches', val: stats.newCount, cls: 'text-amber-700' },
+              { label: 'Total Students', val: stats.students.toLocaleString(), cls: 'text-gray-800' },
+              { label: 'Reports Ready', val: stats.reportsReady, cls: 'text-green-700' },
+              { label: 'Reports Pending', val: stats.pendingReport, cls: 'text-red-700' },
+            ].map(({ label, val, cls }) => (
+              <div key={label} className="bg-white border border-gray-200 rounded-xl px-3 py-3 flex flex-col items-center">
+                <div className={`text-xl font-bold ${cls}`}>{val}</div>
+                <div className="text-[10px] text-gray-400 text-center mt-0.5">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Filter bar */}
+          <div className="flex flex-wrap items-center gap-2">
+            {['all', 'Old', 'New'].map(t => (
+              <button key={t} onClick={() => setTagFilter(t)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                  tagFilter === t ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                }`}>
+                {t === 'all' ? 'All Branches' : t === 'Old' ? 'Existing' : 'New'}
+              </button>
+            ))}
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search branch or auditor..."
+              className="ml-1 px-3 py-1.5 text-xs border border-gray-200 rounded-full w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            />
+            <button onClick={load} className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+              <RefreshCw size={11} /> Refresh
+            </button>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 min-w-[200px]">Branch</th>
+                  <th className="text-left px-3 py-3 font-semibold text-gray-700">Tag</th>
+                  <th className="text-left px-3 py-3 font-semibold text-gray-700">Assigned Member</th>
+                  <th className="text-left px-3 py-3 font-semibold text-gray-700">Audit Date</th>
+                  <th className="text-right px-3 py-3 font-semibold text-gray-700">Students</th>
+                  <th className="text-left px-3 py-3 font-semibold text-gray-700">Timetable</th>
+                  <th className="text-left px-3 py-3 font-semibold text-gray-700">Links</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(b => {
+                  const ts = timetableStatus(b.timetable);
+                  return (
+                    <tr key={b.name} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-2.5 font-medium text-gray-800">{b.name}</td>
+                      <td className="px-3 py-2.5">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${TAG_COLORS[b.tag] || 'bg-gray-100 text-gray-600'}`}>
+                          {b.tag || '—'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-gray-600">{b.member || <span className="text-gray-300">—</span>}</td>
+                      <td className="px-3 py-2.5 text-gray-600 whitespace-nowrap">{b.date || <span className="text-gray-300">—</span>}</td>
+                      <td className="px-3 py-2.5 text-right text-gray-700">{b.students || <span className="text-gray-300">—</span>}</td>
+                      <td className="px-3 py-2.5">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${ts.cls}`}>{ts.label}</span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-3">
+                          {b.rawSheet ? (
+                            <a href={b.rawSheet} target="_blank" rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-xs text-gray-500 hover:text-indigo-600">
+                              <FileSpreadsheet size={13} /> Raw data
+                            </a>
+                          ) : <span className="text-xs text-gray-300">Raw data</span>}
+                          {b.reportSheet ? (
+                            <a href={b.reportSheet} target="_blank" rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800">
+                              <FileBarChart size={13} /> Report <ExternalLink size={11} />
+                            </a>
+                          ) : <span className="text-xs text-gray-300">Report pending</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">No branches match this filter.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {tab === 'report' && <ReportTab branches={branches} />}
+    </div>
+  );
+}
