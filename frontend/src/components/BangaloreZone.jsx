@@ -131,10 +131,22 @@ const GROUP_FILL_KEYWORDS = ['category'];
 // compact while long-form columns (Key Finding, Remarks) get real width so
 // text wraps into a few wide lines rather than many narrow ones.
 function widthClass(maxLen) {
-  if (maxLen <= 12) return 'whitespace-nowrap';
+  if (maxLen <= 12) return '';
   if (maxLen <= 30) return 'min-w-[170px] max-w-[260px]';
   if (maxLen <= 60) return 'min-w-[240px] max-w-[360px]';
   return 'min-w-[320px] max-w-[480px]';
+}
+
+// Some sheets merge the school title into the first header cell (e.g.
+// "OIS BANNERGHATTA — MASTER SCORECARD #"), which forces that column wide
+// just to fit one unbroken line. The title is already shown in the summary
+// banner above, so collapse it back to its real label (the trailing token).
+function cleanHeaderLabel(text) {
+  const trimmed = text.trim();
+  if (trimmed.length <= 20) return trimmed;
+  const parts = trimmed.split(/\s+/);
+  const last = parts[parts.length - 1];
+  return last.length <= 3 ? last : trimmed;
 }
 
 function GenericReportTable({ rows }) {
@@ -162,9 +174,11 @@ function GenericReportTable({ rows }) {
     return filledRow;
   });
 
+  const narrowCols = new Set();
   const colWidths = keepCols.map((_, ci) => {
     const maxLen = displayRows.reduce((m, row, ri) =>
       classified[ri].kind === 'data' ? Math.max(m, (row[ci] || '').length) : m, 0);
+    if (maxLen <= 12) narrowCols.add(ci);
     return widthClass(maxLen);
   });
 
@@ -188,8 +202,8 @@ function GenericReportTable({ rows }) {
               return (
                 <tr key={ri} className="bg-gray-100">
                   {row.map((c, ci) => (
-                    <th key={ci} className={`text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border border-gray-300 whitespace-nowrap ${colWidths[ci]}`}>
-                      {c}
+                    <th key={ci} className={`text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border border-gray-300 whitespace-normal break-words ${colWidths[ci]}`}>
+                      {cleanHeaderLabel(c)}
                     </th>
                   ))}
                 </tr>
@@ -198,7 +212,7 @@ function GenericReportTable({ rows }) {
             return (
               <tr key={ri} className={`hover:bg-indigo-50/40 ${ri % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
                 {row.map((c, ci) => (
-                  <td key={ci} className={`px-3 py-2.5 align-top text-gray-700 text-[13px] border border-gray-200 ${colWidths[ci]}`}>
+                  <td key={ci} className={`px-3 py-2.5 align-top text-gray-700 text-[13px] border border-gray-200 ${colWidths[ci]} ${narrowCols.has(ci) ? 'whitespace-nowrap' : ''}`}>
                     <ReportCell text={c} />
                   </td>
                 ))}
