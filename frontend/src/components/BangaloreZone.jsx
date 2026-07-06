@@ -363,8 +363,8 @@ export default function BangaloreZone() {
     const oldCount = branches.filter(b => b.tag === 'Old').length;
     const newCount = branches.filter(b => b.tag === 'New').length;
     const students = branches.reduce((a, b) => a + b.students, 0);
-    const reportsReady = branches.filter(b => b.reportSheet).length;
-    const pendingReport = branches.filter(b => b.tag === 'Old' && !b.reportSheet).length;
+    const reportsReady = branches.filter(b => b.scorecardSheetId).length;
+    const pendingReport = branches.filter(b => b.tag === 'Old' && !b.scorecardSheetId).length;
     return { total, oldCount, newCount, students, reportsReady, pendingReport };
   }, [branches]);
 
@@ -476,8 +476,8 @@ export default function BangaloreZone() {
                               <FileSpreadsheet size={13} /> Raw data
                             </a>
                           ) : <span className="text-xs text-gray-300">Raw data</span>}
-                          {b.reportSheet ? (
-                            <a href={b.reportSheet} target="_blank" rel="noopener noreferrer"
+                          {b.scorecardSheetId ? (
+                            <a href={b.reportSheet || b.rawSheet} target="_blank" rel="noopener noreferrer"
                               className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800">
                               <FileBarChart size={13} /> Report <ExternalLink size={11} />
                             </a>
