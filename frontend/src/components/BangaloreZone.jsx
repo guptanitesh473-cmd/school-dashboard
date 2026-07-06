@@ -126,6 +126,17 @@ function ReportCell({ text }) {
 // doesn't show ragged blanks for what is really one continuous group.
 const GROUP_FILL_KEYWORDS = ['category'];
 
+// Size each column by how much text it actually holds, instead of one
+// blanket width for every column — short columns (Status, Count/Data) stay
+// compact while long-form columns (Key Finding, Remarks) get real width so
+// text wraps into a few wide lines rather than many narrow ones.
+function widthClass(maxLen) {
+  if (maxLen <= 12) return 'whitespace-nowrap';
+  if (maxLen <= 30) return 'min-w-[170px] max-w-[260px]';
+  if (maxLen <= 60) return 'min-w-[240px] max-w-[360px]';
+  return 'min-w-[320px] max-w-[480px]';
+}
+
 function GenericReportTable({ rows }) {
   const maxCols = Math.max(...rows.map(r => r.length));
   const padded = rows.map(r => Array.from({ length: maxCols }, (_, i) => r[i] || ''));
@@ -151,9 +162,15 @@ function GenericReportTable({ rows }) {
     return filledRow;
   });
 
+  const colWidths = keepCols.map((_, ci) => {
+    const maxLen = displayRows.reduce((m, row, ri) =>
+      classified[ri].kind === 'data' ? Math.max(m, (row[ci] || '').length) : m, 0);
+    return widthClass(maxLen);
+  });
+
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-300 shadow-sm">
-      <table className="w-full text-sm border-collapse">
+      <table className="text-sm border-collapse">
         <tbody>
           {classified.map(({ kind, row: originalRow }, ri) => {
             const row = displayRows[ri];
@@ -171,7 +188,7 @@ function GenericReportTable({ rows }) {
               return (
                 <tr key={ri} className="bg-gray-100">
                   {row.map((c, ci) => (
-                    <th key={ci} className="text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border border-gray-300 whitespace-nowrap">
+                    <th key={ci} className={`text-left px-3 py-2 font-semibold text-gray-700 text-[11px] uppercase tracking-wide border border-gray-300 whitespace-nowrap ${colWidths[ci]}`}>
                       {c}
                     </th>
                   ))}
@@ -181,7 +198,7 @@ function GenericReportTable({ rows }) {
             return (
               <tr key={ri} className={`hover:bg-indigo-50/40 ${ri % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
                 {row.map((c, ci) => (
-                  <td key={ci} className="px-3 py-2.5 align-top text-gray-700 text-[13px] max-w-xs border border-gray-200">
+                  <td key={ci} className={`px-3 py-2.5 align-top text-gray-700 text-[13px] border border-gray-200 ${colWidths[ci]}`}>
                     <ReportCell text={c} />
                   </td>
                 ))}
