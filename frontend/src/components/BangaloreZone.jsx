@@ -698,8 +698,15 @@ function exportRankingExcel(ranked) {
   downloadSheet([header, ...rows], 'Bangalore_Zone_Ranking.xlsx', 'Ranking');
 }
 
+// Excluded from Ranking: their Master Scorecard/Overall Audit is a generic
+// unfilled template (blanket "✅ Checked and updated in the sheet" with no
+// real findings), not actual audit data, which was skewing the ranking.
+const RANKING_EXCLUDED_BRANCHES = ['OIS Majestic'];
+
 function RankingTab({ branches }) {
-  const targets = useMemo(() => branches.filter(b => b.scorecardSheetId), [branches]);
+  const targets = useMemo(() =>
+    branches.filter(b => b.scorecardSheetId && !RANKING_EXCLUDED_BRANCHES.includes(b.name)),
+  [branches]);
   const [scoresByBranch, setScoresByBranch] = useState(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
