@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, ExternalLink, FileSpreadsheet, FileBarChart } from 'lucide-react';
+import { RefreshCw, ExternalLink, FileSpreadsheet, FileBarChart, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 // ── Sheet URL ─────────────────────────────────────────────────────────────
 const SHEET_ID = '1Zal-ay0pfrKpDhEDRMk3pFYIsRDU4reVUzDRboWV9Gs';
@@ -96,6 +97,20 @@ function timetableStatus(v) {
   if (s === 'done') return { label: 'Done', cls: 'bg-green-100 text-green-800' };
   if (!s) return { label: 'Not scheduled', cls: 'bg-gray-100 text-gray-500' };
   return { label: v, cls: 'bg-amber-100 text-amber-800' };
+}
+
+// ── Excel export helpers ──────────────────────────────────────────────────
+function downloadSheet(rows, filename, sheetName) {
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, filename);
+}
+
+function exportBranchesExcel(branches) {
+  const header = ['Branch', 'Tag', 'Assigned Member', 'Audit Date', 'Total Students', 'No of Days', 'Timetable Upload', 'Raw Data Sheet', 'Report Sheet'];
+  const rows = branches.map(b => [b.name, b.tag, b.member, b.date, b.students, b.days, b.timetable, b.rawSheet, b.reportSheet]);
+  downloadSheet([header, ...rows], 'Bangalore_Zone_Branches.xlsx', 'Branches');
 }
 
 // ── Generic report table (handles varying per-school sheet layouts) ─────
@@ -391,7 +406,9 @@ function resolveColumns(rows) {
       category: find('category'),
       checkPoint: find('check point'),
       finding: find('key finding', 'detail / sub-points'),
+      count: find('count / data'),
       status: find('status'),
+      remarks: find('remarks', 'remark by auditor'),
     };
   }
   return null;
@@ -402,7 +419,75 @@ function scoreFromText(status, finding) {
   return s ? SENTIMENT_SCORE[s] : null;
 }
 
-function computePointerScores(rows) {
+const round1 = n => Math.round(n * 10) / 10;
+const clamp10 = n => Math.max(0, Math.min(10, n));
+
+// Pulls the first "X/Y", "X out of Y" or "X of Y" pair out of free text — the
+// sheets don't have separate numerator/denominator columns, so the ratio has
+// to be read out of whatever text the auditor wrote.
+function extractRatio(text) {
+  if (!text) return null;
+  const m = text.match(/(\d+)\s*(?:\/|out of|of)\s*(\d+)/i);
+  if (!m) return null;
+  const y = +m[2];
+  if (!y) return null;
+  return { x: +m[1], y };
+}
+
+// Rule: "how many are not matching" → score = (count / total) * 10.
+function ratioScore(count, finding) {
+  const ratio = extractRatio(count) || extractRatio(finding);
+  return ratio ? clamp10(round1((ratio.x / ratio.y) * 10)) : null;
+}
+
+const MONTH_ABBR = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const PENDING_WORDS = /(pending|not\s+(?:started|done|corrected|checked)|no\s+work|last\s+corrected)/i;
+
+// Rule: notebook/workbook items pending for more than ~1 month lose an extra
+// 0.5 — approximated by comparing a month name mentioned near "pending"
+// language against the branch's audit month.
+function monthPendingPenalty(text, auditDateStr) {
+  if (!text || !PENDING_WORDS.test(text)) return 0;
+  const m = text.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i);
+  if (!m) return 0;
+  const mentioned = MONTH_ABBR.indexOf(m[1].slice(0, 3).toLowerCase());
+  if (mentioned < 0) return 0;
+  const dateParts = auditDateStr && auditDateStr.split('/');
+  if (!dateParts || dateParts.length !== 3) return 0.5; // can't compare, but signal is strong enough
+  const auditMonth = parseInt(dateParts[0], 10) - 1;
+  const monthsBehind = (auditMonth - mentioned + 12) % 12;
+  return monthsBehind >= 1 ? 0.5 : 0;
+}
+
+// Rule: substitution is binary — zero if the sheet says it wasn't done.
+function substitutionScore(status, finding) {
+  const text = `${status} ${finding}`;
+  if (/not\s+done/i.test(text)) return 0;
+  if (/partial/i.test(text)) return 5;
+  if (/\bdone\b|compliant|verified/i.test(text)) return 10;
+  return ratioScore('', finding) ?? scoreFromText(status, finding);
+}
+
+// Rule: chat reply is scored by how many of the mentioned teams (PRM, SM,
+// Transport, Finance…) show a resolved/no-issue mention vs. a pending one.
+const CHAT_TEAMS = ['prm', 'sm', 'transport', 'finance', 'account', 'cic'];
+function chatReplyScore(finding) {
+  const explicit = extractRatio(finding);
+  if (explicit) return clamp10(round1((explicit.x / explicit.y) * 10));
+  const lower = (finding || '').toLowerCase();
+  const mentioned = CHAT_TEAMS.filter(t => lower.includes(t));
+  if (!mentioned.length) return null;
+  let positive = 0;
+  mentioned.forEach(team => {
+    const idx = lower.indexOf(team);
+    const window = lower.slice(Math.max(0, idx - 10), idx + 60);
+    if (/(no issue|fine|resolved|replying|responded|promptly|✅)/.test(window) &&
+        !/(pending|late|delay|unanswered|not closed|lag|partial|⚠|🔴)/.test(window)) positive++;
+  });
+  return clamp10(round1((positive / mentioned.length) * 10));
+}
+
+function computePointerScores(rows, branch) {
   const cols = resolveColumns(rows);
   if (!cols || cols.checkPoint < 0) return {};
   const scores = {};
@@ -411,14 +496,24 @@ function computePointerScores(rows) {
     const cat = (cols.category >= 0 ? row[cols.category] || '' : '').toLowerCase();
     const cp = (row[cols.checkPoint] || '').toLowerCase();
     if (!cp) continue;
-    const status = cols.status >= 0 ? row[cols.status] || '' : '';
+    const status  = cols.status  >= 0 ? row[cols.status]  || '' : '';
     const finding = cols.finding >= 0 ? row[cols.finding] || '' : '';
+    const count   = cols.count   >= 0 ? row[cols.count]   || '' : '';
+    const remarks = cols.remarks >= 0 ? row[cols.remarks] || '' : '';
     for (const p of POINTER_DEFS) {
-      if (scores[p.key] != null) continue; // first matching row wins
-      if (p.match(cat, cp)) {
-        const sc = scoreFromText(status, finding);
-        if (sc != null) scores[p.key] = sc;
+      if (scores[p.key] != null || !p.match(cat, cp)) continue;
+      let sc;
+      if (p.key === 'substitution') {
+        sc = substitutionScore(status, finding);
+      } else if (p.key === 'chatReply') {
+        sc = chatReplyScore(finding);
+      } else if (p.key === 'notebookCorrection' || p.key === 'workbookCorrection') {
+        const base = ratioScore(count, finding) ?? scoreFromText(status, finding);
+        if (base != null) sc = clamp10(round1(base - monthPendingPenalty(`${finding} ${remarks}`, branch?.date)));
+      } else {
+        sc = ratioScore(count, finding) ?? scoreFromText(status, finding);
       }
+      if (sc != null) scores[p.key] = sc;
     }
   }
   return scores;
@@ -491,6 +586,18 @@ function loadOverrides() {
   try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch { return {}; }
 }
 
+function exportRankingExcel(ranked) {
+  const header = ['Rank', 'Branch',
+    ...HIGH_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), 'High Priority Avg',
+    ...SECOND_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), '2nd Priority Avg'];
+  const rows = ranked.map(({ branch, scores, highAvg, secondAvg }, i) => [
+    i + 1, branch.name,
+    ...HIGH_KEYS.map(k => scores[k] ?? ''), highAvg ?? '',
+    ...SECOND_KEYS.map(k => scores[k] ?? ''), secondAvg ?? '',
+  ]);
+  downloadSheet([header, ...rows], 'Bangalore_Zone_Ranking.xlsx', 'Ranking');
+}
+
 function RankingTab({ branches }) {
   const targets = useMemo(() => branches.filter(b => b.scorecardSheetId), [branches]);
   const [scoresByBranch, setScoresByBranch] = useState(null);
@@ -523,7 +630,7 @@ function RankingTab({ branches }) {
         const b = targets[idx++];
         try {
           const rows = await fetchScorecardRows(b);
-          results[b.name] = computePointerScores(rows);
+          results[b.name] = computePointerScores(rows, b);
         } catch {
           results[b.name] = {};
         }
@@ -559,13 +666,19 @@ function RankingTab({ branches }) {
   return (
     <div className="space-y-4">
       <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600 flex items-start justify-between gap-4">
-        <p>Each pointer is scored 0–10 from its Master Scorecard status: <span className="text-green-700 font-medium">✅ Satisfactory = 10</span>, <span className="text-blue-700 font-medium">ℹ Info = 7</span>, <span className="text-amber-700 font-medium">⚠ Needs Attention = 5</span>, <span className="text-gray-500 font-medium">⏳ Pending = 2</span>, <span className="text-red-700 font-medium">🔴 Critical = 0</span>. Ranked by High Priority average, highest first. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override.</span></p>
-        {hasOverrides && (
-          <button onClick={() => setOverrides({})}
-            className="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 whitespace-nowrap">
-            Reset all overrides
+        <p>Each pointer is scored 0–10 from ratios and rules read off its Master Scorecard (see the <span className="font-medium text-gray-700">Scoring Criteria</span> tab for the exact formula per pointer). Ranked by High Priority average, highest first. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override. Blank cells mean the sheet didn't state a clear total to compute from — fill them in by hand.</span></p>
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <button onClick={() => exportRankingExcel(ranked)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap">
+            <Download size={13} /> Download Excel
           </button>
-        )}
+          {hasOverrides && (
+            <button onClick={() => setOverrides({})}
+              className="px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 whitespace-nowrap">
+              Reset all overrides
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-300 overflow-x-auto shadow-sm">
@@ -615,6 +728,45 @@ function RankingTab({ branches }) {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function CriteriaBlock({ tone, title, items }) {
+  const heading = tone === 'high' ? 'text-indigo-900' : 'text-teal-900';
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <h3 className={`font-semibold text-base mb-3 ${heading}`}>{title}</h3>
+      <ol className="space-y-3 list-decimal list-inside marker:font-semibold marker:text-gray-400">
+        {items.map(({ label, rule, example }) => (
+          <li key={label} className="text-sm text-gray-700">
+            <span className="font-medium text-gray-900">{label}</span> — {rule}
+            {example && <div className="text-xs text-gray-500 mt-0.5 pl-5">e.g. {example}</div>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function ScoringCriteriaTab() {
+  return (
+    <div className="space-y-4">
+      <CriteriaBlock tone="high" title="High Priority (averaged together)" items={[
+        { label: 'Teacher Allocation', rule: 'score = (count not matching the condition ÷ total) × 10.', example: '5 out of 20 not matching → 2.5 / 10.' },
+        { label: 'Portion Completion', rule: 'score = (sections not matching ÷ total) × 10.', example: '4 out of 10 not matching → 4 / 10.' },
+        { label: 'Notebook Correction', rule: 'score = (sections not matching ÷ total) × 10, minus an extra 0.5 if a pending item is more than ~1 month old.', example: '4 out of 10 → 4 / 10, or 3.5 / 10 if something has been pending since a month or more before the audit.' },
+        { label: 'Workbook Correction', rule: 'same formula as Notebook Correction, including the 1-month pending penalty.' },
+        { label: 'Substitution (Eduvate)', rule: '0 if the sheet says substitution was not done in Eduvate; otherwise scored from status (Done = 10, Partial = 5).' },
+      ]} />
+      <CriteriaBlock tone="second" title="2nd Priority (averaged separately)" items={[
+        { label: 'Clicker Usage', rule: 'score = (grades matching ÷ total grades) × 10.', example: '4 out of 10 grades matching → 4 / 10.' },
+        { label: 'Chat Reply', rule: 'score = (teams that replied ÷ total teams mentioned — PRM, SM, Transport, Finance, etc.) × 10.', example: '1 out of 5 teams replied → 2 / 10.' },
+        { label: 'Student Mapping', rule: 'score = (sections not matching ÷ total) × 10.', example: '4 out of 10 not matching → 4 / 10.' },
+      ]} />
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
+        Ratios are read automatically from each branch's Master Scorecard ("Count / Data" and "Key Finding" columns). Some rows don't state a clean count and total in the sheet — those are left blank in the Ranking tab rather than guessed. Click any blank (or any score) there to fill it in or correct it by hand.
       </div>
     </div>
   );
@@ -674,7 +826,7 @@ export default function BangaloreZone() {
     <div className="space-y-4">
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200">
-        {[['branches', 'All Branches'], ['report', 'Audit Report'], ['ranking', 'Ranking']].map(([key, label]) => (
+        {[['branches', 'All Branches'], ['report', 'Audit Report'], ['ranking', 'Ranking'], ['criteria', 'Scoring Criteria']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === key ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -722,7 +874,11 @@ export default function BangaloreZone() {
               placeholder="Search branch or auditor..."
               className="ml-1 px-3 py-1.5 text-xs border border-gray-200 rounded-full w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
-            <button onClick={load} className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+            <button onClick={() => exportBranchesExcel(filtered)}
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+              <Download size={13} /> Download Excel
+            </button>
+            <button onClick={load} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
               <RefreshCw size={11} /> Refresh
             </button>
           </div>
@@ -788,6 +944,7 @@ export default function BangaloreZone() {
 
       {tab === 'report' && <ReportTab branches={branches} />}
       {tab === 'ranking' && <RankingTab branches={branches} />}
+      {tab === 'criteria' && <ScoringCriteriaTab />}
     </div>
   );
 }
