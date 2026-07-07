@@ -663,6 +663,16 @@ function avgOf(scores, keys) {
   return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
+// Overall = 70% High Priority avg + 30% 2nd Priority avg. If one side has no
+// data at all, fall back to just the other rather than dropping the branch.
+const HIGH_WEIGHT = 0.7, SECOND_WEIGHT = 0.3;
+function weightedAvg(highAvg, secondAvg) {
+  if (highAvg == null && secondAvg == null) return null;
+  if (highAvg == null) return secondAvg;
+  if (secondAvg == null) return highAvg;
+  return round1(highAvg * HIGH_WEIGHT + secondAvg * SECOND_WEIGHT);
+}
+
 function scoreCellClass(score) {
   if (score == null) return 'text-gray-300';
   if (score >= 8) return 'text-green-700 font-semibold';
@@ -727,11 +737,13 @@ function loadOverrides() {
 function exportRankingExcel(ranked, zoneLabel) {
   const header = ['Rank', 'Branch',
     ...HIGH_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), 'High Priority Avg',
-    ...SECOND_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), '2nd Priority Avg'];
-  const rows = ranked.map(({ branch, scores, highAvg, secondAvg }, i) => [
+    ...SECOND_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), '2nd Priority Avg',
+    'Overall (70/30)'];
+  const rows = ranked.map(({ branch, scores, highAvg, secondAvg, overallAvg }, i) => [
     i + 1, branch.name,
     ...HIGH_KEYS.map(k => scores[k] ?? ''), highAvg ?? '',
     ...SECOND_KEYS.map(k => scores[k] ?? ''), secondAvg ?? '',
+    overallAvg ?? '',
   ]);
   downloadSheet([header, ...rows], `${zoneLabel}_Zone_Ranking.xlsx`, 'Ranking');
 }
@@ -798,7 +810,8 @@ function RankingTab({ branches, zoneLabel }) {
         const auto = scoresByBranch[b.name] || {};
         const branchOverrides = overrides[b.name] || {};
         const scores = { ...auto, ...branchOverrides };
-        return { branch: b, scores, branchOverrides, highAvg: avgOf(scores, HIGH_KEYS), secondAvg: avgOf(scores, SECOND_KEYS) };
+        const highAvg = avgOf(scores, HIGH_KEYS), secondAvg = avgOf(scores, SECOND_KEYS);
+        return { branch: b, scores, branchOverrides, highAvg, secondAvg, overallAvg: weightedAvg(highAvg, secondAvg) };
       })
       .sort((a, b) => (b.highAvg ?? -1) - (a.highAvg ?? -1));
   }, [scoresByBranch, targets, overrides]);
@@ -815,7 +828,7 @@ function RankingTab({ branches, zoneLabel }) {
   return (
     <div className="space-y-4">
       <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600 flex items-start justify-between gap-4">
-        <p>Each pointer is scored 0–10 from ratios and rules read off its Master Scorecard (see the <span className="font-medium text-gray-700">Scoring Criteria</span> tab for the exact formula per pointer). Ranked by High Priority average, highest first. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override. Blank cells mean the sheet didn't state a clear total to compute from — fill them in by hand.</span></p>
+        <p>Each pointer is scored 0–10 from ratios and rules read off its Master Scorecard (see the <span className="font-medium text-gray-700">Scoring Criteria</span> tab for the exact formula per pointer). Ranked by High Priority average, highest first — the rightmost <span className="font-medium text-purple-700">Overall</span> column is a 70/30 weighted blend of both tiers. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override. Blank cells mean the sheet didn't state a clear total to compute from — fill them in by hand.</span></p>
         <div className="flex-shrink-0 flex items-center gap-2">
           <button onClick={() => exportRankingExcel(ranked, zoneLabel)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap">
@@ -838,6 +851,7 @@ function RankingTab({ branches, zoneLabel }) {
               <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700 text-[11px] uppercase align-bottom min-w-[180px]">Branch</th>
               <th colSpan={HIGH_KEYS.length + 1} className="border border-gray-300 px-3 py-2 text-center font-semibold text-indigo-900 text-[11px] uppercase bg-indigo-50">High Priority</th>
               <th colSpan={SECOND_KEYS.length + 1} className="border border-gray-300 px-3 py-2 text-center font-semibold text-teal-900 text-[11px] uppercase bg-teal-50">2nd Priority</th>
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center font-semibold text-purple-900 text-[11px] uppercase align-bottom bg-purple-100 whitespace-nowrap">Overall<br/>(70/30)</th>
             </tr>
             <tr className="bg-gray-100">
               {HIGH_KEYS.map(k => (
@@ -855,7 +869,7 @@ function RankingTab({ branches, zoneLabel }) {
             </tr>
           </thead>
           <tbody>
-            {ranked.map(({ branch, scores, branchOverrides, highAvg, secondAvg }, i) => (
+            {ranked.map(({ branch, scores, branchOverrides, highAvg, secondAvg, overallAvg }, i) => (
               <tr key={branch.name} className={`hover:bg-indigo-50/40 ${i % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
                 <td className="border border-gray-200 px-3 py-2 text-gray-500 font-medium">{i + 1}</td>
                 <td className="border border-gray-200 px-3 py-2 font-medium text-gray-800 whitespace-nowrap">{branch.name}</td>
@@ -873,6 +887,7 @@ function RankingTab({ branches, zoneLabel }) {
                   </td>
                 ))}
                 <td className="border border-gray-200 px-2 py-2 text-center bg-teal-50/50"><ScoreCell score={secondAvg} /></td>
+                <td className="border border-gray-200 px-2 py-2 text-center bg-purple-50"><ScoreCell score={overallAvg} /></td>
               </tr>
             ))}
           </tbody>
@@ -914,6 +929,9 @@ function ScoringCriteriaTab() {
         { label: 'Chat Reply', rule: 'score = (teams that replied ÷ total teams mentioned — PRM, SM, Transport, Finance, etc.) × 10.', example: '1 out of 5 teams replied → 2 / 10.' },
         { label: 'Student Mapping', rule: 'score = (sections not matching ÷ total) × 10.', example: '4 out of 10 not matching → 4 / 10.' },
       ]} />
+      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-900">
+        <b>Overall (70/30)</b> — the Ranking table's rightmost column — is a weighted average of the two tiers: <b>70% High Priority avg + 30% 2nd Priority avg</b>. If a branch is missing one tier entirely, Overall just uses whichever tier it has rather than dropping the branch.
+      </div>
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900">
         Where available, Portion Completion, Notebook Correction, Workbook Correction, Clicker Usage and Chat Reply are computed from the branch's <b>Overall Audit</b> tab by directly counting its per-grade/section/channel ✅ / ⚠ / 🔴 rows — a real numerator and denominator, not text parsed from a summary sentence. This takes priority over the Master Scorecard estimate below whenever that tab exists and is readable.
       </div>
