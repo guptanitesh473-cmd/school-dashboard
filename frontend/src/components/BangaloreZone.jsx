@@ -441,13 +441,76 @@ function ScoreCell({ score }) {
   return <span className={scoreCellClass(score)}>{score == null ? '—' : score.toFixed(1)}</span>;
 }
 
+// Click a pointer score to override it — the sheet-derived value is a
+// starting point, not the final word, so auditors can correct it by hand.
+// Clearing the field back to blank reverts to the auto-computed score.
+function EditableScoreCell({ value, overridden, onChange }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        type="number" min={0} max={10} step={0.5}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') setEditing(false);
+        }}
+        className="w-14 text-center border border-indigo-400 rounded px-1 py-0.5 text-sm focus:outline-none"
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => { setDraft(value == null ? '' : String(value)); setEditing(true); }}
+      title="Click to edit"
+      className={`w-full rounded px-1.5 py-0.5 cursor-text hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 ${overridden ? 'bg-indigo-50/70 ring-1 ring-indigo-200' : ''}`}
+    >
+      <span className={scoreCellClass(value)}>{value == null ? '—' : value.toFixed(1)}</span>
+      {overridden && <span className="ml-1 text-indigo-400 text-[9px] align-top">●</span>}
+    </button>
+  );
+
+  function commit() {
+    setEditing(false);
+    if (draft.trim() === '') { onChange(null); return; }
+    const n = parseFloat(draft);
+    if (!isNaN(n)) onChange(Math.max(0, Math.min(10, n)));
+  }
+}
+
 const RANKING_CONCURRENCY = 6;
+const OVERRIDES_KEY = 'bz_ranking_overrides';
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch { return {}; }
+}
 
 function RankingTab({ branches }) {
   const targets = useMemo(() => branches.filter(b => b.scorecardSheetId), [branches]);
   const [scoresByBranch, setScoresByBranch] = useState(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [overrides, setOverrides] = useState(loadOverrides);
+
+  useEffect(() => {
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+  }, [overrides]);
+
+  const setOverride = (branchName, key, val) => {
+    setOverrides(prev => {
+      const next = { ...prev };
+      const b = { ...(next[branchName] || {}) };
+      if (val == null) delete b[key]; else b[key] = val;
+      if (Object.keys(b).length) next[branchName] = b; else delete next[branchName];
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!targets.length) { setScoresByBranch({}); setLoading(false); return; }
@@ -476,11 +539,15 @@ function RankingTab({ branches }) {
     if (!scoresByBranch) return [];
     return targets
       .map(b => {
-        const scores = scoresByBranch[b.name] || {};
-        return { branch: b, scores, highAvg: avgOf(scores, HIGH_KEYS), secondAvg: avgOf(scores, SECOND_KEYS) };
+        const auto = scoresByBranch[b.name] || {};
+        const branchOverrides = overrides[b.name] || {};
+        const scores = { ...auto, ...branchOverrides };
+        return { branch: b, scores, branchOverrides, highAvg: avgOf(scores, HIGH_KEYS), secondAvg: avgOf(scores, SECOND_KEYS) };
       })
       .sort((a, b) => (b.highAvg ?? -1) - (a.highAvg ?? -1));
-  }, [scoresByBranch, targets]);
+  }, [scoresByBranch, targets, overrides]);
+
+  const hasOverrides = Object.keys(overrides).length > 0;
 
   if (loading) return (
     <div className="flex flex-col justify-center items-center h-40 gap-3">
@@ -491,8 +558,14 @@ function RankingTab({ branches }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600">
-        <p>Each pointer is scored 0–10 from its Master Scorecard status: <span className="text-green-700 font-medium">✅ Satisfactory = 10</span>, <span className="text-blue-700 font-medium">ℹ Info = 7</span>, <span className="text-amber-700 font-medium">⚠ Needs Attention = 5</span>, <span className="text-gray-500 font-medium">⏳ Pending = 2</span>, <span className="text-red-700 font-medium">🔴 Critical = 0</span>. Ranked by High Priority average, highest first.</p>
+      <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600 flex items-start justify-between gap-4">
+        <p>Each pointer is scored 0–10 from its Master Scorecard status: <span className="text-green-700 font-medium">✅ Satisfactory = 10</span>, <span className="text-blue-700 font-medium">ℹ Info = 7</span>, <span className="text-amber-700 font-medium">⚠ Needs Attention = 5</span>, <span className="text-gray-500 font-medium">⏳ Pending = 2</span>, <span className="text-red-700 font-medium">🔴 Critical = 0</span>. Ranked by High Priority average, highest first. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override.</span></p>
+        {hasOverrides && (
+          <button onClick={() => setOverrides({})}
+            className="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 whitespace-nowrap">
+            Reset all overrides
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-300 overflow-x-auto shadow-sm">
@@ -520,16 +593,22 @@ function RankingTab({ branches }) {
             </tr>
           </thead>
           <tbody>
-            {ranked.map(({ branch, scores, highAvg, secondAvg }, i) => (
+            {ranked.map(({ branch, scores, branchOverrides, highAvg, secondAvg }, i) => (
               <tr key={branch.name} className={`hover:bg-indigo-50/40 ${i % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
                 <td className="border border-gray-200 px-3 py-2 text-gray-500 font-medium">{i + 1}</td>
                 <td className="border border-gray-200 px-3 py-2 font-medium text-gray-800 whitespace-nowrap">{branch.name}</td>
                 {HIGH_KEYS.map(k => (
-                  <td key={k} className="border border-gray-200 px-2 py-2 text-center"><ScoreCell score={scores[k]} /></td>
+                  <td key={k} className="border border-gray-200 p-0 text-center">
+                    <EditableScoreCell value={scores[k]} overridden={branchOverrides[k] != null}
+                      onChange={v => setOverride(branch.name, k, v)} />
+                  </td>
                 ))}
                 <td className="border border-gray-200 px-2 py-2 text-center bg-indigo-50/50"><ScoreCell score={highAvg} /></td>
                 {SECOND_KEYS.map(k => (
-                  <td key={k} className="border border-gray-200 px-2 py-2 text-center"><ScoreCell score={scores[k]} /></td>
+                  <td key={k} className="border border-gray-200 p-0 text-center">
+                    <EditableScoreCell value={scores[k]} overridden={branchOverrides[k] != null}
+                      onChange={v => setOverride(branch.name, k, v)} />
+                  </td>
                 ))}
                 <td className="border border-gray-200 px-2 py-2 text-center bg-teal-50/50"><ScoreCell score={secondAvg} /></td>
               </tr>
