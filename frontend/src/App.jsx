@@ -99,7 +99,7 @@ const NAV = [
   },
   {
     to: '/bangalore-zone',
-    label: 'Bangalore Zone',
+    label: 'Zone Audits',
     icon: MapPin,
   },
   {
@@ -365,7 +365,7 @@ function PageTitle() {
     '/monthly-meeting': 'Monthly Meeting',
     '/audit': 'Audit Report',
     '/compliance': 'Compliances and Audit',
-    '/bangalore-zone': 'Bangalore Zone',
+    '/bangalore-zone': 'Zone Audits',
     '/template-type': 'Template Type',
     '/users': 'User Management',
     '/schools': 'Schools',

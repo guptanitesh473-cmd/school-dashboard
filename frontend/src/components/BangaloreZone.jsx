@@ -2,10 +2,16 @@ import { useState, useEffect, useMemo } from 'react';
 import { RefreshCw, ExternalLink, FileSpreadsheet, FileBarChart, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-// ── Sheet URL ─────────────────────────────────────────────────────────────
-const SHEET_ID = '1Zal-ay0pfrKpDhEDRMk3pFYIsRDU4reVUzDRboWV9Gs';
-const GID = '1772969052';
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+// ── Zones — each is a tab in the same audit-plan workbook ────────────────
+const ZONE_SHEET_ID = '1Zal-ay0pfrKpDhEDRMk3pFYIsRDU4reVUzDRboWV9Gs';
+const ZONES = [
+  { key: 'bangalore',  label: 'Bangalore',  gid: '1772969052' },
+  { key: 'chennai',    label: 'Chennai',    gid: '294605648' },
+  { key: 'hyderabad',  label: 'Hyderabad',  gid: '435799059' },
+  { key: 'mumbai',     label: 'Mumbai',     gid: '1669902267' },
+  { key: 'pune',       label: 'Pune',       gid: '62717054' },
+];
+const zoneSheetUrl = gid => `https://docs.google.com/spreadsheets/d/${ZONE_SHEET_ID}/export?format=csv&gid=${gid}`;
 
 // ── CSV parser ────────────────────────────────────────────────────────────
 function parseCSV(text) {
@@ -73,17 +79,49 @@ async function fetchScorecardRows(branch) {
   return byNameRows;
 }
 
+// Each zone's tab has its own column order/count (Hyderabad has 3 extra
+// blank columns, only Bangalore has a Timetable column, header labels vary
+// slightly in wording) — resolve by header text instead of fixed position.
+function resolveZoneColumns(headerRow) {
+  const lower = headerRow.map(c => c.trim().toLowerCase());
+  const find = (...keywords) => {
+    for (let i = 0; i < lower.length; i++) if (keywords.some(k => lower[i].includes(k))) return i;
+    return -1;
+  };
+  return {
+    name: find('school name'),
+    tag: find('tag'),
+    member: find('assigned member'),
+    date: find('audit date'),
+    students: find('strength', 'total students'),
+    days: find('no of days'),
+    rawSheet: find('raw data', 'raw data sheet'),
+    reportSheet: find('report sheet'),
+    remark: find('manjula'),
+    timetable: find('time table', 'timetable'),
+  };
+}
+
 // ── Sheet parser (skips title row + header row) ─────────────────────────
 function parseBranches(rows) {
+  if (rows.length < 2) return [];
+  const cols = resolveZoneColumns(rows[1]);
+  if (cols.name < 0) return [];
+  const get = (row, key) => (cols[key] >= 0 ? row[cols[key]] || '' : '');
   const data = [];
+  const seen = new Set();
   for (let r = 2; r < rows.length; r++) {
-    const [sno, name, tag, member, date, students, days, rawSheet, reportSheet, remark, timetable] = rows[r];
-    if (!name || name.startsWith('Total')) continue;
+    const row = rows[r];
+    const name = get(row, 'name');
+    if (!name || name.startsWith('Total') || seen.has(name)) continue;
+    seen.add(name);
+    const rawSheet = get(row, 'rawSheet');
+    const reportSheet = get(row, 'reportSheet');
     data.push({
-      sno, name, tag: tag || '', member: member || '', date: date || '',
-      students: +students || 0, days: days || '',
-      rawSheet: rawSheet || '', reportSheet: reportSheet || '',
-      remark: remark || '', timetable: timetable || '',
+      name, tag: get(row, 'tag'), member: get(row, 'member'), date: get(row, 'date'),
+      students: +get(row, 'students') || 0, days: get(row, 'days'),
+      rawSheet, reportSheet,
+      remark: get(row, 'remark'), timetable: get(row, 'timetable'),
       scorecardSheetId: extractSheetId(reportSheet) || extractSheetId(rawSheet),
     });
   }
@@ -107,10 +145,10 @@ function downloadSheet(rows, filename, sheetName) {
   XLSX.writeFile(wb, filename);
 }
 
-function exportBranchesExcel(branches) {
+function exportBranchesExcel(branches, zoneLabel) {
   const header = ['Branch', 'Tag', 'Assigned Member', 'Audit Date', 'Total Students', 'No of Days', 'Timetable Upload', 'Raw Data Sheet', 'Report Sheet'];
   const rows = branches.map(b => [b.name, b.tag, b.member, b.date, b.students, b.days, b.timetable, b.rawSheet, b.reportSheet]);
-  downloadSheet([header, ...rows], 'Bangalore_Zone_Branches.xlsx', 'Branches');
+  downloadSheet([header, ...rows], `${zoneLabel}_Zone_Branches.xlsx`, 'Branches');
 }
 
 // ── Generic report table (handles varying per-school sheet layouts) ─────
@@ -686,7 +724,7 @@ function loadOverrides() {
   try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch { return {}; }
 }
 
-function exportRankingExcel(ranked) {
+function exportRankingExcel(ranked, zoneLabel) {
   const header = ['Rank', 'Branch',
     ...HIGH_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), 'High Priority Avg',
     ...SECOND_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), '2nd Priority Avg'];
@@ -695,7 +733,7 @@ function exportRankingExcel(ranked) {
     ...HIGH_KEYS.map(k => scores[k] ?? ''), highAvg ?? '',
     ...SECOND_KEYS.map(k => scores[k] ?? ''), secondAvg ?? '',
   ]);
-  downloadSheet([header, ...rows], 'Bangalore_Zone_Ranking.xlsx', 'Ranking');
+  downloadSheet([header, ...rows], `${zoneLabel}_Zone_Ranking.xlsx`, 'Ranking');
 }
 
 // Excluded from Ranking: their Master Scorecard/Overall Audit is a generic
@@ -703,7 +741,7 @@ function exportRankingExcel(ranked) {
 // real findings), not actual audit data, which was skewing the ranking.
 const RANKING_EXCLUDED_BRANCHES = ['OIS Majestic'];
 
-function RankingTab({ branches }) {
+function RankingTab({ branches, zoneLabel }) {
   const targets = useMemo(() =>
     branches.filter(b => b.scorecardSheetId && !RANKING_EXCLUDED_BRANCHES.includes(b.name)),
   [branches]);
@@ -779,7 +817,7 @@ function RankingTab({ branches }) {
       <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600 flex items-start justify-between gap-4">
         <p>Each pointer is scored 0–10 from ratios and rules read off its Master Scorecard (see the <span className="font-medium text-gray-700">Scoring Criteria</span> tab for the exact formula per pointer). Ranked by High Priority average, highest first. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override. Blank cells mean the sheet didn't state a clear total to compute from — fill them in by hand.</span></p>
         <div className="flex-shrink-0 flex items-center gap-2">
-          <button onClick={() => exportRankingExcel(ranked)}
+          <button onClick={() => exportRankingExcel(ranked, zoneLabel)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap">
             <Download size={13} /> Download Excel
           </button>
@@ -887,6 +925,8 @@ function ScoringCriteriaTab() {
 }
 
 export default function BangaloreZone() {
+  const [zoneKey, setZoneKey]   = useState(ZONES[0].key);
+  const zone = ZONES.find(z => z.key === zoneKey);
   const [branches, setBranches] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
@@ -896,14 +936,14 @@ export default function BangaloreZone() {
 
   const load = () => {
     setLoading(true); setError('');
-    fetch(SHEET_URL)
+    fetch(zoneSheetUrl(zone.gid))
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
       .then(text => setBranches(parseBranches(parseCSV(text))))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []); // eslint-disable-line
+  useEffect(() => { load(); }, [zoneKey]); // eslint-disable-line
 
   const filtered = useMemo(() => {
     return branches.filter(b => {
@@ -924,20 +964,31 @@ export default function BangaloreZone() {
     return { total, oldCount, newCount, students, reportsReady, pendingReport };
   }, [branches]);
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-40">
-      <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" />
-    </div>
-  );
-  if (error) return (
-    <div className="bg-red-50 p-4 rounded-xl text-red-700 text-sm">
-      Failed to load: {error}
-      <button onClick={load} className="ml-3 underline">Retry</button>
-    </div>
-  );
-
   return (
     <div className="space-y-4">
+      {/* Zone selector */}
+      <div className="flex flex-wrap items-center gap-2">
+        {ZONES.map(z => (
+          <button key={z.key} onClick={() => setZoneKey(z.key)}
+            className={`px-3.5 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+              zoneKey === z.key ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+            }`}>
+            {z.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" />
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 p-4 rounded-xl text-red-700 text-sm">
+          Failed to load: {error}
+          <button onClick={load} className="ml-3 underline">Retry</button>
+        </div>
+      ) : (
+      <div key={zoneKey} className="space-y-4">
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200">
         {[['branches', 'All Branches'], ['report', 'Audit Report'], ['ranking', 'Ranking'], ['criteria', 'Scoring Criteria']].map(([key, label]) => (
@@ -988,7 +1039,7 @@ export default function BangaloreZone() {
               placeholder="Search branch or auditor..."
               className="ml-1 px-3 py-1.5 text-xs border border-gray-200 rounded-full w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
-            <button onClick={() => exportBranchesExcel(filtered)}
+            <button onClick={() => exportBranchesExcel(filtered, zone.label)}
               className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
               <Download size={13} /> Download Excel
             </button>
@@ -1057,8 +1108,10 @@ export default function BangaloreZone() {
       )}
 
       {tab === 'report' && <ReportTab branches={branches} />}
-      {tab === 'ranking' && <RankingTab branches={branches} />}
+      {tab === 'ranking' && <RankingTab branches={branches} zoneLabel={zone.label} />}
       {tab === 'criteria' && <ScoringCriteriaTab />}
+      </div>
+      )}
     </div>
   );
 }
