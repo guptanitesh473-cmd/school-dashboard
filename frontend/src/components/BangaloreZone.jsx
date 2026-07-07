@@ -519,6 +519,106 @@ function computePointerScores(rows, branch) {
   return scores;
 }
 
+// ── Overall Audit cross-reference ────────────────────────────────────────
+// The Overall Audit tab holds the actual per-grade/section rows the Master
+// Scorecard's summary counts were rolled up from (e.g. one row per section
+// with its own ✅/⚠/🔴 status), so counting those rows directly gives a real
+// numerator/denominator instead of parsing a vague summary sentence.
+function overallAuditUrl(sheetId) {
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('Overall Audit')}`;
+}
+
+async function fetchOverallAuditRows(branch) {
+  if (!branch.scorecardSheetId) return null;
+  try {
+    const text = await fetch(overallAuditUrl(branch.scorecardSheetId)).then(r => { if (!r.ok) throw new Error(); return r.text(); });
+    const rows = parseCSV(text);
+    const preview = rows.slice(0, 5).map(r => r.join(' ')).join(' ');
+    if (!/pointer\s*\d/i.test(preview)) return null; // tab missing — gviz silently returned a different sheet
+    return rows;
+  } catch { return null; }
+}
+
+// Splits rows into blocks keyed by "POINTER n" / "POINTERS n-m" marker rows.
+function splitPointerBlocks(rows) {
+  const blocks = {};
+  let current = null;
+  for (const row of rows) {
+    const first = (row[0] || '').trim();
+    const m = first.match(/^pointers?\s*(\d+)/i);
+    if (m) { current = m[1]; blocks[current] = []; continue; }
+    if (current) blocks[current].push(row);
+  }
+  return blocks;
+}
+
+// Splits a block further on "4a." / "4b." style sub-headers.
+function splitSubBlocks(rows, prefixRegex) {
+  const blocks = {};
+  let current = null;
+  for (const row of rows) {
+    const first = (row[0] || '').trim();
+    const m = first.match(prefixRegex);
+    if (m) { current = m[1].toLowerCase(); blocks[current] = []; continue; }
+    if (current) blocks[current].push(row);
+  }
+  return blocks;
+}
+
+// Counts how many data rows in a block end in a ✅ vs another status emoji —
+// each row is one graded grade/section/channel, so this is an exact count,
+// not a text-mined guess. Also collects the non-✅ rows' text for the
+// month-pending penalty scan.
+function tallyStatusRows(rows) {
+  let total = 0, good = 0, flaggedText = '';
+  for (const row of rows) {
+    const nonEmpty = row.map(c => c.trim()).filter(Boolean);
+    if (!nonEmpty.length) continue;
+    const last = nonEmpty[nonEmpty.length - 1];
+    if (/^status$/i.test(last)) continue; // sub-table header row
+    const sentiment = sentimentOf(last);
+    if (!sentiment) continue;
+    total++;
+    if (sentiment === 'good') good++;
+    else flaggedText += ' ' + row.join(' ');
+  }
+  return { total, good, flaggedText };
+}
+
+function computeOverallAuditScores(rows, branch) {
+  const blocks = splitPointerBlocks(rows);
+  const out = {};
+
+  if (blocks['3']) {
+    const { total, good } = tallyStatusRows(blocks['3']);
+    if (total) out.portionCompletion = clamp10(round1(((total - good) / total) * 10));
+  }
+
+  if (blocks['4']) {
+    const sub = splitSubBlocks(blocks['4'], /^(4[a-c])\./i);
+    if (sub['4a']) {
+      const { total, good, flaggedText } = tallyStatusRows(sub['4a']);
+      if (total) out.notebookCorrection = clamp10(round1(((total - good) / total) * 10 - monthPendingPenalty(flaggedText, branch?.date)));
+    }
+    if (sub['4b']) {
+      const { total, good, flaggedText } = tallyStatusRows(sub['4b']);
+      if (total) out.workbookCorrection = clamp10(round1(((total - good) / total) * 10 - monthPendingPenalty(flaggedText, branch?.date)));
+    }
+  }
+
+  if (blocks['5']) {
+    const { total, good } = tallyStatusRows(blocks['5']);
+    if (total) out.clickerUsage = clamp10(round1((good / total) * 10));
+  }
+
+  if (blocks['7']) {
+    const { total, good } = tallyStatusRows(blocks['7']);
+    if (total) out.chatReply = clamp10(round1((good / total) * 10));
+  }
+
+  return out;
+}
+
 function avgOf(scores, keys) {
   const vals = keys.map(k => scores[k]).filter(v => v != null);
   if (!vals.length) return null;
@@ -628,12 +728,16 @@ function RankingTab({ branches }) {
     async function worker() {
       while (idx < targets.length) {
         const b = targets[idx++];
+        let scores = {};
         try {
           const rows = await fetchScorecardRows(b);
-          results[b.name] = computePointerScores(rows, b);
-        } catch {
-          results[b.name] = {};
-        }
+          scores = computePointerScores(rows, b);
+        } catch { /* Master Scorecard unavailable — Overall Audit may still fill in below */ }
+        try {
+          const oaRows = await fetchOverallAuditRows(b);
+          if (oaRows) scores = { ...scores, ...computeOverallAuditScores(oaRows, b) };
+        } catch { /* Overall Audit unavailable — keep Master Scorecard scores as-is */ }
+        results[b.name] = scores;
         if (!cancelled) setProgress(p => p + 1);
       }
     }
@@ -765,8 +869,11 @@ function ScoringCriteriaTab() {
         { label: 'Chat Reply', rule: 'score = (teams that replied ÷ total teams mentioned — PRM, SM, Transport, Finance, etc.) × 10.', example: '1 out of 5 teams replied → 2 / 10.' },
         { label: 'Student Mapping', rule: 'score = (sections not matching ÷ total) × 10.', example: '4 out of 10 not matching → 4 / 10.' },
       ]} />
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900">
+        Where available, Portion Completion, Notebook Correction, Workbook Correction, Clicker Usage and Chat Reply are computed from the branch's <b>Overall Audit</b> tab by directly counting its per-grade/section/channel ✅ / ⚠ / 🔴 rows — a real numerator and denominator, not text parsed from a summary sentence. This takes priority over the Master Scorecard estimate below whenever that tab exists and is readable.
+      </div>
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
-        Ratios are read automatically from each branch's Master Scorecard ("Count / Data" and "Key Finding" columns). Some rows don't state a clean count and total in the sheet — those are left blank in the Ranking tab rather than guessed. Click any blank (or any score) there to fill it in or correct it by hand.
+        Otherwise, ratios fall back to being read from the branch's Master Scorecard ("Count / Data" and "Key Finding" columns). Some rows don't state a clean count and total in either sheet — those are left blank in the Ranking tab rather than guessed. Click any blank (or any score) there to fill it in or correct it by hand.
       </div>
     </div>
   );
