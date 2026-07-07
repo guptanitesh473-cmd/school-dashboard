@@ -38,6 +38,40 @@ function masterScorecardUrl(sheetId) {
   return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('Master Scorecard')}`;
 }
 
+// For a handful of workbooks, the by-name gviz endpoint above returns the
+// whole tab collapsed into one or two garbled rows (a Google-side quirk, not
+// tied to sheet content). Fetching the same tab by its gid is reliable, so
+// that's the fallback once we can tell the by-name response is bad.
+function gidCsvUrl(editUrl) {
+  const id = extractSheetId(editUrl);
+  const gidMatch = editUrl && editUrl.match(/gid=(\d+)/);
+  if (!id || !gidMatch) return null;
+  return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gidMatch[1]}`;
+}
+
+function isValidScorecard(rows) {
+  if (rows.length < 3) return false;
+  const cols = resolveColumns(rows);
+  return !!cols && cols.category >= 0 && cols.checkPoint >= 0;
+}
+
+// Try the by-name Master Scorecard fetch; if it comes back malformed, retry
+// against the exact gid the branch's Report/Raw Data link points to.
+async function fetchScorecardRows(branch) {
+  const byNameText = await fetch(masterScorecardUrl(branch.scorecardSheetId))
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); });
+  const byNameRows = parseCSV(byNameText);
+  if (isValidScorecard(byNameRows)) return byNameRows;
+
+  const fallback = gidCsvUrl(branch.reportSheet) || gidCsvUrl(branch.rawSheet);
+  if (fallback) {
+    const fallbackText = await fetch(fallback).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); });
+    const fallbackRows = parseCSV(fallbackText);
+    if (isValidScorecard(fallbackRows)) return fallbackRows;
+  }
+  return byNameRows;
+}
+
 // ── Sheet parser (skips title row + header row) ─────────────────────────
 function parseBranches(rows) {
   const data = [];
@@ -245,11 +279,9 @@ function ReportTab({ branches }) {
 
   useEffect(() => {
     if (!branch?.scorecardSheetId) { setRows(null); return; }
-    const url = masterScorecardUrl(branch.scorecardSheetId);
     setLoading(true); setErr('');
-    fetch(url)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-      .then(text => setRows(parseCSV(text)))
+    fetchScorecardRows(branch)
+      .then(setRows)
       .catch(e => setErr(e.message))
       .finally(() => setLoading(false));
   }, [branch?.scorecardSheetId]); // eslint-disable-line
@@ -330,6 +362,185 @@ function ReportTab({ branches }) {
   );
 }
 
+// ── Ranking (scores each branch's Master Scorecard against fixed pointers) ──
+// Pointers are matched against the Check Point / Category text, not by fixed
+// column position, since that text is the one thing that stays consistent
+// across the differently-shaped sheets each branch uses.
+const POINTER_DEFS = [
+  { key: 'teacherAllocation', label: 'Teacher Allocation',  tier: 'high',   match: (cat, cp) => cp.includes('teacher allocation') },
+  { key: 'portionCompletion', label: 'Portion Completion',  tier: 'high',   match: (cat, cp) => cp.includes('portion completion') },
+  { key: 'notebookCorrection',label: 'Notebook Correction', tier: 'high',   match: (cat, cp) => cp.includes('notebook correction') },
+  { key: 'workbookCorrection',label: 'Workbook Correction', tier: 'high',   match: (cat, cp) => cp.includes('workbook correction') },
+  { key: 'substitution',     label: 'Substitution (Eduvate)',tier: 'high',  match: (cat, cp) => cat.includes('substitution') || cp.includes('substitution') },
+  { key: 'clickerUsage',     label: 'Clicker Usage',        tier: 'second', match: (cat, cp) => cp.includes('clicker usage') },
+  { key: 'chatReply',        label: 'Chat Reply',           tier: 'second', match: (cat, cp) => cat.includes('chat reply') || cp.includes('chat') },
+  { key: 'studentMapping',   label: 'Student Mapping',      tier: 'second', match: (cat, cp) => cp.includes('student mapping') },
+];
+const HIGH_KEYS = POINTER_DEFS.filter(p => p.tier === 'high').map(p => p.key);
+const SECOND_KEYS = POINTER_DEFS.filter(p => p.tier === 'second').map(p => p.key);
+const SENTIMENT_SCORE = { good: 10, info: 7, warn: 5, pending: 2, bad: 0 };
+
+// Find the header row (reusing the same classifier as the report table) and
+// map each column name to its index — column order/width differs per sheet.
+function resolveColumns(rows) {
+  for (const row of rows) {
+    if (classifyRow(row) !== 'header') continue;
+    const lower = row.map(c => c.trim().toLowerCase());
+    const find = (...names) => { for (const n of names) { const i = lower.indexOf(n); if (i >= 0) return i; } return -1; };
+    return {
+      category: find('category'),
+      checkPoint: find('check point'),
+      finding: find('key finding', 'detail / sub-points'),
+      status: find('status'),
+    };
+  }
+  return null;
+}
+
+function scoreFromText(status, finding) {
+  const s = sentimentOf(status) || sentimentOf(finding);
+  return s ? SENTIMENT_SCORE[s] : null;
+}
+
+function computePointerScores(rows) {
+  const cols = resolveColumns(rows);
+  if (!cols || cols.checkPoint < 0) return {};
+  const scores = {};
+  for (const row of rows) {
+    if (classifyRow(row) !== 'data') continue;
+    const cat = (cols.category >= 0 ? row[cols.category] || '' : '').toLowerCase();
+    const cp = (row[cols.checkPoint] || '').toLowerCase();
+    if (!cp) continue;
+    const status = cols.status >= 0 ? row[cols.status] || '' : '';
+    const finding = cols.finding >= 0 ? row[cols.finding] || '' : '';
+    for (const p of POINTER_DEFS) {
+      if (scores[p.key] != null) continue; // first matching row wins
+      if (p.match(cat, cp)) {
+        const sc = scoreFromText(status, finding);
+        if (sc != null) scores[p.key] = sc;
+      }
+    }
+  }
+  return scores;
+}
+
+function avgOf(scores, keys) {
+  const vals = keys.map(k => scores[k]).filter(v => v != null);
+  if (!vals.length) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function scoreCellClass(score) {
+  if (score == null) return 'text-gray-300';
+  if (score >= 8) return 'text-green-700 font-semibold';
+  if (score >= 5) return 'text-amber-700 font-semibold';
+  return 'text-red-700 font-semibold';
+}
+
+function ScoreCell({ score }) {
+  return <span className={scoreCellClass(score)}>{score == null ? '—' : score.toFixed(1)}</span>;
+}
+
+const RANKING_CONCURRENCY = 6;
+
+function RankingTab({ branches }) {
+  const targets = useMemo(() => branches.filter(b => b.scorecardSheetId), [branches]);
+  const [scoresByBranch, setScoresByBranch] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!targets.length) { setScoresByBranch({}); setLoading(false); return; }
+    let cancelled = false;
+    setLoading(true); setProgress(0);
+    const results = {};
+    let idx = 0;
+    async function worker() {
+      while (idx < targets.length) {
+        const b = targets[idx++];
+        try {
+          const rows = await fetchScorecardRows(b);
+          results[b.name] = computePointerScores(rows);
+        } catch {
+          results[b.name] = {};
+        }
+        if (!cancelled) setProgress(p => p + 1);
+      }
+    }
+    Promise.all(Array.from({ length: Math.min(RANKING_CONCURRENCY, targets.length) }, worker))
+      .then(() => { if (!cancelled) { setScoresByBranch(results); setLoading(false); } });
+    return () => { cancelled = true; };
+  }, [targets]);
+
+  const ranked = useMemo(() => {
+    if (!scoresByBranch) return [];
+    return targets
+      .map(b => {
+        const scores = scoresByBranch[b.name] || {};
+        return { branch: b, scores, highAvg: avgOf(scores, HIGH_KEYS), secondAvg: avgOf(scores, SECOND_KEYS) };
+      })
+      .sort((a, b) => (b.highAvg ?? -1) - (a.highAvg ?? -1));
+  }, [scoresByBranch, targets]);
+
+  if (loading) return (
+    <div className="flex flex-col justify-center items-center h-40 gap-3">
+      <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full" />
+      <div className="text-xs text-gray-400">Scoring branches… {progress}/{targets.length}</div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600">
+        <p>Each pointer is scored 0–10 from its Master Scorecard status: <span className="text-green-700 font-medium">✅ Satisfactory = 10</span>, <span className="text-blue-700 font-medium">ℹ Info = 7</span>, <span className="text-amber-700 font-medium">⚠ Needs Attention = 5</span>, <span className="text-gray-500 font-medium">⏳ Pending = 2</span>, <span className="text-red-700 font-medium">🔴 Critical = 0</span>. Ranked by High Priority average, highest first.</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-300 overflow-x-auto shadow-sm">
+        <table className="text-sm border-collapse w-full">
+          <thead>
+            <tr className="bg-gray-100">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700 text-[11px] uppercase align-bottom">Rank</th>
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700 text-[11px] uppercase align-bottom min-w-[180px]">Branch</th>
+              <th colSpan={HIGH_KEYS.length + 1} className="border border-gray-300 px-3 py-2 text-center font-semibold text-indigo-900 text-[11px] uppercase bg-indigo-50">High Priority</th>
+              <th colSpan={SECOND_KEYS.length + 1} className="border border-gray-300 px-3 py-2 text-center font-semibold text-teal-900 text-[11px] uppercase bg-teal-50">2nd Priority</th>
+            </tr>
+            <tr className="bg-gray-100">
+              {HIGH_KEYS.map(k => (
+                <th key={k} className="border border-gray-300 px-2 py-2 text-center font-medium text-gray-600 text-[10.5px] uppercase whitespace-nowrap bg-indigo-50/60">
+                  {POINTER_DEFS.find(p => p.key === k).label}
+                </th>
+              ))}
+              <th className="border border-gray-300 px-2 py-2 text-center font-semibold text-indigo-900 text-[10.5px] uppercase whitespace-nowrap bg-indigo-100">Avg</th>
+              {SECOND_KEYS.map(k => (
+                <th key={k} className="border border-gray-300 px-2 py-2 text-center font-medium text-gray-600 text-[10.5px] uppercase whitespace-nowrap bg-teal-50/60">
+                  {POINTER_DEFS.find(p => p.key === k).label}
+                </th>
+              ))}
+              <th className="border border-gray-300 px-2 py-2 text-center font-semibold text-teal-900 text-[10.5px] uppercase whitespace-nowrap bg-teal-100">Avg</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ranked.map(({ branch, scores, highAvg, secondAvg }, i) => (
+              <tr key={branch.name} className={`hover:bg-indigo-50/40 ${i % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
+                <td className="border border-gray-200 px-3 py-2 text-gray-500 font-medium">{i + 1}</td>
+                <td className="border border-gray-200 px-3 py-2 font-medium text-gray-800 whitespace-nowrap">{branch.name}</td>
+                {HIGH_KEYS.map(k => (
+                  <td key={k} className="border border-gray-200 px-2 py-2 text-center"><ScoreCell score={scores[k]} /></td>
+                ))}
+                <td className="border border-gray-200 px-2 py-2 text-center bg-indigo-50/50"><ScoreCell score={highAvg} /></td>
+                {SECOND_KEYS.map(k => (
+                  <td key={k} className="border border-gray-200 px-2 py-2 text-center"><ScoreCell score={scores[k]} /></td>
+                ))}
+                <td className="border border-gray-200 px-2 py-2 text-center bg-teal-50/50"><ScoreCell score={secondAvg} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function BangaloreZone() {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -384,7 +595,7 @@ export default function BangaloreZone() {
     <div className="space-y-4">
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200">
-        {[['branches', 'All Branches'], ['report', 'Audit Report']].map(([key, label]) => (
+        {[['branches', 'All Branches'], ['report', 'Audit Report'], ['ranking', 'Ranking']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === key ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -497,6 +708,7 @@ export default function BangaloreZone() {
       )}
 
       {tab === 'report' && <ReportTab branches={branches} />}
+      {tab === 'ranking' && <RankingTab branches={branches} />}
     </div>
   );
 }
