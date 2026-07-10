@@ -755,6 +755,7 @@ function exportRankingExcel(ranked, zoneLabel, showZoneColumn) {
 const RANKING_EXCLUDED_BRANCHES = [
   'OIS Majestic',
   'OIS Koparkhairane', 'OIS Malad East', 'OIS Mulund', 'OIS Seawoods', 'OIS KKH Sector 14', 'OIS Borivali',
+  'OIS Manapakkam',
 ];
 
 function RankingTab({ branches, zoneLabel, showZoneColumn }) {
