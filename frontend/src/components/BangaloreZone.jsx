@@ -11,6 +11,7 @@ const ZONES = [
   { key: 'mumbai',     label: 'Mumbai',     gid: '1669902267' },
   { key: 'pune',       label: 'Pune',       gid: '62717054' },
 ];
+const ALL_ZONES_KEY = 'all';
 const zoneSheetUrl = gid => `https://docs.google.com/spreadsheets/d/${ZONE_SHEET_ID}/export?format=csv&gid=${gid}`;
 
 // ── CSV parser ────────────────────────────────────────────────────────────
@@ -103,7 +104,7 @@ function resolveZoneColumns(headerRow) {
 }
 
 // ── Sheet parser (skips title row + header row) ─────────────────────────
-function parseBranches(rows) {
+function parseBranches(rows, zoneLabel) {
   if (rows.length < 2) return [];
   const cols = resolveZoneColumns(rows[1]);
   if (cols.name < 0) return [];
@@ -118,7 +119,7 @@ function parseBranches(rows) {
     const rawSheet = get(row, 'rawSheet');
     const reportSheet = get(row, 'reportSheet');
     data.push({
-      name, tag: get(row, 'tag'), member: get(row, 'member'), date: get(row, 'date'),
+      name, zone: zoneLabel, tag: get(row, 'tag'), member: get(row, 'member'), date: get(row, 'date'),
       students: +get(row, 'students') || 0, days: get(row, 'days'),
       rawSheet, reportSheet,
       remark: get(row, 'remark'), timetable: get(row, 'timetable'),
@@ -146,9 +147,9 @@ function downloadSheet(rows, filename, sheetName) {
 }
 
 function exportBranchesExcel(branches, zoneLabel) {
-  const header = ['Branch', 'Tag', 'Assigned Member', 'Audit Date', 'Total Students', 'No of Days', 'Timetable Upload', 'Raw Data Sheet', 'Report Sheet'];
-  const rows = branches.map(b => [b.name, b.tag, b.member, b.date, b.students, b.days, b.timetable, b.rawSheet, b.reportSheet]);
-  downloadSheet([header, ...rows], `${zoneLabel}_Zone_Branches.xlsx`, 'Branches');
+  const header = ['Branch', 'Zone', 'Tag', 'Assigned Member', 'Audit Date', 'Total Students', 'No of Days', 'Timetable Upload', 'Raw Data Sheet', 'Report Sheet'];
+  const rows = branches.map(b => [b.name, b.zone, b.tag, b.member, b.date, b.students, b.days, b.timetable, b.rawSheet, b.reportSheet]);
+  downloadSheet([header, ...rows], `${zoneLabel.replace(/\s+/g, '_')}_Zone_Branches.xlsx`, 'Branches');
 }
 
 // ── Generic report table (handles varying per-school sheet layouts) ─────
@@ -734,18 +735,18 @@ function loadOverrides() {
   try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch { return {}; }
 }
 
-function exportRankingExcel(ranked, zoneLabel) {
-  const header = ['Rank', 'Branch',
+function exportRankingExcel(ranked, zoneLabel, showZoneColumn) {
+  const header = ['Rank', 'Branch', ...(showZoneColumn ? ['Zone'] : []),
     ...HIGH_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), 'High Priority Avg',
     ...SECOND_KEYS.map(k => POINTER_DEFS.find(p => p.key === k).label), '2nd Priority Avg',
     'Overall (70/30)'];
   const rows = ranked.map(({ branch, scores, highAvg, secondAvg, overallAvg }, i) => [
-    i + 1, branch.name,
+    i + 1, branch.name, ...(showZoneColumn ? [branch.zone] : []),
     ...HIGH_KEYS.map(k => scores[k] ?? ''), highAvg ?? '',
     ...SECOND_KEYS.map(k => scores[k] ?? ''), secondAvg ?? '',
     overallAvg ?? '',
   ]);
-  downloadSheet([header, ...rows], `${zoneLabel}_Zone_Ranking.xlsx`, 'Ranking');
+  downloadSheet([header, ...rows], `${zoneLabel.replace(/\s+/g, '_')}_Zone_Ranking.xlsx`, 'Ranking');
 }
 
 // Excluded from Ranking: their Master Scorecard/Overall Audit is a generic
@@ -756,7 +757,7 @@ const RANKING_EXCLUDED_BRANCHES = [
   'OIS Koparkhairane', 'OIS Malad East', 'OIS Mulund', 'OIS Seawoods', 'OIS KKH Sector 14', 'OIS Borivali',
 ];
 
-function RankingTab({ branches, zoneLabel }) {
+function RankingTab({ branches, zoneLabel, showZoneColumn }) {
   const targets = useMemo(() =>
     branches.filter(b => b.scorecardSheetId && !RANKING_EXCLUDED_BRANCHES.includes(b.name)),
   [branches]);
@@ -833,7 +834,7 @@ function RankingTab({ branches, zoneLabel }) {
       <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600 flex items-start justify-between gap-4">
         <p>Each pointer is scored 0–10 from ratios and rules read off its Master Scorecard (see the <span className="font-medium text-gray-700">Scoring Criteria</span> tab for the exact formula per pointer). Ranked by High Priority average, highest first — the rightmost <span className="font-medium text-purple-700">Overall</span> column is a 70/30 weighted blend of both tiers. <span className="text-gray-400">Click any score to edit it — </span><span className="text-indigo-500">●</span><span className="text-gray-400"> marks a manual override. Blank cells mean the sheet didn't state a clear total to compute from — fill them in by hand.</span></p>
         <div className="flex-shrink-0 flex items-center gap-2">
-          <button onClick={() => exportRankingExcel(ranked, zoneLabel)}
+          <button onClick={() => exportRankingExcel(ranked, zoneLabel, showZoneColumn)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap">
             <Download size={13} /> Download Excel
           </button>
@@ -852,6 +853,7 @@ function RankingTab({ branches, zoneLabel }) {
             <tr className="bg-gray-100">
               <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700 text-[11px] uppercase align-bottom">Rank</th>
               <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700 text-[11px] uppercase align-bottom min-w-[180px]">Branch</th>
+              {showZoneColumn && <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700 text-[11px] uppercase align-bottom">Zone</th>}
               <th colSpan={HIGH_KEYS.length + 1} className="border border-gray-300 px-3 py-2 text-center font-semibold text-indigo-900 text-[11px] uppercase bg-indigo-50">High Priority</th>
               <th colSpan={SECOND_KEYS.length + 1} className="border border-gray-300 px-3 py-2 text-center font-semibold text-teal-900 text-[11px] uppercase bg-teal-50">2nd Priority</th>
               <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center font-semibold text-purple-900 text-[11px] uppercase align-bottom bg-purple-100 whitespace-nowrap">Overall<br/>(70/30)</th>
@@ -873,9 +875,10 @@ function RankingTab({ branches, zoneLabel }) {
           </thead>
           <tbody>
             {ranked.map(({ branch, scores, branchOverrides, highAvg, secondAvg, overallAvg }, i) => (
-              <tr key={branch.name} className={`hover:bg-indigo-50/40 ${i % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
+              <tr key={`${branch.zone}-${branch.name}`} className={`hover:bg-indigo-50/40 ${i % 2 ? 'bg-gray-50/60' : 'bg-white'}`}>
                 <td className="border border-gray-200 px-3 py-2 text-gray-500 font-medium">{i + 1}</td>
                 <td className="border border-gray-200 px-3 py-2 font-medium text-gray-800 whitespace-nowrap">{branch.name}</td>
+                {showZoneColumn && <td className="border border-gray-200 px-3 py-2 text-gray-600 whitespace-nowrap">{branch.zone}</td>}
                 {HIGH_KEYS.map(k => (
                   <td key={k} className="border border-gray-200 p-0 text-center">
                     <EditableScoreCell value={scores[k]} overridden={branchOverrides[k] != null}
@@ -947,7 +950,9 @@ function ScoringCriteriaTab() {
 
 export default function BangaloreZone() {
   const [zoneKey, setZoneKey]   = useState(ZONES[0].key);
+  const isAllZones = zoneKey === ALL_ZONES_KEY;
   const zone = ZONES.find(z => z.key === zoneKey);
+  const zoneLabel = isAllZones ? 'All Zones' : zone.label;
   const [branches, setBranches] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
@@ -955,11 +960,18 @@ export default function BangaloreZone() {
   const [search, setSearch]     = useState('');
   const [tab, setTab]           = useState('branches');
 
+  const fetchZoneBranches = z =>
+    fetch(zoneSheetUrl(z.gid))
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+      .then(text => parseBranches(parseCSV(text), z.label));
+
   const load = () => {
     setLoading(true); setError('');
-    fetch(zoneSheetUrl(zone.gid))
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-      .then(text => setBranches(parseBranches(parseCSV(text))))
+    const request = isAllZones
+      ? Promise.all(ZONES.map(z => fetchZoneBranches(z))).then(lists => lists.flat())
+      : fetchZoneBranches(zone);
+    request
+      .then(setBranches)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
@@ -997,6 +1009,13 @@ export default function BangaloreZone() {
             {z.label}
           </button>
         ))}
+        <span className="w-px h-5 bg-gray-300 mx-1" />
+        <button onClick={() => setZoneKey(ALL_ZONES_KEY)}
+          className={`px-3.5 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+            isAllZones ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-purple-700 border-purple-300 hover:bg-purple-50'
+          }`}>
+          All Zones (combined)
+        </button>
       </div>
 
       {loading ? (
@@ -1060,7 +1079,7 @@ export default function BangaloreZone() {
               placeholder="Search branch or auditor..."
               className="ml-1 px-3 py-1.5 text-xs border border-gray-200 rounded-full w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
-            <button onClick={() => exportBranchesExcel(filtered, zone.label)}
+            <button onClick={() => exportBranchesExcel(filtered, zoneLabel)}
               className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
               <Download size={13} /> Download Excel
             </button>
@@ -1075,6 +1094,7 @@ export default function BangaloreZone() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 min-w-[200px]">Branch</th>
+                  {isAllZones && <th className="text-left px-3 py-3 font-semibold text-gray-700">Zone</th>}
                   <th className="text-left px-3 py-3 font-semibold text-gray-700">Tag</th>
                   <th className="text-left px-3 py-3 font-semibold text-gray-700">Assigned Member</th>
                   <th className="text-left px-3 py-3 font-semibold text-gray-700">Audit Date</th>
@@ -1087,8 +1107,9 @@ export default function BangaloreZone() {
                 {filtered.map(b => {
                   const ts = timetableStatus(b.timetable);
                   return (
-                    <tr key={b.name} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={`${b.zone}-${b.name}`} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="px-4 py-2.5 font-medium text-gray-800">{b.name}</td>
+                      {isAllZones && <td className="px-3 py-2.5 text-gray-600">{b.zone}</td>}
                       <td className="px-3 py-2.5">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${TAG_COLORS[b.tag] || 'bg-gray-100 text-gray-600'}`}>
                           {b.tag || '—'}
@@ -1120,7 +1141,7 @@ export default function BangaloreZone() {
                   );
                 })}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">No branches match this filter.</td></tr>
+                  <tr><td colSpan={isAllZones ? 8 : 7} className="px-4 py-8 text-center text-gray-400 text-sm">No branches match this filter.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1129,7 +1150,7 @@ export default function BangaloreZone() {
       )}
 
       {tab === 'report' && <ReportTab branches={branches} />}
-      {tab === 'ranking' && <RankingTab branches={branches} zoneLabel={zone.label} />}
+      {tab === 'ranking' && <RankingTab branches={branches} zoneLabel={zoneLabel} showZoneColumn={isAllZones} />}
       {tab === 'criteria' && <ScoringCriteriaTab />}
       </div>
       )}
