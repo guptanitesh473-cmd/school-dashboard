@@ -206,8 +206,8 @@ db.exec(`
 const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
 if (userCount === 0) {
   db.prepare(`INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)`)
-    .run('admin', 'admin123', 'Administrator', 'admin');
-  console.log('Default user created: admin / admin123');
+    .run('OnlyNitesh', 'OnlyNitesh', 'Administrator', 'admin');
+  console.log('Default user created: OnlyNitesh / OnlyNitesh');
 }
 
 // Migrations — safe to run multiple times
