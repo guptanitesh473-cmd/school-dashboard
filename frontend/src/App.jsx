@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
+import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
   School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
-  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages, MapPin,
+  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages, MapPin, Building2,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -23,6 +23,7 @@ import MonthlyMeeting from './components/MonthlyMeeting';
 import AuditReport from './components/AuditReport';
 import ComplianceAudit from './components/ComplianceAudit';
 import BangaloreZone from './components/BangaloreZone';
+import ERPSystem from './components/ERPSystem';
 import TemplateType from './components/TemplateType';
 import ReportView from './components/ReportView';
 import UserManagement from './components/UserManagement';
@@ -107,6 +108,11 @@ const NAV = [
     label: 'Template Type',
     icon: Languages,
   },
+  {
+    to: '/erp',
+    label: 'ERP System',
+    icon: Building2,
+  },
 ];
 
 const SCHOOL_NAV = [
@@ -119,6 +125,8 @@ export default function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -139,6 +147,12 @@ export default function App() {
 
   if (!authChecked) return null; // brief flicker prevention
   if (!user) return <Login onLogin={handleLogin} />;
+
+  // ERP System is a self-contained sub-app with its own login/shell — render
+  // it full-screen instead of nesting it inside the dashboard's sidebar.
+  if (location.pathname.startsWith('/erp')) {
+    return <ERPSystem onExit={() => navigate('/')} />;
+  }
 
   return (
     <UserContext.Provider value={user}>
@@ -367,6 +381,7 @@ function PageTitle() {
     '/compliance': 'Compliances and Audit',
     '/bangalore-zone': 'Zone Audits',
     '/template-type': 'Template Type',
+    '/erp': 'ERP System',
     '/users': 'User Management',
     '/schools': 'Schools',
     '/schools/new': 'Add School',
