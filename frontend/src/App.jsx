@@ -110,7 +110,7 @@ const NAV = [
   },
   {
     to: '/erp',
-    label: 'ERP System',
+    label: 'BLA Dashboard new',
     icon: Building2,
   },
 ];
@@ -381,7 +381,7 @@ function PageTitle() {
     '/compliance': 'Compliances and Audit',
     '/bangalore-zone': 'Zone Audits',
     '/template-type': 'Template Type',
-    '/erp': 'ERP System',
+    '/erp': 'BLA Dashboard new',
     '/users': 'User Management',
     '/schools': 'Schools',
     '/schools/new': 'Add School',
