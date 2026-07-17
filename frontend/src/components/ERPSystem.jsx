@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import {
   BookOpen, CalendarCheck, FileText, Send, LogOut, ChevronRight,
   CheckCircle2, Clock, XCircle, User, Layers, GraduationCap, Inbox, Plus, ArrowLeft,
-  Mail, Phone, MapPin, Pencil, Save, BadgeCheck
+  Mail, Phone, MapPin, Pencil, Save, BadgeCheck, Trash2, UserPlus, Users, LayoutDashboard
 } from "lucide-react";
 
 
@@ -464,6 +464,24 @@ const LEAVE_BALANCE = [
 ];
 
 /* ------------------------------------------------------------------ */
+/*  Admin — employee directory (mock data for the admin dashboard)    */
+/* ------------------------------------------------------------------ */
+
+const SUBJECT_OPTIONS = ["Mathematics", "Science", "English", "Chemistry", "Social Studies", "Not assigned"];
+const GRADE_OPTIONS = ["Grade 6", "Grade 7", "Grade 8", "—"];
+
+const INITIAL_EMPLOYEES = [
+  { id: 1, name: "Anita Rao", email: "a.rao@banyanacademy.edu", subject: "Mathematics", grade: "Grade 6", attendancePct: 96, lpCompleted: 9, lpTotal: 12, leavesTaken: 2, joined: "12 Jun 2021" },
+  { id: 2, name: "Ravi Kumar", email: "r.kumar@banyanacademy.edu", subject: "Chemistry", grade: "Grade 6", attendancePct: 88, lpCompleted: 4, lpTotal: 6, leavesTaken: 5, joined: "3 Jan 2022" },
+  { id: 3, name: "Meena Iyer", email: "m.iyer@banyanacademy.edu", subject: "Science", grade: "Grade 7", attendancePct: 91, lpCompleted: 5, lpTotal: 8, leavesTaken: 1, joined: "18 Aug 2020" },
+  { id: 4, name: "Suresh Babu", email: "s.babu@banyanacademy.edu", subject: "English", grade: "Grade 6", attendancePct: 84, lpCompleted: 3, lpTotal: 8, leavesTaken: 4, joined: "22 Feb 2023" },
+  { id: 5, name: "Divya Nair", email: "d.nair@banyanacademy.edu", subject: "Social Studies", grade: "Grade 7", attendancePct: 97, lpCompleted: 4, lpTotal: 4, leavesTaken: 0, joined: "9 Jun 2019" },
+  { id: 6, name: "Karthik Menon", email: "k.menon@banyanacademy.edu", subject: "Mathematics", grade: "Grade 8", attendancePct: 79, lpCompleted: 6, lpTotal: 10, leavesTaken: 6, joined: "14 Nov 2022" },
+  { id: 7, name: "Priya Sharma", email: "p.sharma@banyanacademy.edu", subject: "Science", grade: "Grade 8", attendancePct: 93, lpCompleted: 5, lpTotal: 6, leavesTaken: 2, joined: "5 May 2021" },
+  { id: 8, name: "Arjun Das", email: "a.das@banyanacademy.edu", subject: "Not assigned", grade: "—", attendancePct: 90, lpCompleted: 0, lpTotal: 0, leavesTaken: 1, joined: "1 Jul 2026" },
+];
+
+/* ------------------------------------------------------------------ */
 /*  Small building blocks                                              */
 /* ------------------------------------------------------------------ */
 
@@ -510,10 +528,11 @@ function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
+  const [role, setRole] = useState("employee");
 
   const submit = () => {
     if (!email.trim() || !pw.trim()) { setErr("Enter both email and password to sign in."); return; }
-    onLogin(email.trim());
+    onLogin(email.trim(), role);
   };
 
   return (
@@ -549,7 +568,23 @@ function Login({ onLogin }) {
             <span className="display font-bold text-lg">Banyan International Academy</span>
           </div>
           <h1 className="display text-2xl font-bold">Sign in</h1>
-          <p className="text-sm mt-1 mb-6" style={{ color: "#5B6B85" }}>Use your staff email to continue.</p>
+          <p className="text-sm mt-1 mb-4" style={{ color: "#5B6B85" }}>Use your staff email to continue.</p>
+
+          <label className="block text-sm font-medium mb-1">Sign in as</label>
+          <div className="flex gap-2 mb-4">
+            {["employee", "admin"].map((r) => (
+              <button
+                key={r}
+                onClick={() => setRole(r)}
+                className="flex-1 py-2 rounded-md text-sm font-semibold border capitalize transition-colors"
+                style={role === r
+                  ? { background: "#1E2B5C", color: "#fff", borderColor: "#1E2B5C" }
+                  : { background: "#fff", color: "#5B6B85", borderColor: "#D8D4C6" }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
 
           <label className="block text-sm font-medium mb-1">Staff email</label>
           <input
@@ -576,7 +611,7 @@ function Login({ onLogin }) {
             className="w-full mt-6 py-2.5 rounded-md font-semibold text-sm transition-transform active:scale-[0.99]"
             style={{ background: "#E07C24", color: "#1E2B5C" }}
           >
-            Sign in to portal
+            Sign in as {role}
           </button>
           <p className="text-xs mt-4" style={{ color: "#8A8672" }}>
             Demo build — any email and password will sign you in.
@@ -613,10 +648,62 @@ function BooksTab({ book }) {
   );
 }
 
-function LPItem({ lp, status, onCycle }) {
+// Turns a freeform LP content string into PPT-style slide blocks: a blank
+// line starts a new slide; the first non-bullet line in a block becomes its
+// heading, and any "•" / "1." / "2." lines become bullet points.
+const BULLET_RE = /^(?:•|-|\d+\.)\s+/;
+function parseSlideBlocks(content) {
+  return content
+    .split(/\n\s*\n/)
+    .map((block) => block.split("\n").map((l) => l.trim()).filter(Boolean))
+    .filter((lines) => lines.length)
+    .map((lines) => {
+      let heading = "";
+      let body = lines;
+      if (!BULLET_RE.test(lines[0]) && lines.length > 1) {
+        heading = lines[0];
+        body = lines.slice(1);
+      }
+      const bullets = body.filter((l) => BULLET_RE.test(l)).map((l) => l.replace(BULLET_RE, ""));
+      const plain = body.filter((l) => !BULLET_RE.test(l));
+      return { heading, bullets, plain };
+    });
+}
+
+function LPSlide({ slide, index }) {
+  const accent = ["#E07C24", "#2E7D5B", "#1E2B5C"][index % 3];
+  return (
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "#E3E0D6" }}>
+      {slide.heading && (
+        <div className="px-4 py-2 text-sm font-bold text-white" style={{ background: accent }}>
+          {slide.heading}
+        </div>
+      )}
+      <div className="p-4" style={{ background: "#FFFEFB" }}>
+        {slide.plain.map((line, i) => (
+          <p key={i} className="text-sm mb-2" style={{ color: "#3A4560" }}>{line}</p>
+        ))}
+        {slide.bullets.length > 0 && (
+          <ul className="space-y-2">
+            {slide.bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "#3A4560" }}>
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: accent }} />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LPItem({ lp, status, onCycle, onMarkDone }) {
   const [open, setOpen] = useState(false);
   const isRich = typeof lp === "object";
   const title = isRich ? lp.title : lp;
+  const slides = isRich ? parseSlideBlocks(lp.content) : [];
+  const isDone = status === "Completed";
   return (
     <li className="border-t" style={{ borderColor: "#F0EDE3" }}>
       <div className="flex items-center justify-between gap-3 px-4 py-3">
@@ -629,16 +716,29 @@ function LPItem({ lp, status, onCycle }) {
           <span className="text-sm truncate">{title}</span>
           {isRich && <ChevronRight size={14} className="shrink-0 text-gray-400 transition-transform" style={{ transform: open ? "rotate(90deg)" : "none" }} />}
         </button>
-        <button onClick={onCycle} className="shrink-0" title="Change status">
-          <StatusPill label={status} />
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={onCycle} title="Change status">
+            <StatusPill label={status} />
+          </button>
+          <button
+            onClick={onMarkDone}
+            disabled={isDone}
+            title="Mark done"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border transition-colors disabled:cursor-default"
+            style={isDone
+              ? { background: "#E8F3EC", color: "#2E7D5B", borderColor: "#CFE6D8" }
+              : { background: "#FFFFFF", color: "#2E7D5B", borderColor: "#2E7D5B" }}
+          >
+            <CheckCircle2 size={13} /> {isDone ? "Done" : "Mark done"}
+          </button>
+        </div>
       </div>
       {isRich && open && (
-        <div className="px-4 pb-4">
-          <div className="rounded-md p-3 text-xs mb-2" style={{ background: "#FBEEDF", color: "#7A4A0E" }}>
+        <div className="px-4 pb-4 space-y-3">
+          <div className="rounded-md p-3 text-xs" style={{ background: "#FBEEDF", color: "#7A4A0E" }}>
             <span className="font-semibold">30-minute period guide — </span>{lp.guidance}
           </div>
-          <div className="text-sm whitespace-pre-line" style={{ color: "#3A4560" }}>{lp.content}</div>
+          {slides.map((slide, i) => <LPSlide key={i} slide={slide} index={i} />)}
         </div>
       )}
     </li>
@@ -667,6 +767,7 @@ function Curriculum() {
       return { ...s, [key(lpTitle)]: next };
     });
   };
+  const markDone = (lpTitle) => setLpStatus((s) => ({ ...s, [key(lpTitle)]: "Completed" }));
 
   const openChapter = (c) => {
     setChapter(c);
@@ -774,7 +875,7 @@ function Curriculum() {
               {CURRICULUM[grade][subject][chapter].lps.map((lp) => {
                 const title = typeof lp === "object" ? lp.title : lp;
                 return (
-                  <LPItem key={title} lp={lp} status={lpStatus[key(title)] || "Not started"} onCycle={() => cycleStatus(title)} />
+                  <LPItem key={title} lp={lp} status={lpStatus[key(title)] || "Not started"} onCycle={() => cycleStatus(title)} onMarkDone={() => markDone(title)} />
                 );
               })}
             </ul>
@@ -1055,6 +1156,217 @@ function Requests() {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Admin — Employee Management                                        */
+/* ------------------------------------------------------------------ */
+
+function ProgressBar({ pct, color = "#E07C24" }) {
+  return (
+    <div className="h-1.5 rounded-full w-full" style={{ background: "#F0EDE3" }}>
+      <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, Math.max(0, pct))}%`, background: color }} />
+    </div>
+  );
+}
+
+function EmployeeManagement({ employees, setEmployees }) {
+  const [form, setForm] = useState({ name: "", email: "", subject: SUBJECT_OPTIONS[0], grade: GRADE_OPTIONS[0] });
+  const [msg, setMsg] = useState("");
+  const input = "w-full border rounded-md px-3 py-2 text-sm bg-white";
+
+  const addEmployee = () => {
+    if (!form.name.trim() || !form.email.trim()) { setMsg("Enter both name and email."); return; }
+    setEmployees((prev) => [
+      ...prev,
+      { id: Date.now(), ...form, attendancePct: 100, lpCompleted: 0, lpTotal: 0, leavesTaken: 0, joined: "Today" },
+    ]);
+    setForm({ name: "", email: "", subject: SUBJECT_OPTIONS[0], grade: GRADE_OPTIONS[0] });
+    setMsg("Employee added.");
+  };
+
+  const removeEmployee = (id) => setEmployees((prev) => prev.filter((e) => e.id !== id));
+  const assignSubject = (id, subject) => setEmployees((prev) => prev.map((e) => (e.id === id ? { ...e, subject } : e)));
+  const assignGrade = (id, grade) => setEmployees((prev) => prev.map((e) => (e.id === id ? { ...e, grade } : e)));
+
+  return (
+    <div>
+      <SectionTitle eyebrow="Admin" title="Manage employees" />
+
+      <Card className="p-5 margin-rule mb-6">
+        <div className="font-semibold text-sm mb-4 flex items-center gap-2"><UserPlus size={16} style={{ color: "#E07C24" }} /> Add employee</div>
+        <div className="grid sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-xs font-medium mb-1">Name</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" className={input} style={{ borderColor: "#D8D4C6" }} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Email</label>
+            <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="staff email" className={input} style={{ borderColor: "#D8D4C6" }} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Subject</label>
+            <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }}>
+              {SUBJECT_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Grade</label>
+            <select value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }}>
+              {GRADE_OPTIONS.map((g) => <option key={g}>{g}</option>)}
+            </select>
+          </div>
+        </div>
+        {msg && <div className="text-xs mb-3" style={{ color: "#2E7D5B" }}>{msg}</div>}
+        <button onClick={addEmployee} className="px-4 py-2 rounded-md text-sm font-semibold inline-flex items-center gap-2" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+          <UserPlus size={14} /> Add employee
+        </button>
+      </Card>
+
+      <Card>
+        <div className="p-4 border-b font-semibold text-sm flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
+          <span>All employees ({employees.length})</span>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold">Subject</th>
+              <th className="px-4 py-3 font-semibold">Grade</th>
+              <th className="px-4 py-3 font-semibold text-right">Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            {employees.map((emp) => (
+              <tr key={emp.id} className="border-t" style={{ borderColor: "#F0EDE3" }}>
+                <td className="px-4 py-2.5">
+                  <div className="font-medium">{emp.name}</div>
+                  <div className="text-xs" style={{ color: "#5B6B85" }}>{emp.email}</div>
+                </td>
+                <td className="px-4 py-2.5">
+                  <select value={emp.subject} onChange={(e) => assignSubject(emp.id, e.target.value)}
+                    className="border rounded-md px-2 py-1 text-xs bg-white" style={{ borderColor: "#D8D4C6" }}>
+                    {SUBJECT_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                  </select>
+                </td>
+                <td className="px-4 py-2.5">
+                  <select value={emp.grade} onChange={(e) => assignGrade(emp.id, e.target.value)}
+                    className="border rounded-md px-2 py-1 text-xs bg-white" style={{ borderColor: "#D8D4C6" }}>
+                    {GRADE_OPTIONS.map((g) => <option key={g}>{g}</option>)}
+                  </select>
+                </td>
+                <td className="px-4 py-2.5 text-right">
+                  <button onClick={() => removeEmployee(emp.id)} className="p-1.5 rounded-md hover:bg-red-50" title="Remove employee" style={{ color: "#C4452E" }}>
+                    <Trash2 size={14} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {employees.length === 0 && (
+              <tr><td colSpan={4} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No employees yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Admin — Dashboard (full visibility across every employee)         */
+/* ------------------------------------------------------------------ */
+
+function AdminDashboard({ employees }) {
+  const [expanded, setExpanded] = useState(null);
+  const total = employees.length;
+  const avgAttendance = total ? Math.round(employees.reduce((s, e) => s + e.attendancePct, 0) / total) : 0;
+  const totalLpDone = employees.reduce((s, e) => s + e.lpCompleted, 0);
+  const totalLp = employees.reduce((s, e) => s + e.lpTotal, 0);
+  const totalLeaves = employees.reduce((s, e) => s + e.leavesTaken, 0);
+
+  const stats = [
+    { label: "Total Employees", value: total, icon: Users, color: "#1E2B5C" },
+    { label: "Avg Attendance", value: `${avgAttendance}%`, icon: CalendarCheck, color: "#2E7D5B" },
+    { label: "LPs Completed", value: `${totalLpDone}/${totalLp}`, icon: BookOpen, color: "#E07C24" },
+    { label: "Leaves Taken (all)", value: totalLeaves, icon: FileText, color: "#C4452E" },
+  ];
+
+  return (
+    <div>
+      <SectionTitle eyebrow="Admin" title="Admin dashboard" />
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {stats.map((s) => (
+          <Card key={s.label} className="p-4">
+            <s.icon size={18} style={{ color: s.color }} />
+            <div className="display text-2xl font-bold mt-2">{s.value}</div>
+            <div className="text-xs" style={{ color: "#5B6B85" }}>{s.label}</div>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>Employee progress</div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Subject / Grade</th>
+              <th className="px-4 py-3 font-semibold">Attendance</th>
+              <th className="px-4 py-3 font-semibold">LP Progress</th>
+              <th className="px-4 py-3 font-semibold text-right">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {employees.map((emp) => {
+              const lpPct = emp.lpTotal ? Math.round((emp.lpCompleted / emp.lpTotal) * 100) : 0;
+              const open = expanded === emp.id;
+              return (
+                <Fragment key={emp.id}>
+                  <tr className="border-t" style={{ borderColor: "#F0EDE3" }}>
+                    <td className="px-4 py-2.5 font-medium">{emp.name}</td>
+                    <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{emp.subject} · {emp.grade}</td>
+                    <td className="px-4 py-2.5 w-32">
+                      <div className="flex items-center gap-2">
+                        <ProgressBar pct={emp.attendancePct} color={emp.attendancePct >= 90 ? "#2E7D5B" : emp.attendancePct >= 80 ? "#E07C24" : "#C4452E"} />
+                        <span className="text-xs shrink-0" style={{ color: "#5B6B85" }}>{emp.attendancePct}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5 w-32">
+                      <div className="flex items-center gap-2">
+                        <ProgressBar pct={lpPct} color="#E07C24" />
+                        <span className="text-xs shrink-0" style={{ color: "#5B6B85" }}>{emp.lpCompleted}/{emp.lpTotal}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      <button onClick={() => setExpanded(open ? null : emp.id)} className="text-xs hover:underline" style={{ color: "#E07C24" }}>
+                        {open ? "Hide" : "View"}
+                      </button>
+                    </td>
+                  </tr>
+                  {open && (
+                    <tr key={`${emp.id}-detail`} className="border-t" style={{ borderColor: "#F0EDE3", background: "#FBF9F3" }}>
+                      <td colSpan={5} className="px-4 py-4">
+                        <div className="grid sm:grid-cols-4 gap-4 text-xs">
+                          <div><div style={{ color: "#8A8672" }}>Email</div><div className="font-medium mt-0.5">{emp.email}</div></div>
+                          <div><div style={{ color: "#8A8672" }}>Joined</div><div className="font-medium mt-0.5">{emp.joined}</div></div>
+                          <div><div style={{ color: "#8A8672" }}>Leaves taken</div><div className="font-medium mt-0.5">{emp.leavesTaken}</div></div>
+                          <div><div style={{ color: "#8A8672" }}>LP completion</div><div className="font-medium mt-0.5">{lpPct}% ({emp.lpCompleted} of {emp.lpTotal})</div></div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+            {employees.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No employees yet — add one under Manage Employees.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Dashboard                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -1214,7 +1526,7 @@ function Profile({ email }) {
 /*  Shell                                                              */
 /* ------------------------------------------------------------------ */
 
-const NAV = [
+const BASE_NAV = [
   { id: "dashboard", label: "Dashboard", icon: GraduationCap },
   { id: "curriculum", label: "Curriculum", icon: BookOpen },
   { id: "attendance", label: "Attendance", icon: CalendarCheck },
@@ -1222,16 +1534,22 @@ const NAV = [
   { id: "requests", label: "Requests", icon: Inbox },
   { id: "profile", label: "My profile", icon: User },
 ];
+const ADMIN_NAV = [
+  { id: "admin-dashboard", label: "Admin Dashboard", icon: LayoutDashboard },
+  { id: "employees", label: "Manage Employees", icon: Users },
+];
 
 export default function ERPSystem({ onExit }) {
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState("employee");
   const [tab, setTab] = useState("dashboard");
+  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
 
   if (!user) {
     return (
       <div className="erp">
         <style>{styles}</style>
-        <Login onLogin={(email) => { setUser(email); setTab("dashboard"); }} />
+        <Login onLogin={(email, r) => { setUser(email); setRole(r); setTab(r === "admin" ? "admin-dashboard" : "dashboard"); }} />
         {onExit && (
           <button
             onClick={onExit}
@@ -1244,6 +1562,8 @@ export default function ERPSystem({ onExit }) {
       </div>
     );
   }
+
+  const isAdmin = role === "admin";
 
   return (
     <div className="erp min-h-screen flex flex-col md:flex-row" style={{ background: "#FAF9F4" }}>
@@ -1259,7 +1579,7 @@ export default function ERPSystem({ onExit }) {
             <span className="display font-bold text-sm leading-tight">Banyan International<br />Academy</span>
           </div>
           <nav className="flex md:flex-col gap-1 p-2 md:px-3 w-full">
-            {NAV.map((n) => {
+            {BASE_NAV.map((n) => {
               const active = tab === n.id;
               return (
                 <button
@@ -1276,6 +1596,29 @@ export default function ERPSystem({ onExit }) {
                 </button>
               );
             })}
+            {isAdmin && (
+              <>
+                <div className="mx-1 my-2 border-t" style={{ borderColor: "#2C3B72" }} />
+                <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider hidden md:block" style={{ color: "#7A88AC" }}>Admin</div>
+                {ADMIN_NAV.map((n) => {
+                  const active = tab === n.id;
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => setTab(n.id)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors"
+                      style={{
+                        background: active ? "#E07C24" : "transparent",
+                        color: active ? "#1E2B5C" : "#C6D0E2",
+                        fontWeight: active ? 600 : 400,
+                      }}
+                    >
+                      <n.icon size={16} /> {n.label}
+                    </button>
+                  );
+                })}
+              </>
+            )}
           </nav>
         </div>
         <div className="hidden md:block p-4 border-t" style={{ borderColor: "#2C3B72" }}>
@@ -1288,7 +1631,10 @@ export default function ERPSystem({ onExit }) {
             <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#2C3B72" }}>
               <User size={14} />
             </div>
-            <div className="truncate text-xs" style={{ color: "#C6D0E2" }}>{user}</div>
+            <div className="min-w-0">
+              <div className="truncate text-xs" style={{ color: "#C6D0E2" }}>{user}</div>
+              <div className="text-[10px] uppercase tracking-wide" style={{ color: "#7A88AC" }}>{role}</div>
+            </div>
           </div>
           <button onClick={() => setUser(null)} className="flex items-center gap-2 text-xs hover:underline" style={{ color: "#9FB0CC" }}>
             <LogOut size={13} /> Sign out
@@ -1304,6 +1650,8 @@ export default function ERPSystem({ onExit }) {
         {tab === "leaves" && <Leaves />}
         {tab === "requests" && <Requests />}
         {tab === "profile" && <Profile email={user} />}
+        {tab === "admin-dashboard" && isAdmin && <AdminDashboard employees={employees} />}
+        {tab === "employees" && isAdmin && <EmployeeManagement employees={employees} setEmployees={setEmployees} />}
         <div className="md:hidden mt-8">
           <button onClick={() => setUser(null)} className="flex items-center gap-2 text-xs" style={{ color: "#5B6B85" }}>
             <LogOut size={13} /> Sign out ({user})
