@@ -34,40 +34,161 @@ const styles = `
 const CURRICULUM = {
   "Grade 6": {
     Mathematics: {
-      "Ch 1 · Knowing Our Numbers": ["LP 1.1 Place value & comparison", "LP 1.2 Estimation in daily life", "LP 1.3 Roman numerals"],
-      "Ch 2 · Whole Numbers": ["LP 2.1 Number line", "LP 2.2 Properties of operations"],
-      "Ch 3 · Playing with Numbers": ["LP 3.1 Factors & multiples", "LP 3.2 Tests of divisibility", "LP 3.3 HCF & LCM"],
+      "Ch 1 · Knowing Our Numbers": { book: null, lps: ["LP 1.1 Place value & comparison", "LP 1.2 Estimation in daily life", "LP 1.3 Roman numerals"] },
+      "Ch 2 · Whole Numbers": { book: null, lps: ["LP 2.1 Number line", "LP 2.2 Properties of operations"] },
+      "Ch 3 · Playing with Numbers": { book: null, lps: ["LP 3.1 Factors & multiples", "LP 3.2 Tests of divisibility", "LP 3.3 HCF & LCM"] },
     },
     Science: {
-      "Ch 1 · Food: Where Does It Come From?": ["LP 1.1 Plant & animal sources", "LP 1.2 Food habits survey"],
-      "Ch 2 · Components of Food": ["LP 2.1 Nutrients & tests", "LP 2.2 Balanced diet planning"],
+      "Ch 1 · Food: Where Does It Come From?": { book: null, lps: ["LP 1.1 Plant & animal sources", "LP 1.2 Food habits survey"] },
+      "Ch 2 · Components of Food": { book: null, lps: ["LP 2.1 Nutrients & tests", "LP 2.2 Balanced diet planning"] },
     },
     English: {
-      "Ch 1 · Who Did Patrick's Homework?": ["LP 1.1 Reading & comprehension", "LP 1.2 Vocabulary in context"],
-      "Ch 2 · How the Dog Found Himself a Master": ["LP 2.1 Guided reading", "LP 2.2 Character mapping"],
+      "Ch 1 · Who Did Patrick's Homework?": { book: null, lps: ["LP 1.1 Reading & comprehension", "LP 1.2 Vocabulary in context"] },
+      "Ch 2 · How the Dog Found Himself a Master": { book: null, lps: ["LP 2.1 Guided reading", "LP 2.2 Character mapping"] },
+    },
+    Chemistry: {
+      "Ch 1 · Fibre to Fabric": {
+        book: {
+          title: "Chapter 1 — Fibre to Fabric",
+          pdfUrl: "/books/grade6-chemistry-ch1-fibre-to-fabric.pdf",
+          pages: "34 pages",
+        },
+        lps: [
+          {
+            title: "LP-1",
+            guidance: "0–5 min: Ask students to look at what they're wearing and guess what it's made of — start the fibre discovery journey. 5–20 min: Introduce the definition of fibre and the two broad categories, Natural vs Synthetic, using the classification chart. 20–27 min: Go through real-world examples of each and note them on the board. 27–30 min: Quick recap — 2–3 students name one natural and one synthetic fibre.",
+            content:
+`What is Fibre?
+The thin threads or filaments extracted from natural sources (animal and plant) or synthetically produced, which are used to make yarn, are called Fibres.
+
+Classification of Fibres:
+1. Natural fibres — found in nature, extracted from plants and animals.
+   • Plant-based fibres: from cultivated plant tissue (stem, fruit) — e.g. Cotton, Jute, Flax.
+   • Animal-based fibres: from animal tissue (hair, fur, secretion) — e.g. Wool, Silk.
+2. Synthetic fibres — not found directly in nature, artificially made — e.g. Nylon, Polyester.
+
+Key idea: All fibres are chemically a polymer — large molecules made of many repeating smaller units called monomers (e.g. starch, protein and fibre are all polymers).`,
+          },
+          {
+            title: "LP-2",
+            guidance: "0–5 min: Show pictures/samples of raw cotton, jute and flax; ask students to guess which fabric each becomes. 5–22 min: Walk through Cotton (growing conditions, cotton bolls, ginning), Jute (growing conditions, producing states) and Flax (history, strength). 22–27 min: Cover the 'Did you know?' facts — cotton is more durable when wet; flax is one of the strongest natural fibres. 27–30 min: Students name 2 products each made from cotton and jute.",
+            content:
+`Cotton
+• The most produced fibre worldwide — cotton seeds dating back to 450 BC were found in Peru.
+• Grown in warm climates with black soil; leading Indian states: Punjab, Gujarat, Madhya Pradesh, Karnataka, Maharashtra.
+• Cotton plants produce lemon-sized fruits called cotton bolls; once mature they burst open, revealing the fibre, picked by hand.
+• Ginning: separating cotton fibres from cotton seeds — traditionally by hand, now via double-roller cotton gins.
+• No waste: seeds go to animal feed/cottonseed oil; stalks are tilled back into the soil.
+• Did you know? Cotton is more durable when wet, unlike other cellulosic fibres such as rayon.
+
+Jute
+• From the stem of the jute plant — second only to cotton in production and variety of uses.
+• Easy to grow, high yield, little pesticide/fertiliser needed — grown in the rainy season (unlike cotton).
+• Leading Indian producers: Bihar, Assam, West Bengal.
+• Harvested at the flowering stage; stems are soaked in water for 4–5 days (retting) to rot the soft tissue, then fibres are collected by hand.
+• Did you know? Jute is called the "Golden Fibre" for its golden shine and silky texture.
+
+Flax
+• Grows best in well-drained sandy loam, temperate climates.
+• One of the oldest textile fibres — evidence found in prehistoric lake dwellings in Switzerland, and fine linen discovered in Egyptian tombs.
+• Did you know? Flax is one of the strongest natural fibres ever discovered.`,
+          },
+          {
+            title: "LP-3",
+            guidance: "0–5 min: Ask 'Where do wool and silk come from?' 5–20 min: Cover Wool and Silk (sericulture), then Nylon and Polyester with everyday examples. 20–26 min: Run the 'Let's Experiment' discussion — sweat patches on polyester vs cotton sportswear, and why. 26–30 min: Fill in the Natural vs Synthetic comparison table together on the board.",
+            content:
+`Animal-based fibres — from animal tissue such as hair or fur.
+• Silk: production is called sericulture. Raw silk extraction starts with cultivating silkworms; as worms pupate in cocoons, the cocoons are boiled in water to unwind the long individual fibres, fed into a spinning reel.
+• Wool: sheared from sheep and transformed — through age-old techniques and modern technology — into soft fabrics and yarns.
+
+Synthetic fibres — artificially made, not found directly in nature.
+• Nylon: the first commercially successful synthetic polymer. Found in toothbrushes, umbrellas, fishing line, windbreakers, tents.
+• Polyester: human-made, resilient, withstands wear and tear, holds shape, dries quickly, but isn't very absorbent (unlike cotton).
+
+Let's Experiment: Polyester sportswear develops visible sweat patches during exercise, while cotton clothing does not — because polyester isn't absorbent.
+
+Natural vs Synthetic — key differences:
+• Natural fibres are found in nature (Wool, Silk, Cotton); synthetic fibres are human-made or lab-prepared (Nylon, Rayon).
+• Natural fibres are good absorbents of heat, temperature, sweat; synthetic fibres, made of chemicals with no pores, generally are not.
+• Natural fibre length is fixed by nature; synthetic fibre length can be controlled and changed to different structures.
+• Natural fibres are more comfortable to wear than synthetic fibres.`,
+          },
+          {
+            title: "LP-4",
+            guidance: "0–5 min: Ask students to imagine a world with no woven fabric — what would people use? 5–22 min: Walk through the timeline — leaves & bark → weaving fleece/vines → cotton near the Ganga → Egyptian cotton & flax near the Nile → unstitched garments → the sewing needle. 22–27 min: Discuss which unstitched garments (saree, dhoti, lungi, turban) are still used today and why. 27–30 min: Quick oral recap of the timeline in order.",
+            content:
+`History of Textile
+1. In ancient times, due to lack of exposure/knowledge to process fibre, people used big leaves and tree bark to cover themselves.
+2. Once agricultural settlements began, people learned to weave — animal hair/fleece and vines were wrapped and stretched into strands, then woven into fabrics.
+3. Cotton grew in areas near the Ganga, which early Indians readily used to make fabric.
+4. Early Egyptians cultivated both cotton and flax near the river Nile for fabric.
+5. Before stitching was known, people simply wrapped fabric around their bodies — unstitched garments like sarees, dhotis, lungis and turbans are still widely used today.
+6. The invention of the sewing needle let people stitch fibres into fabric.`,
+          },
+          {
+            title: "LP-5",
+            guidance: "0–5 min: Pass around a piece of torn cotton cloth — students pull out a single thread and observe it's made of many finer fibres twisted together. 5–20 min: Explain spinning, and introduce the Takli and Charkha as traditional spinning devices; introduce the term Khadi. 20–27 min: Revisit jute's retting process (soaking stems 4–5 days) as a parallel yarn-preparation step. 27–30 min: 'Think about this' discussion — why twist fibres together to make thread?",
+            content:
+`Spinning is the process of developing yarn from fibres — fibres from a mass of cotton fleece are drawn out and twisted together to form yarn.
+• Two key devices: Takli (a hand spindle) and Charkha (a hand-operated spinning wheel).
+• On a larger scale, spinning is done by machines, followed by weaving into fabric.
+• Khadi is the term for cloth made from homespun (hand-spun) yarn.
+
+Try and learn: Pull a single thread out of an old torn cotton cloth — you'll see the thread is actually made of several finer fibres twisted together.
+
+Think about this: A single fibre isn't strong enough on its own, but many fibres twisted together become very strong — that's why fibres are twisted into threads.
+
+Related — Retting (Jute): soaking jute stems in water for 4–5 days to rot the soft tissue so the fibres can be separated by hand. This step requires a large amount of water.`,
+          },
+          {
+            title: "LP-6",
+            guidance: "0–5 min: Show a woven fabric sample and a knitted item (e.g. a sock or sweater) — students spot the difference. 5–20 min: Explain weaving (loom, two sets of yarn interlaced) and knitting (single strand of yarn). 20–26 min: Discuss why intertwining patterns give fabric elasticity, and why pulling a sweater thread unravels the whole garment (knitting) while a woven shawl resists this. 26–30 min: Run the Checkpoint questions as an oral quiz to close the chapter.",
+            content:
+`Weaving: intertwining two sets of yarn simultaneously to make fabric, using a loom (hand- or machine-operated) that interlaces two or more sets of yarn.
+
+Knitting: a technique where a single strand of yarn is used to construct fabric — used for socks, sweaters and winter wear. Can be done by hand or machine.
+
+Mental floss: Intertwining patterns give fabric elasticity.
+
+Chapter recap (Bird's-eye view):
+• Fibres are thin filamentous structures, collected from nature or made synthetically.
+• Natural fibres: plant-based (cotton, jute) and animal-based (wool, silk).
+• Synthetic fibres (nylon, polyester, acrylic) are made from chemical substances — all fibres are chemically a polymer.
+• Cotton needs black soil + warm climate; separated from seed by ginning.
+• Jute is produced by retting the stem in water; grown mainly in West Bengal, Assam, Bihar.
+• Spinning turns fibres into yarn; weaving and knitting turn yarn into fabric.
+
+Checkpoint — quick quiz to close the lesson:
+• Which devices are used for yarn preparation?
+• What is spinning, and why is it used?
+• What's the main difference between knitting and weaving?
+• What's the difference between fibre, yarn and fabric?`,
+          },
+        ],
+      },
     },
   },
   "Grade 7": {
     Mathematics: {
-      "Ch 1 · Integers": ["LP 1.1 Operations on integers", "LP 1.2 Properties & word problems"],
-      "Ch 2 · Fractions and Decimals": ["LP 2.1 Multiplication of fractions", "LP 2.2 Division & applications"],
+      "Ch 1 · Integers": { book: null, lps: ["LP 1.1 Operations on integers", "LP 1.2 Properties & word problems"] },
+      "Ch 2 · Fractions and Decimals": { book: null, lps: ["LP 2.1 Multiplication of fractions", "LP 2.2 Division & applications"] },
     },
     Science: {
-      "Ch 1 · Nutrition in Plants": ["LP 1.1 Photosynthesis demo", "LP 1.2 Modes of nutrition"],
-      "Ch 2 · Nutrition in Animals": ["LP 2.1 Human digestive system", "LP 2.2 Digestion in ruminants"],
+      "Ch 1 · Nutrition in Plants": { book: null, lps: ["LP 1.1 Photosynthesis demo", "LP 1.2 Modes of nutrition"] },
+      "Ch 2 · Nutrition in Animals": { book: null, lps: ["LP 2.1 Human digestive system", "LP 2.2 Digestion in ruminants"] },
     },
     "Social Studies": {
-      "Ch 1 · Tracing Changes Through a Thousand Years": ["LP 1.1 Maps & sources", "LP 1.2 Historians' terms"],
+      "Ch 1 · Tracing Changes Through a Thousand Years": { book: null, lps: ["LP 1.1 Maps & sources", "LP 1.2 Historians' terms"] },
     },
   },
   "Grade 8": {
     Mathematics: {
-      "Ch 1 · Rational Numbers": ["LP 1.1 Properties of rationals", "LP 1.2 Representation on number line"],
-      "Ch 2 · Linear Equations": ["LP 2.1 Solving one-variable equations", "LP 2.2 Applications & word problems", "LP 2.3 Equations reducible to linear form"],
+      "Ch 1 · Rational Numbers": { book: null, lps: ["LP 1.1 Properties of rationals", "LP 1.2 Representation on number line"] },
+      "Ch 2 · Linear Equations": { book: null, lps: ["LP 2.1 Solving one-variable equations", "LP 2.2 Applications & word problems", "LP 2.3 Equations reducible to linear form"] },
     },
     Science: {
-      "Ch 1 · Crop Production": ["LP 1.1 Agricultural practices", "LP 1.2 Irrigation methods"],
-      "Ch 2 · Microorganisms": ["LP 2.1 Friend & foe", "LP 2.2 Food preservation"],
+      "Ch 1 · Crop Production": { book: null, lps: ["LP 1.1 Agricultural practices", "LP 1.2 Irrigation methods"] },
+      "Ch 2 · Microorganisms": { book: null, lps: ["LP 2.1 Friend & foe", "LP 2.2 Food preservation"] },
     },
   },
 };
@@ -219,11 +340,66 @@ function Login({ onLogin }) {
 /*  Curriculum: Grade → Subject → Chapter → LPs                        */
 /* ------------------------------------------------------------------ */
 
+function BooksTab({ book }) {
+  if (!book) {
+    return (
+      <div className="px-4 py-10 text-center text-sm" style={{ color: "#8A8672" }}>
+        No textbook attached to this chapter yet.
+      </div>
+    );
+  }
+  return (
+    <div className="p-4">
+      <div className="font-semibold text-sm mb-1">{book.title}</div>
+      {book.pages && <div className="text-xs mb-3" style={{ color: "#5B6B85" }}>{book.pages}</div>}
+      <div className="rounded-md overflow-hidden border" style={{ borderColor: "#E3E0D6" }}>
+        <iframe src={book.pdfUrl} title={book.title} style={{ width: "100%", height: "70vh", border: "none" }} />
+      </div>
+      <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs mt-2 inline-flex items-center gap-1 hover:underline" style={{ color: "#E07C24" }}>
+        Open PDF in new tab <ChevronRight size={12} />
+      </a>
+    </div>
+  );
+}
+
+function LPItem({ lp, status, onCycle }) {
+  const [open, setOpen] = useState(false);
+  const isRich = typeof lp === "object";
+  const title = isRich ? lp.title : lp;
+  return (
+    <li className="border-t" style={{ borderColor: "#F0EDE3" }}>
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <button
+          onClick={() => isRich && setOpen((o) => !o)}
+          className="flex items-center gap-3 min-w-0 flex-1 text-left"
+          disabled={!isRich}
+        >
+          <Layers size={16} className="shrink-0" style={{ color: "#E07C24" }} />
+          <span className="text-sm truncate">{title}</span>
+          {isRich && <ChevronRight size={14} className="shrink-0 text-gray-400 transition-transform" style={{ transform: open ? "rotate(90deg)" : "none" }} />}
+        </button>
+        <button onClick={onCycle} className="shrink-0" title="Change status">
+          <StatusPill label={status} />
+        </button>
+      </div>
+      {isRich && open && (
+        <div className="px-4 pb-4">
+          <div className="rounded-md p-3 text-xs mb-2" style={{ background: "#FBEEDF", color: "#7A4A0E" }}>
+            <span className="font-semibold">30-minute period guide — </span>{lp.guidance}
+          </div>
+          <div className="text-sm whitespace-pre-line" style={{ color: "#3A4560" }}>{lp.content}</div>
+        </div>
+      )}
+    </li>
+  );
+}
+
 function Curriculum() {
   const [grade, setGrade] = useState(null);
   const [subject, setSubject] = useState(null);
   const [chapter, setChapter] = useState(null);
-  const [lpStatus, setLpStatus] = useState({}); // key: `${grade}|${subject}|${chapter}|${lp}`
+  const [chapterTab, setChapterTab] = useState("lps");
+  const [lpStatus, setLpStatus] = useState({}); // key: `${grade}|${subject}|${chapter}|${lpTitle}`
 
   const crumbs = [
     { label: "Grades", onClick: () => { setGrade(null); setSubject(null); setChapter(null); } },
@@ -232,13 +408,18 @@ function Curriculum() {
     chapter && { label: chapter.split(" · ")[0], onClick: () => {} },
   ].filter(Boolean);
 
-  const key = (lp) => `${grade}|${subject}|${chapter}|${lp}`;
-  const cycleStatus = (lp) => {
+  const key = (lpTitle) => `${grade}|${subject}|${chapter}|${lpTitle}`;
+  const cycleStatus = (lpTitle) => {
     setLpStatus((s) => {
-      const cur = s[key(lp)] || "Not started";
+      const cur = s[key(lpTitle)] || "Not started";
       const next = LP_STATUS[(LP_STATUS.indexOf(cur) + 2) % 3]; // Not started → In progress → Completed
-      return { ...s, [key(lp)]: next };
+      return { ...s, [key(lpTitle)]: next };
     });
+  };
+
+  const openChapter = (c) => {
+    setChapter(c);
+    setChapterTab(CURRICULUM[grade][subject][c].book ? "books" : "lps");
   };
 
   const Tile = ({ label, meta, onClick }) => (
@@ -296,40 +477,57 @@ function Curriculum() {
       {/* Level 3: Chapters */}
       {grade && subject && !chapter && (
         <div className="grid gap-3">
-          {Object.keys(CURRICULUM[grade][subject]).map((c) => (
-            <Tile key={c} label={c} meta={`${CURRICULUM[grade][subject][c].length} lesson plans`} onClick={() => setChapter(c)} />
-          ))}
+          {Object.keys(CURRICULUM[grade][subject]).map((c) => {
+            const cd = CURRICULUM[grade][subject][c];
+            return (
+              <Tile key={c} label={c}
+                meta={`${cd.lps.length} lesson plans${cd.book ? " · 📘 book attached" : ""}`}
+                onClick={() => openChapter(c)} />
+            );
+          })}
         </div>
       )}
 
-      {/* Level 4: Lesson plans */}
+      {/* Level 4: Books & LPs */}
       {grade && subject && chapter && (
         <Card className="margin-rule">
           <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
             <div>
               <div className="font-semibold text-sm">{chapter}</div>
-              <div className="text-xs" style={{ color: "#5B6B85" }}>{grade} · {subject} · tap a status to update it</div>
+              <div className="text-xs" style={{ color: "#5B6B85" }}>{grade} · {subject}</div>
             </div>
             <button onClick={() => setChapter(null)} className="text-xs flex items-center gap-1 hover:underline" style={{ color: "#5B6B85" }}>
               <ArrowLeft size={13} /> Chapters
             </button>
           </div>
-          <ul>
-            {CURRICULUM[grade][subject][chapter].map((lp, i) => {
-              const st = lpStatus[key(lp)] || "Not started";
-              return (
-                <li key={lp} className={`flex items-center justify-between gap-3 px-4 py-3 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Layers size={16} className="shrink-0" style={{ color: "#E07C24" }} />
-                    <span className="text-sm truncate">{lp}</span>
-                  </div>
-                  <button onClick={() => cycleStatus(lp)} className="shrink-0" title="Change status">
-                    <StatusPill label={st} />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+
+          <div className="flex gap-2 px-4 pt-3 border-b" style={{ borderColor: "#E3E0D6" }}>
+            {[["lps", "LPs"], ["books", "Books"]].map(([k, l]) => (
+              <button
+                key={k}
+                onClick={() => setChapterTab(k)}
+                className="px-3 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors"
+                style={{
+                  borderColor: chapterTab === k ? "#E07C24" : "transparent",
+                  color: chapterTab === k ? "#1E2B5C" : "#8A93AC",
+                }}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+
+          {chapterTab === "books" && <BooksTab book={CURRICULUM[grade][subject][chapter].book} />}
+          {chapterTab === "lps" && (
+            <ul>
+              {CURRICULUM[grade][subject][chapter].lps.map((lp) => {
+                const title = typeof lp === "object" ? lp.title : lp;
+                return (
+                  <LPItem key={title} lp={lp} status={lpStatus[key(title)] || "Not started"} onCycle={() => cycleStatus(title)} />
+                );
+              })}
+            </ul>
+          )}
         </Card>
       )}
     </div>
@@ -340,18 +538,85 @@ function Curriculum() {
 /*  Attendance                                                         */
 /* ------------------------------------------------------------------ */
 
+function todayInfo() {
+  const now = new Date();
+  return {
+    date: now.toLocaleDateString("en-US", { month: "short", day: "2-digit" }),
+    day: now.toLocaleDateString("en-US", { weekday: "short" }),
+    time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+  };
+}
+
+function MarkAttendance({ record, onCheckIn, onCheckOut, onMark }) {
+  return (
+    <Card className="p-5 margin-rule mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="font-semibold text-sm mb-1">Today's attendance</div>
+          {record ? (
+            <div className="text-xs" style={{ color: "#5B6B85" }}>
+              In <span className="font-medium">{record.in}</span>
+              {record.out !== "—" && <> · Out <span className="font-medium">{record.out}</span></>}
+            </div>
+          ) : (
+            <div className="text-xs" style={{ color: "#5B6B85" }}>You haven't checked in yet.</div>
+          )}
+        </div>
+        {record && <StatusPill label={record.status} />}
+      </div>
+      <div className="flex flex-wrap gap-2 mt-4">
+        {!record && (
+          <>
+            <button onClick={onCheckIn} className="px-4 py-2 rounded-md text-sm font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+              Check in
+            </button>
+            <button onClick={() => onMark("Half day")} className="px-4 py-2 rounded-md text-sm font-semibold border" style={{ borderColor: "#D8D4C6", color: "#1E2B5C" }}>
+              Mark half day
+            </button>
+            <button onClick={() => onMark("On leave")} className="px-4 py-2 rounded-md text-sm font-semibold border" style={{ borderColor: "#D8D4C6", color: "#1E2B5C" }}>
+              Mark on leave
+            </button>
+          </>
+        )}
+        {record && record.status === "Present" && record.out === "—" && (
+          <button onClick={onCheckOut} className="px-4 py-2 rounded-md text-sm font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+            Check out
+          </button>
+        )}
+        {record && (record.status !== "Present" || record.out !== "—") && (
+          <div className="text-xs" style={{ color: "#2E7D5B" }}>Attendance recorded for today.</div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 function Attendance() {
-  const present = INITIAL_ATTENDANCE.filter((d) => d.status === "Present").length;
+  const [records, setRecords] = useState(INITIAL_ATTENDANCE);
+  const { date: todayDate, day: todayDay, time: nowTime } = todayInfo();
+  const todayRecord = records.find((r) => r.date === todayDate);
+
+  const upsertToday = (entry) => {
+    setRecords((prev) => [{ date: todayDate, day: todayDay, ...entry }, ...prev.filter((r) => r.date !== todayDate)]);
+  };
+  const checkIn = () => upsertToday({ status: "Present", in: nowTime, out: "—" });
+  const checkOut = () => upsertToday({ ...todayRecord, out: nowTime });
+  const mark = (status) => upsertToday({ status, in: "—", out: "—" });
+
+  const present = records.filter((d) => d.status === "Present").length;
   const stats = [
-    { label: "Working days", value: INITIAL_ATTENDANCE.length, icon: CalendarCheck, color: "#1E2B5C" },
+    { label: "Working days", value: records.length, icon: CalendarCheck, color: "#1E2B5C" },
     { label: "Present", value: present, icon: CheckCircle2, color: "#2E7D5B" },
-    { label: "Half days", value: INITIAL_ATTENDANCE.filter((d) => d.status === "Half day").length, icon: Clock, color: "#E07C24" },
-    { label: "Leaves", value: INITIAL_ATTENDANCE.filter((d) => d.status === "On leave").length, icon: XCircle, color: "#C4452E" },
+    { label: "Half days", value: records.filter((d) => d.status === "Half day").length, icon: Clock, color: "#E07C24" },
+    { label: "Leaves", value: records.filter((d) => d.status === "On leave").length, icon: XCircle, color: "#C4452E" },
   ];
 
   return (
     <div>
       <SectionTitle eyebrow="Attendance" title="My attendance · July 2026" />
+
+      <MarkAttendance record={todayRecord} onCheckIn={checkIn} onCheckOut={checkOut} onMark={mark} />
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {stats.map((s) => (
           <Card key={s.label} className="p-4">
@@ -373,7 +638,7 @@ function Attendance() {
             </tr>
           </thead>
           <tbody>
-            {INITIAL_ATTENDANCE.map((d) => (
+            {records.map((d) => (
               <tr key={d.date} className="border-t" style={{ borderColor: "#F0EDE3" }}>
                 <td className="px-4 py-3 font-medium">{d.date} <span className="font-normal" style={{ color: "#5B6B85" }}>· {d.day}</span></td>
                 <td className="px-4 py-3 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{d.in}</td>
