@@ -31,6 +31,14 @@ import Login from './components/Login';
 import { authApi } from './services/api';
 import { UserContext } from './contexts/UserContext';
 
+const MAIN_NAV = [
+  {
+    to: '/erp',
+    label: 'BLA Dashboard new',
+    icon: Building2,
+  },
+];
+
 const NAV = [
   {
     to: '/',
@@ -108,11 +116,6 @@ const NAV = [
     label: 'Template Type',
     icon: Languages,
   },
-  {
-    to: '/erp',
-    label: 'BLA Dashboard new',
-    icon: Building2,
-  },
 ];
 
 const SCHOOL_NAV = [
@@ -184,9 +187,34 @@ export default function App() {
 
         {/* Nav */}
         <nav className="flex-1 py-3 overflow-y-auto">
+          {MAIN_NAV.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) => `
+                flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
+                ${isActive
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }
+                ${collapsed ? 'justify-center px-2' : ''}
+              `}
+              title={collapsed ? label : undefined}
+            >
+              <Icon size={18} className="shrink-0" />
+              {!collapsed && <span className="leading-tight text-left">{label}</span>}
+              {!collapsed && <ChevronRight size={14} className="ml-auto opacity-30 shrink-0" />}
+            </NavLink>
+          ))}
+
+          {/* Divider */}
+          <div className={`mx-4 my-3 border-t border-gray-100 ${collapsed ? 'mx-2' : ''}`} />
+
           {/* Label */}
           {!collapsed && (
-            <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Menu</div>
+            <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Old Work</div>
           )}
 
           {NAV.map(({ to, label, icon: Icon, end }) => (
