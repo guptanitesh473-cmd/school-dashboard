@@ -212,6 +212,27 @@ db.exec(`
     grade TEXT DEFAULT '',
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS erp_leave_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL REFERENCES erp_users(id) ON DELETE CASCADE,
+    leave_type TEXT NOT NULL DEFAULT 'Casual leave',
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    reason TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS erp_attendance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL REFERENCES erp_users(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    check_in TEXT DEFAULT '',
+    check_out TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'Present',
+    UNIQUE(employee_id, date)
+  );
 `);
 
 // Ensure default admin user exists
