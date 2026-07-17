@@ -15,10 +15,11 @@ const LOGO = "data:image/webp;base64,UklGRow8AABXRUJQVlA4IIA8AACwpACdASoAAQABPm0
 /* ------------------------------------------------------------------ */
 
 const styles = `
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=Caveat:wght@500;700&display=swap');
 .erp * { box-sizing: border-box; }
 .erp { font-family: 'IBM Plex Sans', sans-serif; color: #1E2B5C; }
 .erp .display { font-family: 'Bricolage Grotesque', sans-serif; }
+.erp .handwriting { font-family: 'Caveat', cursive; }
 .erp ::selection { background:#E07C24; color:#1E2B5C; }
 .erp .margin-rule { box-shadow: inset 2px 0 0 #E07C24; }
 .erp button:focus-visible, .erp input:focus-visible, .erp select:focus-visible, .erp textarea:focus-visible {
@@ -40,6 +41,26 @@ const CURRICULUM = {
           pdfUrl: "/books/grade6-math-ch1-knowing-our-numbers.pdf",
           pages: "37 pages",
         },
+        practice: [
+          {
+            question: "Find the greatest and the smallest number: 42375, 42367, 42329, 42338.",
+            modelAnswer:
+`Compare digit by digit from the left.
+All four numbers start with 423, so compare the last two digits: 75, 67, 29, 38.
+Greatest number is 42375.
+Smallest number is 42329.`,
+            keywords: ["42375", "42329", "greatest", "smallest"],
+          },
+          {
+            question: "Estimate the product 958 × 387 by rounding off each factor to its greatest place.",
+            modelAnswer:
+`Each factor is a three-digit number, so round each to its nearest hundred.
+958 rounds off to 1000.
+387 rounds off to 400.
+Estimated product = 1000 × 400 = 400000.`,
+            keywords: ["1000", "400", "400000", "round"],
+          },
+        ],
         lps: [
           {
             title: "LP-1",
@@ -166,6 +187,24 @@ Chapter recap (Bird's-eye view): number formation rules, ascending/descending or
           pdfUrl: "/books/grade6-math-ch2-whole-numbers.pdf",
           pages: "41 pages",
         },
+        practice: [
+          {
+            question: "Find the predecessor and successor of 999.",
+            modelAnswer:
+`To find the predecessor, subtract 1: 999 − 1 = 998.
+To find the successor, add 1: 999 + 1 = 1000.`,
+            keywords: ["998", "1000", "predecessor", "successor"],
+          },
+          {
+            question: "Find (28 × 36) + (28 × 64) using the distributive property.",
+            modelAnswer:
+`Distributive property: a×(b+c) = a×b + a×c.
+(28 × 36) + (28 × 64) = 28 × (36 + 64)
+= 28 × 100
+= 2800`,
+            keywords: ["28", "100", "2800", "distributive"],
+          },
+        ],
         lps: [
           {
             title: "LP-1",
@@ -304,6 +343,23 @@ Chapter recap (Bird's-eye view):
           pdfUrl: "/books/grade6-chemistry-ch1-fibre-to-fabric.pdf",
           pages: "34 pages",
         },
+        practice: [
+          {
+            question: "Classify the following fibres as natural or synthetic: nylon, wool, cotton, silk, polyester, jute.",
+            modelAnswer:
+`Natural fibres: Wool, Cotton, Silk, Jute (all extracted directly from plants/animals).
+Synthetic fibres: Nylon, Polyester (artificially made, not found in nature).`,
+            keywords: ["wool", "cotton", "silk", "jute", "nylon", "polyester", "natural", "synthetic"],
+          },
+          {
+            question: "What is the main difference between fibre, yarn and fabric?",
+            modelAnswer:
+`A fibre is a filament or thread obtained from animal or plant tissue or secretion.
+Many fibres are spun together to make yarn, which is stronger than the individual fibres.
+Many yarns are woven, or one yarn is knitted, to form a fabric.`,
+            keywords: ["fibre", "yarn", "fabric", "spun", "woven", "knitted"],
+          },
+        ],
         lps: [
           {
             title: "LP-1",
@@ -745,6 +801,139 @@ function LPItem({ lp, status, onCycle, onMarkDone }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Learners Fun — gamified practice quiz per chapter                 */
+/* ------------------------------------------------------------------ */
+
+// Wraps each keyword occurrence in the model answer with a highlight — gold
+// for keywords the student's answer included, pink strikethrough for ones
+// they missed — so the reveal reads like a marked-up handwritten answer.
+function renderHighlightedAnswer(text, keywords, foundSet) {
+  if (!keywords.length) return text;
+  const escaped = [...keywords].sort((a, b) => b.length - a.length).map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const re = new RegExp(`(${escaped.join("|")})`, "gi");
+  return text.split(re).map((part, i) => {
+    const kw = keywords.find((k) => k.toLowerCase() === part.toLowerCase());
+    if (!kw) return part;
+    const found = foundSet.has(kw.toLowerCase());
+    return (
+      <mark key={i} style={{
+        background: found ? "#FDE9A8" : "#FBD5D5",
+        textDecoration: found ? "none" : "line-through",
+        color: found ? "#6B540A" : "#8A2E2E",
+        padding: "0 2px", borderRadius: 2,
+      }}>
+        {part}
+      </mark>
+    );
+  });
+}
+
+function LearnersFunTab({ practice }) {
+  const [qIndex, setQIndex] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [coins, setCoins] = useState(0);
+  const [streak, setStreak] = useState(0);
+
+  if (!practice || !practice.length) {
+    return (
+      <div className="px-4 py-10 text-center text-sm" style={{ color: "#8A8672" }}>
+        No practice questions for this chapter yet.
+      </div>
+    );
+  }
+
+  const q = practice[qIndex];
+  const lowerAnswer = answer.toLowerCase();
+  const foundKeywords = q.keywords.filter((k) => lowerAnswer.includes(k.toLowerCase()));
+  const foundSet = new Set(foundKeywords.map((k) => k.toLowerCase()));
+  const pct = q.keywords.length ? foundKeywords.length / q.keywords.length : 0;
+  const earnedCoins = Math.round(pct * 5);
+  const passed = pct >= 0.7;
+
+  const checkAnswer = () => {
+    if (!answer.trim()) return;
+    setChecked(true);
+    setCoins((c) => c + earnedCoins);
+    if (passed) setStreak((s) => s + 1);
+  };
+  const retry = () => { setAnswer(""); setChecked(false); };
+  const nextQuestion = () => { setQIndex((i) => (i + 1) % practice.length); setAnswer(""); setChecked(false); };
+
+  return (
+    <div className="p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold" style={{ background: "#FDE9DC", color: "#B8540F" }}>🔥 {streak}</span>
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold" style={{ background: "#FBF0D9", color: "#8A6D1D" }}>🪙 {coins}</span>
+        <span className="text-xs ml-auto" style={{ color: "#8A8672" }}>Question {qIndex + 1} of {practice.length}</span>
+      </div>
+
+      <div className="rounded-lg border p-4 mb-4" style={{ borderColor: "#E3E0D6", background: "#FFFEFB" }}>
+        <div className="text-sm font-semibold">{q.question}</div>
+      </div>
+
+      <label className="block text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#8A8672" }}>Your answer</label>
+      <textarea
+        rows={4}
+        value={answer}
+        onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
+        placeholder="Write your working here..."
+        className="w-full border rounded-md p-3 text-sm mb-3"
+        style={{ borderColor: "#D8D4C6" }}
+      />
+
+      {!checked ? (
+        <button onClick={checkAnswer} disabled={!answer.trim()}
+          className="px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-40"
+          style={{ background: "#E07C24", color: "#1E2B5C" }}>
+          Check answer
+        </button>
+      ) : (
+        <>
+          <div className="rounded-lg p-4 mb-3" style={{ background: passed ? "#E3F3E9" : "#FBDADA" }}>
+            <div className="flex items-center justify-between">
+              <div className="font-bold text-lg">{passed ? "Nailed it! 🎉" : "Needs work"}</div>
+              <div className="text-2xl font-bold">{foundKeywords.length}/{q.keywords.length}</div>
+            </div>
+            <div className="text-xs mt-1">{passed ? "Great job — you covered the key steps." : "Some key terms are missing — compare with the model answer below."}</div>
+            <div className="text-xs mt-2 pt-2 border-t" style={{ borderColor: passed ? "#B7DDC4" : "#F0AFAF" }}>Coins earned: {earnedCoins} of 5</div>
+          </div>
+
+          <div className="rounded-lg p-3 mb-3 border" style={{ borderColor: "#E3E0D6" }}>
+            <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#8A8672" }}>Keyword check</div>
+            <div className="flex flex-wrap gap-2">
+              {q.keywords.map((k) => {
+                const found = foundSet.has(k.toLowerCase());
+                return (
+                  <span key={k} className="px-2.5 py-1 rounded-full text-xs font-medium border"
+                    style={found
+                      ? { background: "#FDE9A8", borderColor: "#E8C34A", color: "#6B540A" }
+                      : { background: "#FBD5D5", borderColor: "#EFA9A9", color: "#8A2E2E", textDecoration: "line-through" }}>
+                    {found ? "✓" : "✕"} {k}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-lg p-4 border mb-3" style={{ borderColor: "#E3E0D6", background: "#FFFDF5" }}>
+            <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#8A8672" }}>✏️ Topper's handwritten answer</div>
+            <div className="handwriting text-xl leading-relaxed whitespace-pre-line" style={{ color: "#1E3A6B" }}>
+              {renderHighlightedAnswer(q.modelAnswer, q.keywords, foundSet)}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button onClick={retry} className="flex-1 py-2 rounded-md text-sm font-semibold border" style={{ borderColor: "#1E2B5C", color: "#1E2B5C" }}>Try again</button>
+            <button onClick={nextQuestion} className="flex-1 py-2 rounded-md text-sm font-semibold" style={{ background: "#1E2B5C", color: "#fff" }}>Next question</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Curriculum() {
   const [grade, setGrade] = useState(null);
   const [subject, setSubject] = useState(null);
@@ -854,7 +1043,7 @@ function Curriculum() {
           </div>
 
           <div className="flex gap-2 px-4 pt-3 border-b" style={{ borderColor: "#E3E0D6" }}>
-            {[["lps", "LPs"], ["books", "Books"]].map(([k, l]) => (
+            {[["lps", "LPs"], ["books", "Books"], ["fun", "Learners Fun"]].map(([k, l]) => (
               <button
                 key={k}
                 onClick={() => setChapterTab(k)}
@@ -870,6 +1059,7 @@ function Curriculum() {
           </div>
 
           {chapterTab === "books" && <BooksTab book={CURRICULUM[grade][subject][chapter].book} />}
+          {chapterTab === "fun" && <LearnersFunTab key={chapter} practice={CURRICULUM[grade][subject][chapter].practice} />}
           {chapterTab === "lps" && (
             <ul>
               {CURRICULUM[grade][subject][chapter].lps.map((lp) => {
