@@ -200,6 +200,18 @@ db.exec(`
     role TEXT DEFAULT 'admin',
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS erp_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'employee' CHECK(role IN ('admin', 'employee')),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+    subject TEXT DEFAULT '',
+    grade TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Ensure default admin user exists
@@ -208,6 +220,14 @@ if (userCount === 0) {
   db.prepare(`INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)`)
     .run('OnlyNitesh', 'OnlyNitesh', 'Administrator', 'admin');
   console.log('Default user created: OnlyNitesh / OnlyNitesh');
+}
+
+// Ensure default BLA Dashboard (ERP) admin exists
+const erpAdminCount = db.prepare("SELECT COUNT(*) as c FROM erp_users WHERE role = 'admin'").get().c;
+if (erpAdminCount === 0) {
+  db.prepare(`INSERT INTO erp_users (name, email, password, role, status) VALUES (?, ?, ?, 'admin', 'approved')`)
+    .run('Administrator', 'admin@banyanacademy.edu', 'Banyan@Admin2026');
+  console.log('Default BLA Dashboard admin created: admin@banyanacademy.edu / Banyan@Admin2026');
 }
 
 // Migrations — safe to run multiple times

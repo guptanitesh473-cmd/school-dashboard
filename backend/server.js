@@ -10,6 +10,9 @@ app.use(express.json());
 const { router: authRouter } = require('./routes/auth');
 app.use('/api/auth', authRouter);
 
+// BLA Dashboard (ERP) has its own independent auth/session system
+app.use('/api/erp', require('./routes/erpAuth'));
+
 // All other API routes require a valid session token
 const requireAuth = require('./middleware/auth');
 app.use('/api', requireAuth);
