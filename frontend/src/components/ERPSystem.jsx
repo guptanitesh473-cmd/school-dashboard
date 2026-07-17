@@ -579,22 +579,22 @@ const StatusPill = ({ label }) => {
     "Not started": "bg-gray-100 text-gray-600 border-gray-200",
   };
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${map[label] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
+    <span className={`text-sm font-medium px-2.5 py-1 rounded-full border ${map[label] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
       {label}
     </span>
   );
 };
 
 const Card = ({ children, className = "" }) => (
-  <div className={`bg-white border rounded-lg ${className}`} style={{ borderColor: "#E3E0D6" }}>
+  <div className={`bg-white border rounded-xl ${className}`} style={{ borderColor: "#E3E0D6" }}>
     {children}
   </div>
 );
 
 const SectionTitle = ({ eyebrow, title }) => (
-  <div className="mb-6">
-    <div className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#E07C24" }}>{eyebrow}</div>
-    <h1 className="display text-2xl font-bold mt-1" style={{ color: "#1E2B5C" }}>{title}</h1>
+  <div className="mb-8">
+    <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: "#E07C24" }}>{eyebrow}</div>
+    <h1 className="display text-3xl font-bold mt-1.5" style={{ color: "#1E2B5C" }}>{title}</h1>
   </div>
 );
 
@@ -650,79 +650,79 @@ function Login({ onLogin }) {
   if (mode === "register") {
     return (
       <div className="min-h-screen flex" style={{ background: "#FAF9F4" }}>
-        <div className="hidden md:flex flex-col justify-between w-1/2 p-12 text-white" style={{ background: "#1E2B5C" }}>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white p-0.5 shrink-0">
+        <div className="hidden md:flex flex-col justify-between w-1/2 p-14 text-white" style={{ background: "#1E2B5C" }}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-white p-1 shrink-0">
               <img src={LOGO} alt="Banyan International Academy logo" className="w-full h-full rounded-full object-cover" />
             </div>
             <div>
-              <div className="display font-bold text-lg leading-tight">Banyan International Academy</div>
-              <div className="text-xs" style={{ color: "#9FB0CC" }}>Staff portal · Begin · Become · Belong</div>
+              <div className="display font-bold text-xl leading-tight">Banyan International Academy</div>
+              <div className="text-sm" style={{ color: "#9FB0CC" }}>Staff portal · Begin · Become · Belong</div>
             </div>
           </div>
           <div>
-            <div className="display text-4xl font-bold leading-tight">
+            <div className="display text-5xl font-bold leading-tight">
               Rooted in values,<br />skilled for life.
             </div>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed" style={{ color: "#9FB0CC" }}>
+            <p className="mt-5 max-w-md text-base leading-relaxed" style={{ color: "#9FB0CC" }}>
               New here? Submit your details and an admin will review and approve your account before you can sign in.
             </p>
           </div>
-          <div className="text-xs" style={{ color: "#6B7C99" }}>Academic year 2026–27 · Term 1</div>
+          <div className="text-sm" style={{ color: "#6B7C99" }}>Academic year 2026–27 · Term 1</div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-sm">
-            <div className="md:hidden flex items-center gap-2 mb-8">
+        <div className="flex-1 flex items-center justify-center p-7">
+          <div className="w-full max-w-md">
+            <div className="md:hidden flex items-center gap-2.5 mb-10">
               <img src={LOGO} alt="Banyan International Academy logo" className="w-10 h-10 rounded-full object-cover" />
-              <span className="display font-bold text-lg">Banyan International Academy</span>
+              <span className="display font-bold text-xl">Banyan International Academy</span>
             </div>
-            <h1 className="display text-2xl font-bold">Register</h1>
-            <p className="text-sm mt-1 mb-4" style={{ color: "#5B6B85" }}>New employee registration.</p>
+            <h1 className="display text-3xl font-bold">Register</h1>
+            <p className="text-base mt-1.5 mb-5" style={{ color: "#5B6B85" }}>New employee registration.</p>
 
             {regMsg ? (
-              <div className="text-sm p-3 rounded-md" style={{ background: "#EAF3EE", color: "#2E7D5B" }}>{regMsg}</div>
+              <div className="text-base p-4 rounded-lg" style={{ background: "#EAF3EE", color: "#2E7D5B" }}>{regMsg}</div>
             ) : (
               <>
-                <label className="block text-sm font-medium mb-1">Full name</label>
+                <label className="block text-base font-medium mb-1.5">Full name</label>
                 <input value={regName} onChange={(e) => { setRegName(e.target.value); setErr(""); }} placeholder="Anita Rao"
-                  className="w-full border rounded-md px-3 py-2 text-sm mb-3 bg-white" style={{ borderColor: "#D8D4C6" }} />
+                  className="w-full border rounded-lg px-4 py-2.5 text-base mb-4 bg-white" style={{ borderColor: "#D8D4C6" }} />
 
-                <label className="block text-sm font-medium mb-1">Staff email</label>
+                <label className="block text-base font-medium mb-1.5">Staff email</label>
                 <input value={regEmail} onChange={(e) => { setRegEmail(e.target.value); setErr(""); }} placeholder="a.rao@banyanacademy.edu"
-                  className="w-full border rounded-md px-3 py-2 text-sm mb-3 bg-white" style={{ borderColor: "#D8D4C6" }} />
+                  className="w-full border rounded-lg px-4 py-2.5 text-base mb-4 bg-white" style={{ borderColor: "#D8D4C6" }} />
 
-                <label className="block text-sm font-medium mb-1">Password</label>
+                <label className="block text-base font-medium mb-1.5">Password</label>
                 <input type="password" value={regPw} onChange={(e) => { setRegPw(e.target.value); setErr(""); }} placeholder="At least 6 characters"
-                  className="w-full border rounded-md px-3 py-2 text-sm mb-3 bg-white" style={{ borderColor: "#D8D4C6" }} />
+                  className="w-full border rounded-lg px-4 py-2.5 text-base mb-4 bg-white" style={{ borderColor: "#D8D4C6" }} />
 
-                <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Subject</label>
+                    <label className="block text-base font-medium mb-1.5">Subject</label>
                     <select value={regSubject} onChange={(e) => setRegSubject(e.target.value)}
-                      className="w-full border rounded-md px-3 py-2 text-sm bg-white" style={{ borderColor: "#D8D4C6" }}>
+                      className="w-full border rounded-lg px-4 py-2.5 text-base bg-white" style={{ borderColor: "#D8D4C6" }}>
                       {SUBJECT_OPTIONS.map((s) => <option key={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Grade</label>
+                    <label className="block text-base font-medium mb-1.5">Grade</label>
                     <select value={regGrade} onChange={(e) => setRegGrade(e.target.value)}
-                      className="w-full border rounded-md px-3 py-2 text-sm bg-white" style={{ borderColor: "#D8D4C6" }}>
+                      className="w-full border rounded-lg px-4 py-2.5 text-base bg-white" style={{ borderColor: "#D8D4C6" }}>
                       {GRADE_OPTIONS.map((g) => <option key={g}>{g}</option>)}
                     </select>
                   </div>
                 </div>
 
-                {err && <div className="text-sm mb-3" style={{ color: "#C4452E" }}>{err}</div>}
+                {err && <div className="text-base mb-4" style={{ color: "#C4452E" }}>{err}</div>}
                 <button onClick={submitRegister} disabled={busy}
-                  className="w-full py-2.5 rounded-md font-semibold text-sm transition-transform active:scale-[0.99] disabled:opacity-60"
+                  className="w-full py-3 rounded-lg font-semibold text-base transition-transform active:scale-[0.99] disabled:opacity-60"
                   style={{ background: "#E07C24", color: "#1E2B5C" }}>
                   {busy ? "Submitting…" : "Submit registration"}
                 </button>
               </>
             )}
 
-            <button onClick={() => { setMode("login"); setErr(""); setRegMsg(""); }} className="text-xs mt-4 hover:underline" style={{ color: "#5B6B85" }}>
+            <button onClick={() => { setMode("login"); setErr(""); setRegMsg(""); }} className="text-sm mt-5 hover:underline" style={{ color: "#5B6B85" }}>
               ← Back to sign in
             </button>
           </div>
@@ -734,67 +734,67 @@ function Login({ onLogin }) {
   return (
     <div className="min-h-screen flex" style={{ background: "#FAF9F4" }}>
       {/* Left panel — the "school register" */}
-      <div className="hidden md:flex flex-col justify-between w-1/2 p-12 text-white" style={{ background: "#1E2B5C" }}>
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-white p-0.5 shrink-0">
+      <div className="hidden md:flex flex-col justify-between w-1/2 p-14 text-white" style={{ background: "#1E2B5C" }}>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-white p-1 shrink-0">
             <img src={LOGO} alt="Banyan International Academy logo" className="w-full h-full rounded-full object-cover" />
           </div>
           <div>
-            <div className="display font-bold text-lg leading-tight">Banyan International Academy</div>
-            <div className="text-xs" style={{ color: "#9FB0CC" }}>Staff portal · Begin · Become · Belong</div>
+            <div className="display font-bold text-xl leading-tight">Banyan International Academy</div>
+            <div className="text-sm" style={{ color: "#9FB0CC" }}>Staff portal · Begin · Become · Belong</div>
           </div>
         </div>
         <div>
-          <div className="display text-4xl font-bold leading-tight">
+          <div className="display text-5xl font-bold leading-tight">
             Rooted in values,<br />skilled for life.
           </div>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed" style={{ color: "#9FB0CC" }}>
+          <p className="mt-5 max-w-md text-base leading-relaxed" style={{ color: "#9FB0CC" }}>
             Plan lessons chapter by chapter, mark your attendance, apply for leave,
             and raise requests to admin — all from one place.
           </p>
         </div>
-        <div className="text-xs" style={{ color: "#6B7C99" }}>Academic year 2026–27 · Term 1</div>
+        <div className="text-sm" style={{ color: "#6B7C99" }}>Academic year 2026–27 · Term 1</div>
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-sm">
-          <div className="md:hidden flex items-center gap-2 mb-8">
+      <div className="flex-1 flex items-center justify-center p-7">
+        <div className="w-full max-w-md">
+          <div className="md:hidden flex items-center gap-2.5 mb-10">
             <img src={LOGO} alt="Banyan International Academy logo" className="w-10 h-10 rounded-full object-cover" />
-            <span className="display font-bold text-lg">Banyan International Academy</span>
+            <span className="display font-bold text-xl">Banyan International Academy</span>
           </div>
-          <h1 className="display text-2xl font-bold">Sign in</h1>
-          <p className="text-sm mt-1 mb-4" style={{ color: "#5B6B85" }}>Use your staff email to continue.</p>
+          <h1 className="display text-3xl font-bold">Sign in</h1>
+          <p className="text-base mt-1.5 mb-5" style={{ color: "#5B6B85" }}>Use your staff email to continue.</p>
 
-          <label className="block text-sm font-medium mb-1">Staff email</label>
+          <label className="block text-base font-medium mb-1.5">Staff email</label>
           <input
             value={email}
             onChange={(e) => { setEmail(e.target.value); setErr(""); }}
             onKeyDown={(e) => e.key === "Enter" && submit()}
             placeholder="a.rao@banyanacademy.edu"
-            className="w-full border rounded-md px-3 py-2 text-sm mb-4 bg-white"
+            className="w-full border rounded-lg px-4 py-2.5 text-base mb-5 bg-white"
             style={{ borderColor: "#D8D4C6" }}
           />
-          <label className="block text-sm font-medium mb-1">Password</label>
+          <label className="block text-base font-medium mb-1.5">Password</label>
           <input
             type="password"
             value={pw}
             onChange={(e) => { setPw(e.target.value); setErr(""); }}
             onKeyDown={(e) => e.key === "Enter" && submit()}
             placeholder="••••••••"
-            className="w-full border rounded-md px-3 py-2 text-sm bg-white"
+            className="w-full border rounded-lg px-4 py-2.5 text-base bg-white"
             style={{ borderColor: "#D8D4C6" }}
           />
-          {err && <div className="text-sm mt-3" style={{ color: "#C4452E" }}>{err}</div>}
+          {err && <div className="text-base mt-4" style={{ color: "#C4452E" }}>{err}</div>}
           <button
             onClick={submit}
             disabled={busy}
-            className="w-full mt-6 py-2.5 rounded-md font-semibold text-sm transition-transform active:scale-[0.99] disabled:opacity-60"
+            className="w-full mt-6 py-3 rounded-lg font-semibold text-base transition-transform active:scale-[0.99] disabled:opacity-60"
             style={{ background: "#E07C24", color: "#1E2B5C" }}
           >
             {busy ? "Signing in…" : "Sign in"}
           </button>
-          <button onClick={() => { setMode("register"); setErr(""); }} className="text-xs mt-4 hover:underline block" style={{ color: "#5B6B85" }}>
+          <button onClick={() => { setMode("register"); setErr(""); }} className="text-sm mt-5 hover:underline block" style={{ color: "#5B6B85" }}>
             New employee? Register for an account →
           </button>
         </div>
@@ -810,20 +810,20 @@ function Login({ onLogin }) {
 function BooksTab({ book }) {
   if (!book) {
     return (
-      <div className="px-4 py-10 text-center text-sm" style={{ color: "#8A8672" }}>
+      <div className="px-5 py-12 text-center text-base" style={{ color: "#8A8672" }}>
         No textbook attached to this chapter yet.
       </div>
     );
   }
   return (
-    <div className="p-4">
-      <div className="font-semibold text-sm mb-1">{book.title}</div>
-      {book.pages && <div className="text-xs mb-3" style={{ color: "#5B6B85" }}>{book.pages}</div>}
-      <div className="rounded-md overflow-hidden border" style={{ borderColor: "#E3E0D6" }}>
+    <div className="p-5">
+      <div className="font-semibold text-base mb-1.5">{book.title}</div>
+      {book.pages && <div className="text-sm mb-4" style={{ color: "#5B6B85" }}>{book.pages}</div>}
+      <div className="rounded-lg overflow-hidden border" style={{ borderColor: "#E3E0D6" }}>
         <iframe src={book.pdfUrl} title={book.title} style={{ width: "100%", height: "70vh", border: "none" }} />
       </div>
-      <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs mt-2 inline-flex items-center gap-1 hover:underline" style={{ color: "#E07C24" }}>
-        Open PDF in new tab <ChevronRight size={12} />
+      <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-sm mt-2.5 inline-flex items-center gap-1.5 hover:underline" style={{ color: "#E07C24" }}>
+        Open PDF in new tab <ChevronRight size={14} />
       </a>
     </div>
   );
@@ -854,20 +854,20 @@ function parseSlideBlocks(content) {
 function LPSlide({ slide, index }) {
   const accent = ["#E07C24", "#2E7D5B", "#1E2B5C"][index % 3];
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "#E3E0D6" }}>
+    <div className="rounded-xl border overflow-hidden" style={{ borderColor: "#E3E0D6" }}>
       {slide.heading && (
-        <div className="px-4 py-2 text-sm font-bold text-white" style={{ background: accent }}>
+        <div className="px-5 py-2.5 text-base font-bold text-white" style={{ background: accent }}>
           {slide.heading}
         </div>
       )}
-      <div className="p-4" style={{ background: "#FFFEFB" }}>
+      <div className="p-5" style={{ background: "#FFFEFB" }}>
         {slide.plain.map((line, i) => (
-          <p key={i} className="text-sm mb-2" style={{ color: "#3A4560" }}>{line}</p>
+          <p key={i} className="text-base mb-2.5" style={{ color: "#3A4560" }}>{line}</p>
         ))}
         {slide.bullets.length > 0 && (
           <ul className="space-y-2">
             {slide.bullets.map((b, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "#3A4560" }}>
+              <li key={i} className="flex items-start gap-2.5 text-base" style={{ color: "#3A4560" }}>
                 <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: accent }} />
                 <span>{b}</span>
               </li>
@@ -887,17 +887,17 @@ function LPItem({ lp, status, onCycle, onMarkDone }) {
   const isDone = status === "Completed";
   return (
     <li className="border-t" style={{ borderColor: "#F0EDE3" }}>
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5">
         <button
           onClick={() => isRich && setOpen((o) => !o)}
-          className="flex items-center gap-3 min-w-0 flex-1 text-left"
+          className="flex items-center gap-4 min-w-0 flex-1 text-left"
           disabled={!isRich}
         >
-          <Layers size={16} className="shrink-0" style={{ color: "#E07C24" }} />
-          <span className="text-sm truncate">{title}</span>
-          {isRich && <ChevronRight size={14} className="shrink-0 text-gray-400 transition-transform" style={{ transform: open ? "rotate(90deg)" : "none" }} />}
+          <Layers size={18} className="shrink-0" style={{ color: "#E07C24" }} />
+          <span className="text-base truncate">{title}</span>
+          {isRich && <ChevronRight size={16} className="shrink-0 text-gray-400 transition-transform" style={{ transform: open ? "rotate(90deg)" : "none" }} />}
         </button>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <button onClick={onCycle} title="Change status">
             <StatusPill label={status} />
           </button>
@@ -905,18 +905,18 @@ function LPItem({ lp, status, onCycle, onMarkDone }) {
             onClick={onMarkDone}
             disabled={isDone}
             title="Mark done"
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border transition-colors disabled:cursor-default"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-semibold border transition-colors disabled:cursor-default"
             style={isDone
               ? { background: "#E8F3EC", color: "#2E7D5B", borderColor: "#CFE6D8" }
               : { background: "#FFFFFF", color: "#2E7D5B", borderColor: "#2E7D5B" }}
           >
-            <CheckCircle2 size={13} /> {isDone ? "Done" : "Mark done"}
+            <CheckCircle2 size={15} /> {isDone ? "Done" : "Mark done"}
           </button>
         </div>
       </div>
       {isRich && open && (
-        <div className="px-4 pb-4 space-y-3">
-          <div className="rounded-md p-3 text-xs" style={{ background: "#FBEEDF", color: "#7A4A0E" }}>
+        <div className="px-5 pb-4 space-y-3">
+          <div className="rounded-lg p-4 text-sm" style={{ background: "#FBEEDF", color: "#7A4A0E" }}>
             <span className="font-semibold">30-minute period guide — </span>{lp.guidance}
           </div>
           {slides.map((slide, i) => <LPSlide key={i} slide={slide} index={i} />)}
@@ -963,7 +963,7 @@ function LearnersFunTab({ practice }) {
 
   if (!practice || !practice.length) {
     return (
-      <div className="px-4 py-10 text-center text-sm" style={{ color: "#8A8672" }}>
+      <div className="px-5 py-12 text-center text-base" style={{ color: "#8A8672" }}>
         No practice questions for this chapter yet.
       </div>
     );
@@ -987,51 +987,51 @@ function LearnersFunTab({ practice }) {
   const nextQuestion = () => { setQIndex((i) => (i + 1) % practice.length); setAnswer(""); setChecked(false); };
 
   return (
-    <div className="p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold" style={{ background: "#FDE9DC", color: "#B8540F" }}>🔥 {streak}</span>
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold" style={{ background: "#FBF0D9", color: "#8A6D1D" }}>🪙 {coins}</span>
-        <span className="text-xs ml-auto" style={{ color: "#8A8672" }}>Question {qIndex + 1} of {practice.length}</span>
+    <div className="p-5">
+      <div className="flex items-center gap-2.5 mb-5">
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: "#FDE9DC", color: "#B8540F" }}>🔥 {streak}</span>
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: "#FBF0D9", color: "#8A6D1D" }}>🪙 {coins}</span>
+        <span className="text-sm ml-auto" style={{ color: "#8A8672" }}>Question {qIndex + 1} of {practice.length}</span>
       </div>
 
-      <div className="rounded-lg border p-4 mb-4" style={{ borderColor: "#E3E0D6", background: "#FFFEFB" }}>
-        <div className="text-sm font-semibold">{q.question}</div>
+      <div className="rounded-xl border p-5 mb-5" style={{ borderColor: "#E3E0D6", background: "#FFFEFB" }}>
+        <div className="text-base font-semibold">{q.question}</div>
       </div>
 
-      <label className="block text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#8A8672" }}>Your answer</label>
+      <label className="block text-sm font-semibold uppercase tracking-wide mb-1.5" style={{ color: "#8A8672" }}>Your answer</label>
       <textarea
         rows={4}
         value={answer}
         onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
         placeholder="Write your working here..."
-        className="w-full border rounded-md p-3 text-sm mb-3"
+        className="w-full border rounded-lg p-4 text-base mb-4"
         style={{ borderColor: "#D8D4C6" }}
       />
 
       {!checked ? (
         <button onClick={checkAnswer} disabled={!answer.trim()}
-          className="px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-40"
+          className="px-5 py-2.5 rounded-lg text-base font-semibold disabled:opacity-40"
           style={{ background: "#E07C24", color: "#1E2B5C" }}>
           Check answer
         </button>
       ) : (
         <>
-          <div className="rounded-lg p-4 mb-3" style={{ background: passed ? "#E3F3E9" : "#FBDADA" }}>
+          <div className="rounded-xl p-5 mb-4" style={{ background: passed ? "#E3F3E9" : "#FBDADA" }}>
             <div className="flex items-center justify-between">
-              <div className="font-bold text-lg">{passed ? "Nailed it! 🎉" : "Needs work"}</div>
-              <div className="text-2xl font-bold">{foundKeywords.length}/{q.keywords.length}</div>
+              <div className="font-bold text-xl">{passed ? "Nailed it! 🎉" : "Needs work"}</div>
+              <div className="text-3xl font-bold">{foundKeywords.length}/{q.keywords.length}</div>
             </div>
-            <div className="text-xs mt-1">{passed ? "Great job — you covered the key steps." : "Some key terms are missing — compare with the model answer below."}</div>
-            <div className="text-xs mt-2 pt-2 border-t" style={{ borderColor: passed ? "#B7DDC4" : "#F0AFAF" }}>Coins earned: {earnedCoins} of 5</div>
+            <div className="text-sm mt-1.5">{passed ? "Great job — you covered the key steps." : "Some key terms are missing — compare with the model answer below."}</div>
+            <div className="text-sm mt-2.5 pt-2 border-t" style={{ borderColor: passed ? "#B7DDC4" : "#F0AFAF" }}>Coins earned: {earnedCoins} of 5</div>
           </div>
 
-          <div className="rounded-lg p-3 mb-3 border" style={{ borderColor: "#E3E0D6" }}>
-            <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#8A8672" }}>Keyword check</div>
-            <div className="flex flex-wrap gap-2">
+          <div className="rounded-xl p-4 mb-4 border" style={{ borderColor: "#E3E0D6" }}>
+            <div className="text-sm font-semibold uppercase tracking-wide mb-2.5" style={{ color: "#8A8672" }}>Keyword check</div>
+            <div className="flex flex-wrap gap-2.5">
               {q.keywords.map((k) => {
                 const found = foundSet.has(k.toLowerCase());
                 return (
-                  <span key={k} className="px-2.5 py-1 rounded-full text-xs font-medium border"
+                  <span key={k} className="px-3 py-1.5 rounded-full text-sm font-medium border"
                     style={found
                       ? { background: "#FDE9A8", borderColor: "#E8C34A", color: "#6B540A" }
                       : { background: "#FBD5D5", borderColor: "#EFA9A9", color: "#8A2E2E", textDecoration: "line-through" }}>
@@ -1042,16 +1042,16 @@ function LearnersFunTab({ practice }) {
             </div>
           </div>
 
-          <div className="rounded-lg p-4 border mb-3" style={{ borderColor: "#E3E0D6", background: "#FFFDF5" }}>
-            <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#8A8672" }}>✏️ Topper's handwritten answer</div>
-            <div className="handwriting text-xl leading-relaxed whitespace-pre-line" style={{ color: "#1E3A6B" }}>
+          <div className="rounded-xl p-5 border mb-4" style={{ borderColor: "#E3E0D6", background: "#FFFDF5" }}>
+            <div className="text-sm font-semibold uppercase tracking-wide mb-2.5" style={{ color: "#8A8672" }}>✏️ Topper's handwritten answer</div>
+            <div className="handwriting text-2xl leading-relaxed whitespace-pre-line" style={{ color: "#1E3A6B" }}>
               {renderHighlightedAnswer(q.modelAnswer, q.keywords, foundSet)}
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <button onClick={retry} className="flex-1 py-2 rounded-md text-sm font-semibold border" style={{ borderColor: "#1E2B5C", color: "#1E2B5C" }}>Try again</button>
-            <button onClick={nextQuestion} className="flex-1 py-2 rounded-md text-sm font-semibold" style={{ background: "#1E2B5C", color: "#fff" }}>Next question</button>
+          <div className="flex gap-2.5">
+            <button onClick={retry} className="flex-1 py-2.5 rounded-lg text-base font-semibold border" style={{ borderColor: "#1E2B5C", color: "#1E2B5C" }}>Try again</button>
+            <button onClick={nextQuestion} className="flex-1 py-2.5 rounded-lg text-base font-semibold" style={{ background: "#1E2B5C", color: "#fff" }}>Next question</button>
           </div>
         </>
       )}
@@ -1091,14 +1091,14 @@ function Curriculum() {
   const Tile = ({ label, meta, onClick }) => (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white border rounded-lg p-4 flex items-center justify-between hover:border-amber-400 transition-colors group"
+      className="w-full text-left bg-white border rounded-xl p-5 flex items-center justify-between hover:border-amber-400 transition-colors group"
       style={{ borderColor: "#E3E0D6" }}
     >
       <div>
-        <div className="font-semibold text-sm">{label}</div>
-        <div className="text-xs mt-0.5" style={{ color: "#5B6B85" }}>{meta}</div>
+        <div className="font-semibold text-base">{label}</div>
+        <div className="text-sm mt-1" style={{ color: "#5B6B85" }}>{meta}</div>
       </div>
-      <ChevronRight size={16} className="text-gray-400 group-hover:text-amber-500" />
+      <ChevronRight size={18} className="text-gray-400 group-hover:text-amber-500" />
     </button>
   );
 
@@ -1107,13 +1107,13 @@ function Curriculum() {
       <SectionTitle eyebrow="Curriculum" title="Lesson planning" />
 
       {/* Breadcrumb */}
-      <div className="flex items-center flex-wrap gap-1 text-sm mb-5">
+      <div className="flex items-center flex-wrap gap-1.5 text-base mb-5">
         {crumbs.map((c, i) => (
-          <span key={c.label} className="flex items-center gap-1">
-            {i > 0 && <ChevronRight size={14} className="text-gray-400" />}
+          <span key={c.label} className="flex items-center gap-1.5">
+            {i > 0 && <ChevronRight size={16} className="text-gray-400" />}
             <button
               onClick={c.onClick}
-              className={`px-1.5 py-0.5 rounded ${i === crumbs.length - 1 ? "font-semibold" : "hover:underline"}`}
+              className={`px-2 py-1 rounded ${i === crumbs.length - 1 ? "font-semibold" : "hover:underline"}`}
               style={{ color: i === crumbs.length - 1 ? "#1E2B5C" : "#5B6B85" }}
             >
               {c.label}
@@ -1124,7 +1124,7 @@ function Curriculum() {
 
       {/* Level 1: Grades */}
       {!grade && (
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-3 gap-4">
           {Object.keys(CURRICULUM).map((g) => (
             <Tile key={g} label={g} meta={`${Object.keys(CURRICULUM[g]).length} subjects`} onClick={() => setGrade(g)} />
           ))}
@@ -1133,7 +1133,7 @@ function Curriculum() {
 
       {/* Level 2: Subjects */}
       {grade && !subject && (
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-3 gap-4">
           {Object.keys(CURRICULUM[grade]).map((s) => (
             <Tile key={s} label={s} meta={`${Object.keys(CURRICULUM[grade][s]).length} chapters`} onClick={() => setSubject(s)} />
           ))}
@@ -1142,7 +1142,7 @@ function Curriculum() {
 
       {/* Level 3: Chapters */}
       {grade && subject && !chapter && (
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {Object.keys(CURRICULUM[grade][subject]).map((c) => {
             const cd = CURRICULUM[grade][subject][c];
             return (
@@ -1157,22 +1157,22 @@ function Curriculum() {
       {/* Level 4: Books & LPs */}
       {grade && subject && chapter && (
         <Card className="margin-rule">
-          <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
+          <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
             <div>
-              <div className="font-semibold text-sm">{chapter}</div>
-              <div className="text-xs" style={{ color: "#5B6B85" }}>{grade} · {subject}</div>
+              <div className="font-semibold text-base">{chapter}</div>
+              <div className="text-sm" style={{ color: "#5B6B85" }}>{grade} · {subject}</div>
             </div>
-            <button onClick={() => setChapter(null)} className="text-xs flex items-center gap-1 hover:underline" style={{ color: "#5B6B85" }}>
-              <ArrowLeft size={13} /> Chapters
+            <button onClick={() => setChapter(null)} className="text-sm flex items-center gap-1.5 hover:underline" style={{ color: "#5B6B85" }}>
+              <ArrowLeft size={15} /> Chapters
             </button>
           </div>
 
-          <div className="flex gap-2 px-4 pt-3 border-b" style={{ borderColor: "#E3E0D6" }}>
+          <div className="flex gap-2.5 px-5 pt-3 border-b" style={{ borderColor: "#E3E0D6" }}>
             {[["lps", "LPs"], ["books", "Books"], ["fun", "Learners Fun"]].map(([k, l]) => (
               <button
                 key={k}
                 onClick={() => setChapterTab(k)}
-                className="px-3 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors"
+                className="px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
                 style={{
                   borderColor: chapterTab === k ? "#E07C24" : "transparent",
                   color: chapterTab === k ? "#1E2B5C" : "#8A93AC",
@@ -1231,70 +1231,70 @@ function Attendance() {
     <div>
       <SectionTitle eyebrow="Attendance" title={`My attendance · ${monthLabel}`} />
 
-      <Card className="p-5 margin-rule mb-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      <Card className="p-6 margin-rule mb-8">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <div className="font-semibold text-sm mb-1">Today's attendance</div>
+            <div className="font-semibold text-base mb-1.5">Today's attendance</div>
             {todayRecord ? (
-              <div className="text-xs" style={{ color: "#5B6B85" }}>
+              <div className="text-sm" style={{ color: "#5B6B85" }}>
                 In <span className="font-medium">{todayRecord.check_in}</span>
                 {todayRecord.check_out && <> · Out <span className="font-medium">{todayRecord.check_out}</span></>}
               </div>
             ) : (
-              <div className="text-xs" style={{ color: "#5B6B85" }}>You haven't checked in yet.</div>
+              <div className="text-sm" style={{ color: "#5B6B85" }}>You haven't checked in yet.</div>
             )}
           </div>
           {todayRecord && <StatusPill label={todayRecord.status} />}
         </div>
-        {err && <div className="text-xs mt-3" style={{ color: "#C4452E" }}>{err}</div>}
-        <div className="flex flex-wrap gap-2 mt-4">
+        {err && <div className="text-sm mt-4" style={{ color: "#C4452E" }}>{err}</div>}
+        <div className="flex flex-wrap gap-2.5 mt-5">
           {!todayRecord && (
-            <button onClick={checkIn} className="px-4 py-2 rounded-md text-sm font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+            <button onClick={checkIn} className="px-5 py-2.5 rounded-lg text-base font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
               Check in
             </button>
           )}
           {todayRecord && !todayRecord.check_out && (
-            <button onClick={checkOut} className="px-4 py-2 rounded-md text-sm font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+            <button onClick={checkOut} className="px-5 py-2.5 rounded-lg text-base font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
               Check out
             </button>
           )}
           {todayRecord && todayRecord.check_out && (
-            <div className="text-xs" style={{ color: "#2E7D5B" }}>Attendance recorded for today.</div>
+            <div className="text-sm" style={{ color: "#2E7D5B" }}>Attendance recorded for today.</div>
           )}
         </div>
       </Card>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         {stats.map((s) => (
-          <Card key={s.label} className="p-4">
-            <s.icon size={18} style={{ color: s.color }} />
-            <div className="display text-2xl font-bold mt-2">{s.value}</div>
-            <div className="text-xs" style={{ color: "#5B6B85" }}>{s.label}</div>
+          <Card key={s.label} className="p-5">
+            <s.icon size={20} style={{ color: s.color }} />
+            <div className="display text-3xl font-bold mt-2.5">{s.value}</div>
+            <div className="text-sm" style={{ color: "#5B6B85" }}>{s.label}</div>
           </Card>
         ))}
       </div>
 
       <Card>
-        <table className="w-full text-sm">
+        <table className="w-full text-base">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-              <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Check in</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Check out</th>
-              <th className="px-4 py-3 font-semibold text-right">Status</th>
+            <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-5 py-3.5 font-semibold">Date</th>
+              <th className="px-5 py-3.5 font-semibold hidden sm:table-cell">Check in</th>
+              <th className="px-5 py-3.5 font-semibold hidden sm:table-cell">Check out</th>
+              <th className="px-5 py-3.5 font-semibold text-right">Status</th>
             </tr>
           </thead>
           <tbody>
             {data.records.map((d) => (
               <tr key={d.date} className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                <td className="px-4 py-3 font-medium">{d.date}</td>
-                <td className="px-4 py-3 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{d.check_in || "—"}</td>
-                <td className="px-4 py-3 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{d.check_out || "—"}</td>
-                <td className="px-4 py-3 text-right"><StatusPill label={d.status} /></td>
+                <td className="px-5 py-3.5 font-medium">{d.date}</td>
+                <td className="px-5 py-3.5 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{d.check_in || "—"}</td>
+                <td className="px-5 py-3.5 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{d.check_out || "—"}</td>
+                <td className="px-5 py-3.5 text-right"><StatusPill label={d.status} /></td>
               </tr>
             ))}
             {data.records.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No attendance recorded yet this month.</td></tr>
+              <tr><td colSpan={4} className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No attendance recorded yet this month.</td></tr>
             )}
           </tbody>
         </table>
@@ -1334,65 +1334,65 @@ function Leaves() {
     }
   };
 
-  const input = "w-full border rounded-md px-3 py-2 text-sm bg-white";
+  const input = "w-full border rounded-lg px-4 py-2.5 text-base bg-white";
 
   return (
     <div>
       <SectionTitle eyebrow="Leaves" title="Apply for leave" />
 
-      <div className="grid sm:grid-cols-3 gap-3 mb-6">
+      <div className="grid sm:grid-cols-3 gap-4 mb-8">
         {LEAVE_BALANCE.map((b) => (
-          <Card key={b.type} className="p-4">
-            <div className="text-xs" style={{ color: "#5B6B85" }}>{b.type}</div>
-            <div className="display text-2xl font-bold mt-1">
-              {b.total - b.used}<span className="text-sm font-normal" style={{ color: "#5B6B85" }}> / {b.total} left</span>
+          <Card key={b.type} className="p-5">
+            <div className="text-sm" style={{ color: "#5B6B85" }}>{b.type}</div>
+            <div className="display text-3xl font-bold mt-1.5">
+              {b.total - b.used}<span className="text-base font-normal" style={{ color: "#5B6B85" }}> / {b.total} left</span>
             </div>
-            <div className="h-1.5 rounded-full mt-3" style={{ background: "#F0EDE3" }}>
+            <div className="h-1.5 rounded-full mt-4" style={{ background: "#F0EDE3" }}>
               <div className="h-1.5 rounded-full" style={{ width: `${((b.total - b.used) / b.total) * 100}%`, background: "#E07C24" }} />
             </div>
           </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="p-5 margin-rule">
-          <div className="font-semibold text-sm mb-4">New leave application</div>
-          <label className="block text-xs font-medium mb-1">Leave type</label>
-          <select value={form.leave_type} onChange={(e) => setForm({ ...form, leave_type: e.target.value })} className={`${input} mb-3`} style={{ borderColor: "#D8D4C6" }}>
+      <div className="grid lg:grid-cols-2 gap-7">
+        <Card className="p-6 margin-rule">
+          <div className="font-semibold text-base mb-5">New leave application</div>
+          <label className="block text-sm font-medium mb-1.5">Leave type</label>
+          <select value={form.leave_type} onChange={(e) => setForm({ ...form, leave_type: e.target.value })} className={`${input} mb-4`} style={{ borderColor: "#D8D4C6" }}>
             {LEAVE_BALANCE.map((b) => <option key={b.type}>{b.type}</option>)}
           </select>
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-xs font-medium mb-1">From</label>
+              <label className="block text-sm font-medium mb-1.5">From</label>
               <input type="date" value={form.from} onChange={(e) => setForm({ ...form, from: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }} />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">To</label>
+              <label className="block text-sm font-medium mb-1.5">To</label>
               <input type="date" value={form.to} onChange={(e) => setForm({ ...form, to: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }} />
             </div>
           </div>
-          <label className="block text-xs font-medium mb-1">Reason</label>
-          <textarea rows={3} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Brief reason for leave" className={`${input} mb-3 resize-none`} style={{ borderColor: "#D8D4C6" }} />
-          {msg && <div className="text-xs mb-3" style={{ color: msg.startsWith("Leave applied") ? "#2E7D5B" : "#C4452E" }}>{msg}</div>}
-          <button onClick={apply} className="px-4 py-2 rounded-md text-sm font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+          <label className="block text-sm font-medium mb-1.5">Reason</label>
+          <textarea rows={3} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Brief reason for leave" className={`${input} mb-4 resize-none`} style={{ borderColor: "#D8D4C6" }} />
+          {msg && <div className="text-sm mb-4" style={{ color: msg.startsWith("Leave applied") ? "#2E7D5B" : "#C4452E" }}>{msg}</div>}
+          <button onClick={apply} className="px-5 py-2.5 rounded-lg text-base font-semibold" style={{ background: "#E07C24", color: "#1E2B5C" }}>
             Apply for leave
           </button>
         </Card>
 
         <Card>
-          <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>Leave history</div>
+          <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>Leave history</div>
           <ul>
             {leaves.map((l, i) => (
-              <li key={l.id} className={`px-4 py-3 flex items-start justify-between gap-3 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
+              <li key={l.id} className={`px-5 py-3.5 flex items-start justify-between gap-4 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
                 <div>
-                  <div className="text-sm font-medium">{l.leave_type}</div>
-                  <div className="text-xs mt-0.5" style={{ color: "#5B6B85" }}>{l.start_date} – {l.end_date} · {l.reason}</div>
+                  <div className="text-base font-medium">{l.leave_type}</div>
+                  <div className="text-sm mt-1" style={{ color: "#5B6B85" }}>{l.start_date} – {l.end_date} · {l.reason}</div>
                 </div>
                 <StatusPill label={leaveStatusLabel(l.status)} />
               </li>
             ))}
             {leaves.length === 0 && (
-              <li className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No leave requests yet.</li>
+              <li className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No leave requests yet.</li>
             )}
           </ul>
         </Card>
@@ -1421,66 +1421,66 @@ function LeaveRequests() {
     <div>
       <SectionTitle eyebrow="Admin" title="Leave requests" />
 
-      <Card className="mb-6">
-        <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>Pending ({pending.length})</div>
-        <table className="w-full text-sm">
+      <Card className="mb-8">
+        <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>Pending ({pending.length})</div>
+        <table className="w-full text-base">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-              <th className="px-4 py-3 font-semibold">Employee</th>
-              <th className="px-4 py-3 font-semibold">Type / Dates</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Reason</th>
-              <th className="px-4 py-3 font-semibold text-right">Decision</th>
+            <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-5 py-3.5 font-semibold">Employee</th>
+              <th className="px-5 py-3.5 font-semibold">Type / Dates</th>
+              <th className="px-5 py-3.5 font-semibold hidden sm:table-cell">Reason</th>
+              <th className="px-5 py-3.5 font-semibold text-right">Decision</th>
             </tr>
           </thead>
           <tbody>
             {pending.map((l) => (
               <tr key={l.id} className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                <td className="px-4 py-2.5">
+                <td className="px-5 py-3">
                   <div className="font-medium">{l.employee_name}</div>
-                  <div className="text-xs" style={{ color: "#5B6B85" }}>{l.employee_email}</div>
+                  <div className="text-sm" style={{ color: "#5B6B85" }}>{l.employee_email}</div>
                 </td>
-                <td className="px-4 py-2.5" style={{ color: "#5B6B85" }}>{l.leave_type}<br />{l.start_date} – {l.end_date}</td>
-                <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{l.reason}</td>
-                <td className="px-4 py-2.5 text-right space-x-2">
-                  <button onClick={() => approve(l.id)} className="px-3 py-1.5 rounded-md text-xs font-semibold" style={{ background: "#2E7D5B", color: "#fff" }}>
+                <td className="px-5 py-3" style={{ color: "#5B6B85" }}>{l.leave_type}<br />{l.start_date} – {l.end_date}</td>
+                <td className="px-5 py-3 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{l.reason}</td>
+                <td className="px-5 py-3 text-right space-x-2">
+                  <button onClick={() => approve(l.id)} className="px-4 py-2 rounded-lg text-sm font-semibold" style={{ background: "#2E7D5B", color: "#fff" }}>
                     Approve
                   </button>
-                  <button onClick={() => reject(l.id)} className="px-3 py-1.5 rounded-md text-xs font-semibold border" style={{ borderColor: "#D8D4C6", color: "#C4452E" }}>
+                  <button onClick={() => reject(l.id)} className="px-4 py-2 rounded-lg text-sm font-semibold border" style={{ borderColor: "#D8D4C6", color: "#C4452E" }}>
                     Reject
                   </button>
                 </td>
               </tr>
             ))}
             {pending.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No pending leave requests.</td></tr>
+              <tr><td colSpan={4} className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No pending leave requests.</td></tr>
             )}
           </tbody>
         </table>
       </Card>
 
       <Card>
-        <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>History</div>
-        <table className="w-full text-sm">
+        <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>History</div>
+        <table className="w-full text-base">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-              <th className="px-4 py-3 font-semibold">Employee</th>
-              <th className="px-4 py-3 font-semibold">Type / Dates</th>
-              <th className="px-4 py-3 font-semibold text-right">Status</th>
+            <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-5 py-3.5 font-semibold">Employee</th>
+              <th className="px-5 py-3.5 font-semibold">Type / Dates</th>
+              <th className="px-5 py-3.5 font-semibold text-right">Status</th>
             </tr>
           </thead>
           <tbody>
             {decided.map((l) => (
               <tr key={l.id} className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                <td className="px-4 py-2.5">
+                <td className="px-5 py-3">
                   <div className="font-medium">{l.employee_name}</div>
-                  <div className="text-xs" style={{ color: "#5B6B85" }}>{l.employee_email}</div>
+                  <div className="text-sm" style={{ color: "#5B6B85" }}>{l.employee_email}</div>
                 </td>
-                <td className="px-4 py-2.5" style={{ color: "#5B6B85" }}>{l.leave_type}<br />{l.start_date} – {l.end_date}</td>
-                <td className="px-4 py-2.5 text-right"><StatusPill label={leaveStatusLabel(l.status)} /></td>
+                <td className="px-5 py-3" style={{ color: "#5B6B85" }}>{l.leave_type}<br />{l.start_date} – {l.end_date}</td>
+                <td className="px-5 py-3 text-right"><StatusPill label={leaveStatusLabel(l.status)} /></td>
               </tr>
             ))}
             {decided.length === 0 && (
-              <tr><td colSpan={3} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No decided leave requests yet.</td></tr>
+              <tr><td colSpan={3} className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No decided leave requests yet.</td></tr>
             )}
           </tbody>
         </table>
@@ -1508,40 +1508,40 @@ function Requests() {
     setMsg("Request raised — the admin office has been notified.");
   };
 
-  const input = "w-full border rounded-md px-3 py-2 text-sm bg-white";
+  const input = "w-full border rounded-lg px-4 py-2.5 text-base bg-white";
 
   return (
     <div>
       <SectionTitle eyebrow="Requests" title="Raise a request" />
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="p-5 margin-rule">
-          <div className="font-semibold text-sm mb-4">New request</div>
-          <label className="block text-xs font-medium mb-1">Category</label>
-          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={`${input} mb-3`} style={{ borderColor: "#D8D4C6" }}>
+      <div className="grid lg:grid-cols-2 gap-7">
+        <Card className="p-6 margin-rule">
+          <div className="font-semibold text-base mb-5">New request</div>
+          <label className="block text-sm font-medium mb-1.5">Category</label>
+          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={`${input} mb-4`} style={{ borderColor: "#D8D4C6" }}>
             <option>IT support</option>
             <option>Supplies</option>
             <option>Maintenance</option>
             <option>HR / Payroll</option>
             <option>Other</option>
           </select>
-          <label className="block text-xs font-medium mb-1">Subject</label>
-          <input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="e.g. Smartboard pen missing in Room 4A" className={`${input} mb-3`} style={{ borderColor: "#D8D4C6" }} />
-          <label className="block text-xs font-medium mb-1">Details (optional)</label>
-          <textarea rows={3} value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} placeholder="Anything the admin team should know" className={`${input} mb-3 resize-none`} style={{ borderColor: "#D8D4C6" }} />
-          {msg && <div className="text-xs mb-3" style={{ color: msg.startsWith("Request raised") ? "#2E7D5B" : "#C4452E" }}>{msg}</div>}
-          <button onClick={raise} className="px-4 py-2 rounded-md text-sm font-semibold inline-flex items-center gap-2" style={{ background: "#E07C24", color: "#1E2B5C" }}>
-            <Send size={14} /> Raise request
+          <label className="block text-sm font-medium mb-1.5">Subject</label>
+          <input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="e.g. Smartboard pen missing in Room 4A" className={`${input} mb-4`} style={{ borderColor: "#D8D4C6" }} />
+          <label className="block text-sm font-medium mb-1.5">Details (optional)</label>
+          <textarea rows={3} value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} placeholder="Anything the admin team should know" className={`${input} mb-4 resize-none`} style={{ borderColor: "#D8D4C6" }} />
+          {msg && <div className="text-sm mb-4" style={{ color: msg.startsWith("Request raised") ? "#2E7D5B" : "#C4452E" }}>{msg}</div>}
+          <button onClick={raise} className="px-5 py-2.5 rounded-lg text-base font-semibold inline-flex items-center gap-2.5" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+            <Send size={16} /> Raise request
           </button>
         </Card>
 
         <Card>
-          <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>My requests</div>
+          <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>My requests</div>
           <ul>
             {reqs.map((r, i) => (
-              <li key={r.id} className={`px-4 py-3 flex items-start justify-between gap-3 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
+              <li key={r.id} className={`px-5 py-3.5 flex items-start justify-between gap-4 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
                 <div>
-                  <div className="text-sm font-medium">{r.subject}</div>
-                  <div className="text-xs mt-0.5" style={{ color: "#5B6B85" }}>{r.category} · raised {r.date}</div>
+                  <div className="text-base font-medium">{r.subject}</div>
+                  <div className="text-sm mt-1" style={{ color: "#5B6B85" }}>{r.category} · raised {r.date}</div>
                 </div>
                 <StatusPill label={r.status} />
               </li>
@@ -1561,7 +1561,7 @@ function EmployeeManagement({ employees, pending, refresh }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", subject: SUBJECT_OPTIONS[0], grade: GRADE_OPTIONS[0] });
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
-  const input = "w-full border rounded-md px-3 py-2 text-sm bg-white";
+  const input = "w-full border rounded-lg px-4 py-2.5 text-base bg-white";
 
   const addEmployee = async () => {
     if (!form.name.trim() || !form.email.trim() || !form.password.trim()) { setErr("Enter name, email and password."); return; }
@@ -1587,32 +1587,32 @@ function EmployeeManagement({ employees, pending, refresh }) {
       <SectionTitle eyebrow="Admin" title="Manage employees" />
 
       {pending.length > 0 && (
-        <Card className="mb-6">
-          <div className="p-4 border-b font-semibold text-sm flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
+        <Card className="mb-8">
+          <div className="p-5 border-b font-semibold text-base flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
             <span>Pending approvals ({pending.length})</span>
           </div>
-          <table className="w-full text-sm">
+          <table className="w-full text-base">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-                <th className="px-4 py-3 font-semibold">Name</th>
-                <th className="px-4 py-3 font-semibold">Requested subject / grade</th>
-                <th className="px-4 py-3 font-semibold text-right">Decision</th>
+              <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+                <th className="px-5 py-3.5 font-semibold">Name</th>
+                <th className="px-5 py-3.5 font-semibold">Requested subject / grade</th>
+                <th className="px-5 py-3.5 font-semibold text-right">Decision</th>
               </tr>
             </thead>
             <tbody>
               {pending.map((p) => (
                 <tr key={p.id} className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                  <td className="px-4 py-2.5">
+                  <td className="px-5 py-3">
                     <div className="font-medium">{p.name}</div>
-                    <div className="text-xs" style={{ color: "#5B6B85" }}>{p.email}</div>
+                    <div className="text-sm" style={{ color: "#5B6B85" }}>{p.email}</div>
                   </td>
-                  <td className="px-4 py-2.5" style={{ color: "#5B6B85" }}>{p.subject || "—"} · {p.grade || "—"}</td>
-                  <td className="px-4 py-2.5 text-right space-x-2">
-                    <button onClick={() => approve(p.id)} className="px-3 py-1.5 rounded-md text-xs font-semibold inline-flex items-center gap-1.5" style={{ background: "#2E7D5B", color: "#fff" }}>
-                      <UserCheck2 size={13} /> Approve
+                  <td className="px-5 py-3" style={{ color: "#5B6B85" }}>{p.subject || "—"} · {p.grade || "—"}</td>
+                  <td className="px-5 py-3 text-right space-x-2">
+                    <button onClick={() => approve(p.id)} className="px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2" style={{ background: "#2E7D5B", color: "#fff" }}>
+                      <UserCheck2 size={15} /> Approve
                     </button>
-                    <button onClick={() => reject(p.id)} className="px-3 py-1.5 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 border" style={{ borderColor: "#D8D4C6", color: "#C4452E" }}>
-                      <UserX2 size={13} /> Reject
+                    <button onClick={() => reject(p.id)} className="px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 border" style={{ borderColor: "#D8D4C6", color: "#C4452E" }}>
+                      <UserX2 size={15} /> Reject
                     </button>
                   </td>
                 </tr>
@@ -1622,82 +1622,82 @@ function EmployeeManagement({ employees, pending, refresh }) {
         </Card>
       )}
 
-      <Card className="p-5 margin-rule mb-6">
-        <div className="font-semibold text-sm mb-4 flex items-center gap-2"><UserPlus size={16} style={{ color: "#E07C24" }} /> Add employee directly (auto-approved)</div>
-        <div className="grid sm:grid-cols-2 gap-3 mb-3">
+      <Card className="p-6 margin-rule mb-8">
+        <div className="font-semibold text-base mb-5 flex items-center gap-2.5"><UserPlus size={18} style={{ color: "#E07C24" }} /> Add employee directly (auto-approved)</div>
+        <div className="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-xs font-medium mb-1">Name</label>
+            <label className="block text-sm font-medium mb-1.5">Name</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" className={input} style={{ borderColor: "#D8D4C6" }} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1.5">Email</label>
             <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="staff email" className={input} style={{ borderColor: "#D8D4C6" }} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium mb-1.5">Password</label>
             <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="At least 6 characters" className={input} style={{ borderColor: "#D8D4C6" }} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Subject</label>
+            <label className="block text-sm font-medium mb-1.5">Subject</label>
             <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }}>
               {SUBJECT_OPTIONS.map((s) => <option key={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Grade</label>
+            <label className="block text-sm font-medium mb-1.5">Grade</label>
             <select value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }}>
               {GRADE_OPTIONS.map((g) => <option key={g}>{g}</option>)}
             </select>
           </div>
         </div>
-        {msg && <div className="text-xs mb-3" style={{ color: "#2E7D5B" }}>{msg}</div>}
-        {err && <div className="text-xs mb-3" style={{ color: "#C4452E" }}>{err}</div>}
-        <button onClick={addEmployee} className="px-4 py-2 rounded-md text-sm font-semibold inline-flex items-center gap-2" style={{ background: "#E07C24", color: "#1E2B5C" }}>
-          <UserPlus size={14} /> Add employee
+        {msg && <div className="text-sm mb-4" style={{ color: "#2E7D5B" }}>{msg}</div>}
+        {err && <div className="text-sm mb-4" style={{ color: "#C4452E" }}>{err}</div>}
+        <button onClick={addEmployee} className="px-5 py-2.5 rounded-lg text-base font-semibold inline-flex items-center gap-2.5" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+          <UserPlus size={16} /> Add employee
         </button>
       </Card>
 
       <Card>
-        <div className="p-4 border-b font-semibold text-sm flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
+        <div className="p-5 border-b font-semibold text-base flex items-center justify-between" style={{ borderColor: "#E3E0D6" }}>
           <span>All employees ({employees.length})</span>
         </div>
-        <table className="w-full text-sm">
+        <table className="w-full text-base">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-              <th className="px-4 py-3 font-semibold">Name</th>
-              <th className="px-4 py-3 font-semibold">Subject</th>
-              <th className="px-4 py-3 font-semibold">Grade</th>
-              <th className="px-4 py-3 font-semibold text-right">Remove</th>
+            <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-5 py-3.5 font-semibold">Name</th>
+              <th className="px-5 py-3.5 font-semibold">Subject</th>
+              <th className="px-5 py-3.5 font-semibold">Grade</th>
+              <th className="px-5 py-3.5 font-semibold text-right">Remove</th>
             </tr>
           </thead>
           <tbody>
             {employees.map((emp) => (
               <tr key={emp.id} className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                <td className="px-4 py-2.5">
+                <td className="px-5 py-3">
                   <div className="font-medium">{emp.name}</div>
-                  <div className="text-xs" style={{ color: "#5B6B85" }}>{emp.email}</div>
+                  <div className="text-sm" style={{ color: "#5B6B85" }}>{emp.email}</div>
                 </td>
-                <td className="px-4 py-2.5">
+                <td className="px-5 py-3">
                   <select value={emp.subject} onChange={(e) => assignSubject(emp.id, e.target.value)}
-                    className="border rounded-md px-2 py-1 text-xs bg-white" style={{ borderColor: "#D8D4C6" }}>
+                    className="border rounded-lg px-2.5 py-1.5 text-sm bg-white" style={{ borderColor: "#D8D4C6" }}>
                     {SUBJECT_OPTIONS.map((s) => <option key={s}>{s}</option>)}
                   </select>
                 </td>
-                <td className="px-4 py-2.5">
+                <td className="px-5 py-3">
                   <select value={emp.grade} onChange={(e) => assignGrade(emp.id, e.target.value)}
-                    className="border rounded-md px-2 py-1 text-xs bg-white" style={{ borderColor: "#D8D4C6" }}>
+                    className="border rounded-lg px-2.5 py-1.5 text-sm bg-white" style={{ borderColor: "#D8D4C6" }}>
                     {GRADE_OPTIONS.map((g) => <option key={g}>{g}</option>)}
                   </select>
                 </td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => removeEmployee(emp.id)} className="p-1.5 rounded-md hover:bg-red-50" title="Remove employee" style={{ color: "#C4452E" }}>
-                    <Trash2 size={14} />
+                <td className="px-5 py-3 text-right">
+                  <button onClick={() => removeEmployee(emp.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="Remove employee" style={{ color: "#C4452E" }}>
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>
             ))}
             {employees.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No employees yet.</td></tr>
+              <tr><td colSpan={4} className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No employees yet.</td></tr>
             )}
           </tbody>
         </table>
@@ -1725,25 +1725,25 @@ function AdminDashboard({ employees, pending, pendingLeavesCount, attendanceSumm
     <div>
       <SectionTitle eyebrow="Admin" title="Admin dashboard" />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 max-w-2xl">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8 max-w-3xl">
         {stats.map((s) => (
-          <Card key={s.label} className="p-4">
-            <s.icon size={18} style={{ color: s.color }} />
-            <div className="display text-2xl font-bold mt-2">{s.value}</div>
-            <div className="text-xs" style={{ color: "#5B6B85" }}>{s.label}</div>
+          <Card key={s.label} className="p-5">
+            <s.icon size={20} style={{ color: s.color }} />
+            <div className="display text-3xl font-bold mt-2.5">{s.value}</div>
+            <div className="text-sm" style={{ color: "#5B6B85" }}>{s.label}</div>
           </Card>
         ))}
       </div>
 
       <Card>
-        <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>Employees</div>
-        <table className="w-full text-sm">
+        <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>Employees</div>
+        <table className="w-full text-base">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-              <th className="px-4 py-3 font-semibold">Name</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Subject / Grade</th>
-              <th className="px-4 py-3 font-semibold">Attendance (this month)</th>
-              <th className="px-4 py-3 font-semibold text-right">Details</th>
+            <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+              <th className="px-5 py-3.5 font-semibold">Name</th>
+              <th className="px-5 py-3.5 font-semibold hidden sm:table-cell">Subject / Grade</th>
+              <th className="px-5 py-3.5 font-semibold">Attendance (this month)</th>
+              <th className="px-5 py-3.5 font-semibold text-right">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -1753,24 +1753,24 @@ function AdminDashboard({ employees, pending, pendingLeavesCount, attendanceSumm
               return (
                 <Fragment key={emp.id}>
                   <tr className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                    <td className="px-4 py-2.5 font-medium">{emp.name}</td>
-                    <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{emp.subject || "—"} · {emp.grade || "—"}</td>
-                    <td className="px-4 py-2.5" style={{ color: "#5B6B85" }}>
+                    <td className="px-5 py-3 font-medium">{emp.name}</td>
+                    <td className="px-5 py-3 hidden sm:table-cell" style={{ color: "#5B6B85" }}>{emp.subject || "—"} · {emp.grade || "—"}</td>
+                    <td className="px-5 py-3" style={{ color: "#5B6B85" }}>
                       {att ? `${att.pct}% (${att.daysPresent}/${att.workingDaysElapsed})` : "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-right">
-                      <button onClick={() => setExpanded(open ? null : emp.id)} className="text-xs hover:underline" style={{ color: "#E07C24" }}>
+                    <td className="px-5 py-3 text-right">
+                      <button onClick={() => setExpanded(open ? null : emp.id)} className="text-sm hover:underline" style={{ color: "#E07C24" }}>
                         {open ? "Hide" : "View"}
                       </button>
                     </td>
                   </tr>
                   {open && (
                     <tr key={`${emp.id}-detail`} className="border-t" style={{ borderColor: "#F0EDE3", background: "#FBF9F3" }}>
-                      <td colSpan={4} className="px-4 py-4">
-                        <div className="grid sm:grid-cols-3 gap-4 text-xs">
-                          <div><div style={{ color: "#8A8672" }}>Email</div><div className="font-medium mt-0.5">{emp.email}</div></div>
-                          <div><div style={{ color: "#8A8672" }}>Joined</div><div className="font-medium mt-0.5">{(emp.created_at || "").split(" ")[0]}</div></div>
-                          <div><div style={{ color: "#8A8672" }}>Status</div><div className="font-medium mt-0.5 capitalize">{emp.status}</div></div>
+                      <td colSpan={4} className="px-5 py-5">
+                        <div className="grid sm:grid-cols-3 gap-5 text-sm">
+                          <div><div style={{ color: "#8A8672" }}>Email</div><div className="font-medium mt-1">{emp.email}</div></div>
+                          <div><div style={{ color: "#8A8672" }}>Joined</div><div className="font-medium mt-1">{(emp.created_at || "").split(" ")[0]}</div></div>
+                          <div><div style={{ color: "#8A8672" }}>Status</div><div className="font-medium mt-1 capitalize">{emp.status}</div></div>
                         </div>
                       </td>
                     </tr>
@@ -1779,7 +1779,7 @@ function AdminDashboard({ employees, pending, pendingLeavesCount, attendanceSumm
               );
             })}
             {employees.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No employees yet — add one under Manage Employees.</td></tr>
+              <tr><td colSpan={4} className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No employees yet — add one under Manage Employees.</td></tr>
             )}
           </tbody>
         </table>
@@ -1802,21 +1802,21 @@ function Dashboard({ name, go }) {
   return (
     <div>
       <SectionTitle eyebrow="Today · Thu, 16 Jul 2026" title={`Good morning, ${name}`} />
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-5">
         {shortcuts.map((s) => (
           <button
             key={s.id}
             onClick={() => go(s.id)}
-            className="text-left bg-white border rounded-lg p-5 hover:border-amber-400 transition-colors group"
+            className="text-left bg-white border rounded-xl p-6 hover:border-amber-400 transition-colors group"
             style={{ borderColor: "#E3E0D6" }}
           >
-            <div className="w-9 h-9 rounded flex items-center justify-center mb-3" style={{ background: "#FBEEDF" }}>
-              <s.icon size={18} style={{ color: "#B45E12" }} />
+            <div className="w-9 h-9 rounded flex items-center justify-center mb-4" style={{ background: "#FBEEDF" }}>
+              <s.icon size={20} style={{ color: "#B45E12" }} />
             </div>
-            <div className="font-semibold text-sm flex items-center gap-1">
-              {s.title} <ChevronRight size={14} className="text-gray-400 group-hover:text-amber-500" />
+            <div className="font-semibold text-base flex items-center gap-1.5">
+              {s.title} <ChevronRight size={16} className="text-gray-400 group-hover:text-amber-500" />
             </div>
-            <div className="text-xs mt-1 leading-relaxed" style={{ color: "#5B6B85" }}>{s.desc}</div>
+            <div className="text-sm mt-1.5 leading-relaxed" style={{ color: "#5B6B85" }}>{s.desc}</div>
           </button>
         ))}
       </div>
@@ -1851,30 +1851,30 @@ function MyProgress() {
     <div>
       <SectionTitle eyebrow="My Progress" title="Your progress dashboard" />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {stats.map((s) => (
-          <Card key={s.label} className="p-4">
-            <s.icon size={18} style={{ color: s.color }} />
-            <div className="display text-2xl font-bold mt-2">{s.value}</div>
-            <div className="text-xs" style={{ color: "#5B6B85" }}>{s.label}</div>
+          <Card key={s.label} className="p-5">
+            <s.icon size={20} style={{ color: s.color }} />
+            <div className="display text-3xl font-bold mt-2.5">{s.value}</div>
+            <div className="text-sm" style={{ color: "#5B6B85" }}>{s.label}</div>
           </Card>
         ))}
       </div>
 
       <Card>
-        <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>Recent leave requests</div>
+        <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>Recent leave requests</div>
         <ul>
           {leaves.slice(0, 5).map((l, i) => (
-            <li key={l.id} className={`px-4 py-3 flex items-start justify-between gap-3 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
+            <li key={l.id} className={`px-5 py-3.5 flex items-start justify-between gap-4 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "#F0EDE3" }}>
               <div>
-                <div className="text-sm font-medium">{l.leave_type}</div>
-                <div className="text-xs mt-0.5" style={{ color: "#5B6B85" }}>{l.start_date} – {l.end_date}</div>
+                <div className="text-base font-medium">{l.leave_type}</div>
+                <div className="text-sm mt-1" style={{ color: "#5B6B85" }}>{l.start_date} – {l.end_date}</div>
               </div>
               <StatusPill label={leaveStatusLabel(l.status)} />
             </li>
           ))}
           {leaves.length === 0 && (
-            <li className="px-4 py-8 text-center text-sm" style={{ color: "#8A8672" }}>No leave requests yet.</li>
+            <li className="px-5 py-10 text-center text-base" style={{ color: "#8A8672" }}>No leave requests yet.</li>
           )}
         </ul>
       </Card>
@@ -1913,16 +1913,16 @@ function Profile({ email }) {
   const startEdit = () => { setDraft(p); setEditing(true); setSaved(""); };
   const save = () => { setP(draft); setEditing(false); setSaved("Profile updated."); };
 
-  const input = "w-full border rounded-md px-3 py-1.5 text-sm bg-white";
+  const input = "w-full border rounded-lg px-4 py-2 text-base bg-white";
   const field = (label, k, Icon) => (
     <div key={k}>
-      <div className="text-xs font-medium mb-1 flex items-center gap-1.5" style={{ color: "#5B6B85" }}>
-        {Icon && <Icon size={12} />} {label}
+      <div className="text-sm font-medium mb-1.5 flex items-center gap-2" style={{ color: "#5B6B85" }}>
+        {Icon && <Icon size={14} />} {label}
       </div>
       {editing ? (
         <input value={draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} className={input} style={{ borderColor: "#D8D4C6" }} />
       ) : (
-        <div className="text-sm font-medium">{p[k]}</div>
+        <div className="text-base font-medium">{p[k]}</div>
       )}
     </div>
   );
@@ -1932,36 +1932,36 @@ function Profile({ email }) {
       <SectionTitle eyebrow="Profile" title="My profile" />
 
       {/* Identity card */}
-      <Card className="p-5 mb-6 margin-rule">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center shrink-0 text-white display font-bold text-xl" style={{ background: "#1E2B5C" }}>
+      <Card className="p-6 mb-8 margin-rule">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center shrink-0 text-white display font-bold text-2xl" style={{ background: "#1E2B5C" }}>
             {p.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="display text-xl font-bold flex items-center gap-2">
-              {p.name} <BadgeCheck size={18} style={{ color: "#2E7D5B" }} />
+            <div className="display text-2xl font-bold flex items-center gap-2.5">
+              {p.name} <BadgeCheck size={20} style={{ color: "#2E7D5B" }} />
             </div>
-            <div className="text-sm" style={{ color: "#5B6B85" }}>{p.designation} · Employee ID {p.empId}</div>
-            <div className="text-xs mt-0.5" style={{ color: "#5B6B85" }}>Joined {p.joined} · {p.department} department</div>
+            <div className="text-base" style={{ color: "#5B6B85" }}>{p.designation} · Employee ID {p.empId}</div>
+            <div className="text-sm mt-1" style={{ color: "#5B6B85" }}>Joined {p.joined} · {p.department} department</div>
           </div>
           {editing ? (
-            <button onClick={save} className="px-4 py-2 rounded-md text-sm font-semibold inline-flex items-center gap-2 shrink-0" style={{ background: "#E07C24", color: "#1E2B5C" }}>
-              <Save size={14} /> Save changes
+            <button onClick={save} className="px-5 py-2.5 rounded-lg text-base font-semibold inline-flex items-center gap-2.5 shrink-0" style={{ background: "#E07C24", color: "#1E2B5C" }}>
+              <Save size={16} /> Save changes
             </button>
           ) : (
-            <button onClick={startEdit} className="px-4 py-2 rounded-md text-sm font-semibold inline-flex items-center gap-2 shrink-0 border" style={{ borderColor: "#D8D4C6", color: "#1E2B5C" }}>
-              <Pencil size={14} /> Edit profile
+            <button onClick={startEdit} className="px-5 py-2.5 rounded-lg text-base font-semibold inline-flex items-center gap-2.5 shrink-0 border" style={{ borderColor: "#D8D4C6", color: "#1E2B5C" }}>
+              <Pencil size={16} /> Edit profile
             </button>
           )}
         </div>
-        {saved && !editing && <div className="text-xs mt-3" style={{ color: "#2E7D5B" }}>{saved}</div>}
+        {saved && !editing && <div className="text-sm mt-4" style={{ color: "#2E7D5B" }}>{saved}</div>}
       </Card>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-7">
         {/* Contact & personal */}
-        <Card className="p-5">
-          <div className="font-semibold text-sm mb-4">Contact & personal details</div>
-          <div className="grid sm:grid-cols-2 gap-4">
+        <Card className="p-6">
+          <div className="font-semibold text-base mb-5">Contact & personal details</div>
+          <div className="grid sm:grid-cols-2 gap-5">
             {field("Phone", "phone", Phone)}
             {field("Email", "email", Mail)}
             {field("Address", "address", MapPin)}
@@ -1973,26 +1973,26 @@ function Profile({ email }) {
 
         {/* Teaching load */}
         <Card>
-          <div className="p-4 border-b font-semibold text-sm" style={{ borderColor: "#E3E0D6" }}>My classes this term</div>
-          <table className="w-full text-sm">
+          <div className="p-5 border-b font-semibold text-base" style={{ borderColor: "#E3E0D6" }}>My classes this term</div>
+          <table className="w-full text-base">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide" style={{ color: "#5B6B85" }}>
-                <th className="px-4 py-2.5 font-semibold">Class</th>
-                <th className="px-4 py-2.5 font-semibold">Subject</th>
-                <th className="px-4 py-2.5 font-semibold text-right">Periods / wk</th>
+              <tr className="text-left text-sm uppercase tracking-wide" style={{ color: "#5B6B85" }}>
+                <th className="px-5 py-3 font-semibold">Class</th>
+                <th className="px-5 py-3 font-semibold">Subject</th>
+                <th className="px-5 py-3 font-semibold text-right">Periods / wk</th>
               </tr>
             </thead>
             <tbody>
               {classes.map((c) => (
                 <tr key={c.grade + c.section} className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                  <td className="px-4 py-2.5 font-medium">{c.grade} · {c.section}</td>
-                  <td className="px-4 py-2.5" style={{ color: "#5B6B85" }}>{c.subject}</td>
-                  <td className="px-4 py-2.5 text-right">{c.periods}</td>
+                  <td className="px-5 py-3 font-medium">{c.grade} · {c.section}</td>
+                  <td className="px-5 py-3" style={{ color: "#5B6B85" }}>{c.subject}</td>
+                  <td className="px-5 py-3 text-right">{c.periods}</td>
                 </tr>
               ))}
               <tr className="border-t" style={{ borderColor: "#F0EDE3" }}>
-                <td className="px-4 py-2.5 font-semibold" colSpan={2}>Total teaching load</td>
-                <td className="px-4 py-2.5 text-right font-semibold">{classes.reduce((s, c) => s + c.periods, 0)}</td>
+                <td className="px-5 py-3 font-semibold" colSpan={2}>Total teaching load</td>
+                <td className="px-5 py-3 text-right font-semibold">{classes.reduce((s, c) => s + c.periods, 0)}</td>
               </tr>
             </tbody>
           </table>
@@ -2071,7 +2071,7 @@ export default function ERPSystem({ onExit }) {
         {onExit && (
           <button
             onClick={onExit}
-            className="fixed top-4 right-4 z-50 text-xs px-3 py-1.5 rounded-md bg-white/90 border border-gray-200 shadow-sm hover:bg-white"
+            className="fixed top-4 right-4 z-50 text-sm px-4 py-2 rounded-lg bg-white/90 border border-gray-200 shadow-sm hover:bg-white"
             style={{ color: "#1E2B5C" }}
           >
             ← Back to OIS Dashboard
@@ -2086,50 +2086,50 @@ export default function ERPSystem({ onExit }) {
       <style>{styles}</style>
 
       {/* Sidebar */}
-      <aside className="md:w-60 shrink-0 flex md:flex-col justify-between text-white md:min-h-screen" style={{ background: "#1E2B5C" }}>
+      <aside className="md:w-72 shrink-0 flex md:flex-col justify-between text-white md:min-h-screen" style={{ background: "#1E2B5C" }}>
         <div className="flex md:block items-center w-full overflow-x-auto">
-          <div className="hidden md:flex items-center gap-2.5 p-5">
-            <div className="w-9 h-9 rounded-full bg-white p-0.5 shrink-0">
+          <div className="hidden md:flex items-center gap-3 p-6">
+            <div className="w-9 h-9 rounded-full bg-white p-1 shrink-0">
               <img src={LOGO} alt="Banyan International Academy logo" className="w-full h-full rounded-full object-cover" />
             </div>
-            <span className="display font-bold text-sm leading-tight">Banyan International<br />Academy</span>
+            <span className="display font-bold text-base leading-tight">Banyan International<br />Academy</span>
           </div>
-          <nav className="flex md:flex-col gap-1 p-2 md:px-3 w-full">
+          <nav className="flex md:flex-col gap-1.5 p-2.5 md:px-4 w-full">
             {BASE_NAV.map((n) => {
               const active = tab === n.id;
               return (
                 <button
                   key={n.id}
                   onClick={() => setTab(n.id)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-base whitespace-nowrap transition-colors"
                   style={{
                     background: active ? "#E07C24" : "transparent",
                     color: active ? "#1E2B5C" : "#C6D0E2",
                     fontWeight: active ? 600 : 400,
                   }}
                 >
-                  <n.icon size={16} /> {n.label}
+                  <n.icon size={18} /> {n.label}
                 </button>
               );
             })}
             {isAdmin && (
               <>
-                <div className="mx-1 my-2 border-t" style={{ borderColor: "#2C3B72" }} />
-                <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider hidden md:block" style={{ color: "#7A88AC" }}>Admin</div>
+                <div className="mx-1.5 my-2.5 border-t" style={{ borderColor: "#2C3B72" }} />
+                <div className="px-4 mb-1.5 text-xs font-semibold uppercase tracking-wider hidden md:block" style={{ color: "#7A88AC" }}>Admin</div>
                 {ADMIN_NAV.map((n) => {
                   const active = tab === n.id;
                   return (
                     <button
                       key={n.id}
                       onClick={() => setTab(n.id)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-base whitespace-nowrap transition-colors"
                       style={{
                         background: active ? "#E07C24" : "transparent",
                         color: active ? "#1E2B5C" : "#C6D0E2",
                         fontWeight: active ? 600 : 400,
                       }}
                     >
-                      <n.icon size={16} /> {n.label}
+                      <n.icon size={18} /> {n.label}
                     </button>
                   );
                 })}
@@ -2137,29 +2137,29 @@ export default function ERPSystem({ onExit }) {
             )}
           </nav>
         </div>
-        <div className="hidden md:block p-4 border-t" style={{ borderColor: "#2C3B72" }}>
+        <div className="hidden md:block p-5 border-t" style={{ borderColor: "#2C3B72" }}>
           {onExit && (
-            <button onClick={onExit} className="flex items-center gap-2 text-xs hover:underline mb-3" style={{ color: "#9FB0CC" }}>
-              <ArrowLeft size={13} /> Back to OIS Dashboard
+            <button onClick={onExit} className="flex items-center gap-2.5 text-sm hover:underline mb-4" style={{ color: "#9FB0CC" }}>
+              <ArrowLeft size={15} /> Back to OIS Dashboard
             </button>
           )}
-          <div className="flex items-center gap-2 text-sm mb-3">
+          <div className="flex items-center gap-2.5 text-base mb-4">
             <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#2C3B72" }}>
-              <User size={14} />
+              <User size={16} />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-xs" style={{ color: "#C6D0E2" }}>{user.name || user.email}</div>
-              <div className="text-[10px] uppercase tracking-wide" style={{ color: "#7A88AC" }}>{user.role}</div>
+              <div className="truncate text-sm" style={{ color: "#C6D0E2" }}>{user.name || user.email}</div>
+              <div className="text-xs uppercase tracking-wide" style={{ color: "#7A88AC" }}>{user.role}</div>
             </div>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 text-xs hover:underline" style={{ color: "#9FB0CC" }}>
-            <LogOut size={13} /> Sign out
+          <button onClick={handleLogout} className="flex items-center gap-2.5 text-sm hover:underline" style={{ color: "#9FB0CC" }}>
+            <LogOut size={15} /> Sign out
           </button>
         </div>
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-5 md:p-10 max-w-5xl w-full mx-auto">
+      <main className="flex-1 p-6 md:p-12 max-w-6xl w-full mx-auto">
         {tab === "dashboard" && <Dashboard name={user.name || user.email} go={setTab} />}
         {tab === "my-progress" && <MyProgress />}
         {tab === "curriculum" && <Curriculum />}
@@ -2173,8 +2173,8 @@ export default function ERPSystem({ onExit }) {
         {tab === "leave-requests" && isAdmin && <LeaveRequests />}
         {tab === "employees" && isAdmin && <EmployeeManagement employees={employees} pending={pending} refresh={refreshEmployeeData} />}
         <div className="md:hidden mt-8">
-          <button onClick={handleLogout} className="flex items-center gap-2 text-xs" style={{ color: "#5B6B85" }}>
-            <LogOut size={13} /> Sign out ({user.name || user.email})
+          <button onClick={handleLogout} className="flex items-center gap-2.5 text-sm" style={{ color: "#5B6B85" }}>
+            <LogOut size={15} /> Sign out ({user.name || user.email})
           </button>
         </div>
       </main>
