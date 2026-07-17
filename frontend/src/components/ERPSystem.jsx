@@ -34,8 +34,259 @@ const styles = `
 const CURRICULUM = {
   "Grade 6": {
     Mathematics: {
-      "Ch 1 · Knowing Our Numbers": { book: null, lps: ["LP 1.1 Place value & comparison", "LP 1.2 Estimation in daily life", "LP 1.3 Roman numerals"] },
-      "Ch 2 · Whole Numbers": { book: null, lps: ["LP 2.1 Number line", "LP 2.2 Properties of operations"] },
+      "Ch 1 · Knowing Our Numbers": {
+        book: {
+          title: "Chapter 1 — Knowing Our Numbers",
+          pdfUrl: "/books/grade6-math-ch1-knowing-our-numbers.pdf",
+          pages: "37 pages",
+        },
+        lps: [
+          {
+            title: "LP-1",
+            guidance: "0–5 min: Write 4 digits on the board and ask students to form the greatest and smallest number from them. 5–20 min: Explain the rule (no digit repeated, all digits used) with worked examples. 20–27 min: Students attempt 2–3 checkpoint questions individually. 27–30 min: Cover the 'Mental floss' fact — zero was discovered as a digit in India.",
+            content:
+`Making Numbers from Digits
+Numbers are formed with the help of digits.
+• No digit must be repeated.
+• All the given digits must be used.
+
+Example: Take digits 2, 8, 4, 5. The greatest number is 8542; the smallest is 2458.
+
+Notation vs Numeration:
+• Notation — writing a number in figures.
+• Numeration — writing a number in words.
+
+Mental floss: The concept of zero as a digit was discovered in India.
+
+Checkpoint:
+1. Form the greatest number with 6, 4, 0, 9.
+2. Form the smallest number with 8, 4, 2, 3.
+3. Form the greatest number with 3, 0, 9, 7, 5.
+4. Find the difference between the greatest and smallest number formed with 3, 5, 9, 6.`,
+          },
+          {
+            title: "LP-2",
+            guidance: "0–5 min: Line up students by height and ask which order that is (ascending). 5–20 min: Define ascending/descending order with examples; use the height analogy from the book. 20–27 min: Students arrange given number sets in both orders. 27–30 min: Quick recap — ask for the rule when comparing numbers with unequal digit counts.",
+            content:
+`Comparing Numbers
+Ascending order: arranging numbers from smallest to greatest.
+Example: 16, 43, 88, 97.
+
+Descending order: arranging numbers from greatest to smallest.
+Example: 32, 21, 17, 13.
+
+Rule: If two numbers have an unequal number of digits, the number with more digits is greater.
+
+Checkpoint:
+1. Arrange in ascending order: 7783, 8232, 5124, 9212.
+2. Arrange in descending order: 8325, 92737, 6532, 32535, 523443.
+3. Find the greatest and smallest: 4536, 4892, 4370, 4452.`,
+          },
+          {
+            title: "LP-3",
+            guidance: "0–5 min: Write a large number without commas and ask students to read it aloud — notice the difficulty. 5–20 min: Introduce the Indian System (comma after hundreds, then every 2 digits) and the International System (comma after hundreds, then every 3 digits), with side-by-side examples. 20–27 min: Students convert numbers between the two systems. 27–30 min: Recap the placement rule for each system.",
+            content:
+`Use of Commas
+Commas help us read and write large numbers easily.
+
+Indian System of Numeration: first comma after the hundreds place, then every two digits.
+Example: 12,34,567
+
+International System of Numeration: first comma after the hundreds place, then every three digits.
+Example: 1,234,567
+
+Checkpoint:
+1. Write in figures (Indian system): Seven lakh, Thirty lakh, Nine crore.
+2. Insert commas (Indian System): 87595762, 8546283.
+3. Insert commas (International System): 78921092, 7452283.`,
+          },
+          {
+            title: "LP-4",
+            guidance: "0–5 min: Ask students to guess the crowd size in a photo — introduce the idea of 'estimate'. 5–22 min: Teach rounding to nearest tens/hundreds/thousands with the worked examples (79→80, 5839→5800, 14329→14000). 22–27 min: Estimating sum and difference by rounding each number first. 27–30 min: Students try 2 estimation problems on the board.",
+            content:
+`Quick Estimation of Numbers
+A reasonable approximation of the actual value is called an estimate.
+
+Rounding rules:
+• Nearest tens: digits 1–4 round down, 6–9 round up (79 → 80, 44 → 40).
+• Nearest hundreds: round based on the tens digit (5839 → 5800, 9472 → 9500).
+• Nearest thousands: round based on the hundreds digit (14329 → 14000, 14729 → 15000).
+
+Estimating Sum & Difference: round each number first, then operate.
+Example: Estimate 5290 + 17986 to nearest hundreds → 5300 + 18000 = 23300.
+Example: Estimate 5673 − 436 to nearest hundreds → 5700 − 400 = 5300.
+
+Checkpoint:
+1. Estimate 5,290 + 17,986.
+2. Estimate 5,673 – 436.`,
+          },
+          {
+            title: "LP-5",
+            guidance: "0–5 min: Recap rounding off from the previous lesson. 5–18 min: Estimating product and quotient by rounding each number to its greatest place, with worked examples. 18–27 min: Introduce BODMAS and work through the two solved bracket examples step by step. 27–30 min: Students simplify one bracket expression on the board.",
+            content:
+`Estimating Product & Quotient
+Round each number to its greatest place, then operate.
+Example: Estimate 958 × 387 → round to 1000 × 400 = 400000.
+Example: Estimate 2838 ÷ 125 → round to 2800 ÷ 100 = 28.
+
+Brackets (BODMAS)
+BODMAS = Bracket, Of, Division, Multiplication, Addition, Subtraction — the order of operations. Always simplify the innermost bracket first.
+
+Example: 37 − [5 + {28 − (19 − 7)}]
+= 37 − [5 + {28 − 12}] = 37 − [5 + 16] = 37 − 21 = 16
+
+Checkpoint:
+1. Estimate the product 87×313.
+2. Simplify: 94 − [32 − {25 − (6 − 4 − 1)}].`,
+          },
+          {
+            title: "LP-6",
+            guidance: "0–5 min: Show a clock face or old building inscription with Roman numerals — ask what they mean. 5–22 min: Teach the rules (max 3 repeats except V/L/D never repeat; smaller-before-larger subtracts, smaller-after-larger adds; I only subtracts from V/X, X only from L/M/C). 22–27 min: Convert a few numbers to/from Roman numerals together. 27–30 min: Chapter close — run through the Bird's-eye view recap as an oral quiz.",
+            content:
+`Roman Numerals
+• A symbol is never repeated more than three times; V, L and D are never repeated at all.
+• Read left to right, largest to smallest value.
+• A smaller symbol to the right of a larger one is added; to the left, it's subtracted.
+• "I" can only be subtracted from V and X. "X" can only be subtracted from L, M and C.
+
+Examples: 30 = XXX, 50 = L, 80 = LXXX, 90 = XC, 100 = C.
+
+Mental floss: Another name for zero is a cypher.
+
+Checkpoint:
+1. XLVII = ?  2. CXVI = ?  3. MCMXIV = ?  4. Write 1078 in Roman numerals.
+
+Chapter recap (Bird's-eye view): number formation rules, ascending/descending order, Indian vs International numeration, estimation of sum/difference/product/quotient, BODMAS, and the Roman numeral rules above.`,
+          },
+        ],
+      },
+      "Ch 2 · Whole Numbers": {
+        book: {
+          title: "Chapter 2 — Whole Numbers",
+          pdfUrl: "/books/grade6-math-ch2-whole-numbers.pdf",
+          pages: "41 pages",
+        },
+        lps: [
+          {
+            title: "LP-1",
+            guidance: "0–5 min: Ask 'What's the smallest counting number?' to introduce Natural Numbers, then 'What if we include zero?' to introduce Whole Numbers. 5–20 min: Define N and W with their sets, and expanded form of a number. 20–27 min: Teach successor (add 1) and predecessor (subtract 1) with the worked table. 27–30 min: Students find the successor/predecessor of 3–4 numbers on the board.",
+            content:
+`Natural Numbers & Whole Numbers
+Natural Numbers (N): counting numbers — N = {1, 2, 3, 4, 5, …}
+Whole Numbers (W): natural numbers plus zero — W = {0, 1, 2, 3, 4, 5, …}
+
+Expanded form: a number written as the sum of the value of each digit.
+Example: 365 = 3×100 + 6×10 + 5×1
+
+Successor and Predecessor
+• Predecessor = the number immediately before → subtract 1.
+• Successor = the number immediately after → add 1.
+Example: Predecessor of 11999 = 11998. Successor of 15999 = 16000.
+
+Remember: Every number has a successor (we can always add 1).
+
+Checkpoint 1: Find the predecessor and successor of 5665, 4321, 8909, 7000, 1288, 3222.`,
+          },
+          {
+            title: "LP-2",
+            guidance: "0–5 min: Draw a horizontal line on the board and mark 0–10 — introduce the number line. 5–20 min: Demonstrate addition (move right) and subtraction (move left) with the worked examples (5+3, 6−5). 20–27 min: Demonstrate multiplication as repeated jumps (4×3 = four jumps of 3). 27–30 min: Students solve 2–3 number-line problems at the board.",
+            content:
+`The Number Line
+A number line is a straight line with numbers placed at equal intervals, extending infinitely, usually shown horizontally.
+
+Rules:
+• Add a whole number → move right.
+• Subtract a whole number → move left.
+• Multiply on the number line: e.g. 3×4 — start at 0, make 4 moves of 3 units each, arrive at 12.
+
+Example: 5 + 3 → move 3 steps right from 5, reach 8.
+Example: 6 − 5 → move 5 steps left from 6, reach 1.
+
+Think about this: Zero is a special number — it can be written as 0/q where q ≠ 0.
+
+Checkpoint 2:
+1. 20 − 8 = ?  2. 12 − 5 = ?  3. 5 × 3 = ?  4. 6 × 2 = ?`,
+          },
+          {
+            title: "LP-3",
+            guidance: "0–5 min: Ask students to add and multiply two whole numbers and check if the result is still a whole number — introduce Closure. 5–20 min: Show subtraction/division are NOT closed (5−2=3 but 2−5=−3). 20–27 min: Introduce Commutative property for addition/multiplication with examples, and show subtraction is NOT commutative. 27–30 min: Students test 2 closure and 2 commutative examples themselves.",
+            content:
+`Property 1 — Closure Property
+The sum or product of any two whole numbers is always a whole number: a + b and a × b are whole numbers.
+Example: 3 + 4 = 7, 8 × 5 = 40 — both whole numbers.
+Not closed under subtraction or division: 2 − 5 = −3 (not whole); 7 ÷ 5 is not always a whole number.
+
+Property 2 — Commutative Property
+Addition: a + b = b + a (e.g. 5 + 3 = 3 + 5).
+Multiplication: a × b = b × a (e.g. 2 × 6 = 6 × 2).
+Subtraction is NOT commutative: 5 − 3 = 2, but 3 − 5 = −2.
+
+Checkpoint 3:
+1. Is subtraction closed for whole numbers? Give a counter-example.
+2. Which property does 9 × 45 = 45 × 9 show?`,
+          },
+          {
+            title: "LP-4",
+            guidance: "0–5 min: Ask students to add (75+81)+34 and 75+(81+34) separately and compare — introduce Associative property. 5–18 min: Show associative property for addition/multiplication, and that it fails for subtraction/division. 18–27 min: Introduce Distributive property with worked examples (28×36 + 28×64 = 28×100). 27–30 min: Students solve 2 distributive-property problems.",
+            content:
+`Property 3 — Associative Property
+Grouping doesn't change the sum or product: (a+b)+c = a+(b+c) and (a×b)×c = a×(b×c).
+Example: (75+81)+34 = 75+(81+34) = 190.
+Does NOT hold for subtraction/division: 8−(5−2)=5 but (8−5)−2=1.
+
+Property 4 — Distributive Property
+Multiplying a sum: a×(b+c) = a×b + a×c.
+Example: 28×36 + 28×64 = 28×(36+64) = 28×100 = 2800.
+
+Checkpoint 4:
+1. Name the property: (10+3)+15 = 10+(3+15).
+2. Use the distributive property to find 28×36 + 28×64.`,
+          },
+          {
+            title: "LP-5",
+            guidance: "0–5 min: Ask 'What number can you multiply anything by and get the same number back?' — introduce Multiplicative Identity (1). 5–15 min: Ask the same for addition — introduce Additive Identity (0). 15–24 min: Introduce Additive Inverse (a + (−a) = 0). 24–30 min: Students match each property (Closure/Commutative/Associative/Distributive/Identity) to its example — recap all 6 properties learned so far.",
+            content:
+`Property 5 — Multiplicative Identity
+1 is the multiplicative identity: a × 1 = 1 × a = a. Multiplying by 1 never changes a number.
+
+Property 6 — Additive Identity
+0 is the additive identity: a + 0 = a. Adding zero never changes a number.
+
+Additive Inverse
+The additive inverse of a number a is −a, since a + (−a) = 0.
+
+Recap — all whole number properties:
+1. Closure — sum/product of whole numbers is a whole number.
+2. Commutative — order doesn't matter for + and ×.
+3. Associative — grouping doesn't matter for + and ×.
+4. Distributive — a×(b+c) = a×b + a×c.
+5. Multiplicative identity — 1.
+6. Additive identity — 0.`,
+          },
+          {
+            title: "LP-6",
+            guidance: "0–5 min: Ask students to arrange dots for the number 6 as a line, then as a triangle — introduce number patterns. 5–20 min: Show triangular numbers (3, 6, 10, 15…) and square numbers (4, 9, 16…) with dot arrangements. 20–27 min: Walk through the 9×99×999 and 12345×8+5 pattern examples. 27–30 min: Chapter close — recap Bird's-eye view as an oral quiz.",
+            content:
+`Patterns in Whole Numbers
+A pattern is a logical sequence of numbers or pictures, often shown as dot arrangements.
+• Line numbers: any number (••• for 3).
+• Triangular numbers: 3, 6, 10, 15, 21, 28, 36 — arranged as triangles of dots.
+• Square numbers: 9, 16, 25 — arranged as squares.
+• Rectangular numbers: 6, 8, 10 — arranged as rectangles.
+
+Multiplication patterns:
+4 × 9 = 4×(10−1) = 36; 4 × 99 = 4×(100−1) = 396; 4 × 999 = 3996.
+1×8+1=9, 12×8+2=98, 123×8+3=987, 1234×8+4=9876 — each step follows the same rule.
+
+Chapter recap (Bird's-eye view):
+• Natural numbers (N) vs Whole numbers (W, includes 0).
+• Number line: add = right, subtract = left.
+• Six properties: Closure, Commutative, Associative, Distributive, Multiplicative Identity (1), Additive Identity (0).
+• Additive inverse: a + (−a) = 0.
+• Patterns help simplify calculations with numbers like 9, 99, 999.`,
+          },
+        ],
+      },
       "Ch 3 · Playing with Numbers": { book: null, lps: ["LP 3.1 Factors & multiples", "LP 3.2 Tests of divisibility", "LP 3.3 HCF & LCM"] },
     },
     Science: {
