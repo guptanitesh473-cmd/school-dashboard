@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Home as HomeIcon, LayoutGrid, ClipboardList, TrendingUp,
-  School, PlusCircle, ChevronRight, Menu, X, GraduationCap, Package, LogOut, BookMarked,
-  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages, MapPin, Building2,
+  School, PlusCircle, ChevronRight, ChevronDown, Menu, X, GraduationCap, Package, LogOut, BookMarked,
+  UserCheck, Users, MessageSquare, Smartphone, CalendarDays, ShieldCheck, Languages, MapPin, Building2, Folder,
 } from 'lucide-react';
 import Home from './components/Home';
 import MatrixView from './components/MatrixView';
@@ -126,6 +126,7 @@ const SCHOOL_NAV = [
 export default function App() {
   const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [oldWorkOpen, setOldWorkOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const location = useLocation();
@@ -212,84 +213,101 @@ export default function App() {
           {/* Divider */}
           <div className={`mx-4 my-3 border-t border-gray-100 ${collapsed ? 'mx-2' : ''}`} />
 
-          {/* Label */}
-          {!collapsed && (
-            <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Old Work</div>
-          )}
+          {/* Old Work accordion toggle */}
+          <button
+            onClick={() => setOldWorkOpen(o => !o)}
+            className={`
+              flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5 w-[calc(100%-16px)]
+              text-gray-600 hover:bg-gray-100 hover:text-gray-900
+              ${collapsed ? 'justify-center px-2 w-auto' : ''}
+            `}
+            title={collapsed ? 'Old Work' : undefined}
+          >
+            <Folder size={18} className="shrink-0" />
+            {!collapsed && <span className="leading-tight text-left flex-1">Old Work</span>}
+            {!collapsed && (
+              oldWorkOpen
+                ? <ChevronDown size={14} className="opacity-40 shrink-0" />
+                : <ChevronRight size={14} className="opacity-40 shrink-0" />
+            )}
+          </button>
 
-          {NAV.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) => `
-                flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
-                ${isActive
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }
-                ${collapsed ? 'justify-center px-2' : ''}
-              `}
-              title={collapsed ? label : undefined}
-            >
-              <Icon size={18} className="shrink-0" />
-              {!collapsed && <span className="leading-tight text-left">{label}</span>}
-              {!collapsed && <ChevronRight size={14} className="ml-auto opacity-30 shrink-0" />}
-            </NavLink>
-          ))}
+          {oldWorkOpen && (
+            <div>
+              {NAV.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
+                    ${isActive
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }
+                    ${collapsed ? 'justify-center px-2' : 'pl-8'}
+                  `}
+                  title={collapsed ? label : undefined}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  {!collapsed && <span className="leading-tight text-left">{label}</span>}
+                </NavLink>
+              ))}
 
-          {/* Divider */}
-          <div className={`mx-4 my-3 border-t border-gray-100 ${collapsed ? 'mx-2' : ''}`} />
-
-          {!collapsed && (
-            <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Schools</div>
-          )}
-
-          {SCHOOL_NAV.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) => `
-                flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
-                ${isActive
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }
-                ${collapsed ? 'justify-center px-2' : ''}
-              `}
-              title={collapsed ? label : undefined}
-            >
-              <Icon size={18} className="shrink-0" />
-              {!collapsed && <span className="leading-tight text-left">{label}</span>}
-            </NavLink>
-          ))}
-
-          {/* Admin-only section */}
-          {user?.role === 'admin' && (
-            <>
+              {/* Divider */}
               <div className={`mx-4 my-3 border-t border-gray-100 ${collapsed ? 'mx-2' : ''}`} />
+
               {!collapsed && (
-                <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Schools</div>
               )}
-              <NavLink
-                to="/users"
-                onClick={() => setMobileOpen(false)}
-                className={({ isActive }) => `
-                  flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
-                  ${isActive
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }
-                  ${collapsed ? 'justify-center px-2' : ''}
-                `}
-                title={collapsed ? 'User Management' : undefined}
-              >
-                <ShieldCheck size={18} className="shrink-0" />
-                {!collapsed && <span className="leading-tight text-left">User Management</span>}
-              </NavLink>
-            </>
+
+              {SCHOOL_NAV.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
+                    ${isActive
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }
+                    ${collapsed ? 'justify-center px-2' : 'pl-8'}
+                  `}
+                  title={collapsed ? label : undefined}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  {!collapsed && <span className="leading-tight text-left">{label}</span>}
+                </NavLink>
+              ))}
+
+              {/* Admin-only section */}
+              {user?.role === 'admin' && (
+                <>
+                  <div className={`mx-4 my-3 border-t border-gray-100 ${collapsed ? 'mx-2' : ''}`} />
+                  {!collapsed && (
+                    <div className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                  )}
+                  <NavLink
+                    to="/users"
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => `
+                      flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5
+                      ${isActive
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }
+                      ${collapsed ? 'justify-center px-2' : 'pl-8'}
+                    `}
+                    title={collapsed ? 'User Management' : undefined}
+                  >
+                    <ShieldCheck size={16} className="shrink-0" />
+                    {!collapsed && <span className="leading-tight text-left">User Management</span>}
+                  </NavLink>
+                </>
+              )}
+            </div>
           )}
         </nav>
 
