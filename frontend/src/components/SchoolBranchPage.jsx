@@ -18,7 +18,17 @@ const styles = `
 .branch-page ::selection { background: #E07C24; color: #1E2B5C; }
 `;
 
-function PlaceholderImage({ label, accent = "#1E2B5C", className = "" }) {
+function PlaceholderImage({ label, accent = "#1E2B5C", className = "", src }) {
+  if (src) {
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        <img src={src} alt={label} className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 inset-x-0 px-3 py-2 text-xs font-medium text-white" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent)" }}>
+          {label}
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 ${className}`}
@@ -204,7 +214,7 @@ function Facilities() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {FACILITIES.map((f) => (
             <div key={f.title} className="bg-white rounded-2xl border p-6" style={{ borderColor: "#E3E0D6" }}>
-              <PlaceholderImage label={f.title} accent="#1E2B5C" className="rounded-xl h-36 mb-5" />
+              <PlaceholderImage label={f.title} accent="#1E2B5C" className="rounded-xl h-36 mb-5" src={f.image} />
               <div className="display text-lg font-bold mb-2">{f.title}</div>
               <p className="text-base leading-relaxed" style={{ color: "#5B6B85" }}>{f.description}</p>
             </div>
@@ -249,8 +259,8 @@ function Gallery({ branch }) {
           <h2 className="display text-4xl font-bold mt-2">Life at Banyan {branch.city}</h2>
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {GALLERY_CAPTIONS.map((caption, i) => (
-            <PlaceholderImage key={caption} label={caption} accent={accents[i % accents.length]} className="rounded-2xl h-56" />
+          {GALLERY_CAPTIONS.map((g, i) => (
+            <PlaceholderImage key={g.caption} label={g.caption} accent={accents[i % accents.length]} className="rounded-2xl h-56" src={g.image} />
           ))}
         </div>
       </div>

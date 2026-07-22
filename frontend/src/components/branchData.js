@@ -86,19 +86,19 @@ export const LABS = [
 ];
 
 export const FACILITIES = [
-  { title: "Smart Classrooms", description: "Future-ready classrooms with interactive boards and digital learning tools." },
+  { title: "Smart Classrooms", description: "Future-ready classrooms with interactive boards and digital learning tools.", image: "/images/classroom.jpg" },
   { title: "Library", description: "A well-stocked library to nurture curiosity and independent reading." },
-  { title: "Sports Complex", description: "Indoor and outdoor sports facilities for a well-rounded, active campus life." },
-  { title: "Safe Transport", description: "Reliable, monitored transportation covering the surrounding neighbourhoods." },
+  { title: "Sports Complex", description: "Indoor and outdoor sports facilities for a well-rounded, active campus life.", image: "/images/sports.jpg" },
+  { title: "Safe Transport", description: "Reliable, monitored transportation covering the surrounding neighbourhoods.", image: "/images/transport.jpg" },
 ];
 
 export const GALLERY_CAPTIONS = [
-  "Future-ready smart classrooms",
-  "Lush, green campus",
-  "Discover knowledge in our library",
-  "Master a life skill in our pool",
-  "Safety and transport",
-  "Your journey in sports begins here",
+  { caption: "Future-ready smart classrooms", image: "/images/classroom.jpg" },
+  { caption: "Lush, green campus" },
+  { caption: "Discover knowledge in our library" },
+  { caption: "Master a life skill in our pool" },
+  { caption: "Safety and transport", image: "/images/transport.jpg" },
+  { caption: "Your journey in sports begins here", image: "/images/sports.jpg" },
 ];
 
 export const FAQS = [
