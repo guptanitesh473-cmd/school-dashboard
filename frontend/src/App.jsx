@@ -24,6 +24,8 @@ import AuditReport from './components/AuditReport';
 import ComplianceAudit from './components/ComplianceAudit';
 import BangaloreZone from './components/BangaloreZone';
 import ERPSystem from './components/ERPSystem';
+import SchoolBranchPage from './components/SchoolBranchPage';
+import SchoolBranchIndex from './components/SchoolBranchIndex';
 import TemplateType from './components/TemplateType';
 import ReportView from './components/ReportView';
 import UserManagement from './components/UserManagement';
@@ -148,6 +150,14 @@ export default function App() {
     localStorage.removeItem('auth_token');
     setUser(null);
   };
+
+  // Public school marketing pages — no staff login required, checked before
+  // the auth gate below.
+  if (location.pathname.startsWith('/school')) {
+    const parts = location.pathname.split('/').filter(Boolean); // ['school'] or ['school', 'slug']
+    if (parts.length < 2) return <SchoolBranchIndex />;
+    return <SchoolBranchPage slug={parts[1]} />;
+  }
 
   if (!authChecked) return null; // brief flicker prevention
   if (!user) return <Login onLogin={handleLogin} />;
